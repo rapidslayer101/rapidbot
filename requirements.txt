@@ -4,3 +4,7 @@ google==3.0.0
 googletrans==3.0.0
 psutil==5.8.0
 requests==2.26.0
+forex-python==1.6
+praw==7.3.0
+
+

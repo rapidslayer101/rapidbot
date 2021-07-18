@@ -1,9 +1,12 @@
 # MADE BY RAPIDSLAYER101#260, DO NOT COPY, DO NOT SHARE, DO NOT USE
 
-import datetime, time, googletrans, random, zlib, base64, re, asyncio, discord, requests, cleverbotfreeapi # google
+global time, sys, googletrans, google, random, os, zlib, base64, re, asyncio, randint
+import datetime, time, os, random, zlib, base64, re  # inbuilt
+import googletrans, asyncio, discord, requests, cleverbotfreeapi, urllib, praw  # installed modules
 from discord.ext import commands
 from random import randint
-global time, sys, googletrans, google, random, os, zlib, base64, re, asyncio, randint
+from forex_python.converter import CurrencyRates, CurrencyCodes
+from googletrans import Translator
 
 
 global startt, startr, msgcounter
@@ -12,12 +15,13 @@ startt = time.time()
 startr = datetime.datetime.utcnow()
 
 # todo add decrypt command in
+# todo redo the cooldown system
+# todo fix the help section
+# todo add file directory checks
 
 
 # encrypt def stuff
 
-from zlib import decompress
-from base64 import b85decode
 
 while True:
     try:
@@ -26,7 +30,7 @@ while True:
         config_key = "c-k{jF#Rxp+l&N5BV!X&Gjj_|16|ugYZR3ZEml#DQ`6GWjMpwKPc15`EX~X>h>i^mcMS@O4E6L6sIE;" \
                      "cPDxA8$jZ*KR#$cmc5!p}@bdPta;S@`sz@$N%FET!tBHzm4s-JJwXw6;2ian1V4z@WU|;|MM3pDP"
 
-        c_key = decompress(b85decode(config_key)).decode('utf-8').split("🶘")
+        c_key = zlib.decompress(base64.b85decode(config_key)).decode('utf-8').split("🶘")
         hex_head, hex_tail = c_key[0].split(" ")
         hexlen = random.randint(int(hex_head), int(hex_tail))
         alphagens = c_key[1]
@@ -202,7 +206,7 @@ while True:
 
 
         def convert(m_key):
-            m_key = decompress(b85decode(m_key)).decode('utf-8')
+            m_key = zlib.decompress(base64.b85decode(m_key)).decode('utf-8')
             p0_alpha = m_key[:alphalen]
             p1_key = m_key[alphalen:alphalen+hexlen]
             p1_e = m_key[alphalen+hexlen:-alphalen]
@@ -378,7 +382,7 @@ class Random(commands.Cog):
             await ctx.channel.send("```The minimum words is 1!```")
             allowcmd = 1
         if not allowcmd == 1:
-            from nltk.corpus import words
+            from nltk.corpus import words # todo fix, module missing
             from random import sample
             rand_words = ' '.join(sample(words.words(), n))
             embedvar = discord.Embed(title="Random words:", description=rand_words)
@@ -394,7 +398,7 @@ class Random(commands.Cog):
         await ctx.channel.send(embed=embedvar)
 
     @commands.command()
-    async def randuni(self, ctx, arg):
+    async def randuni(self, ctx, arg):  # todo fix, does not work without currency system
         alphaamount = int(arg)
         allowcmd = 0
         if alphaamount > 1:
@@ -462,7 +466,7 @@ class Random(commands.Cog):
         await ctx.channel.send(embed=embedvar)
 
     @commands.command()
-    async def repeat(self, ctx):
+    async def repeat(self, ctx):  # todo do something usefull with this command
         embedvar = discord.Embed(description=ctx.message.content[8:])
         embedvar.set_footer(text=f"Requested by {ctx.author}")
         await ctx.channel.send(embed=embedvar)
@@ -475,28 +479,14 @@ class Random(commands.Cog):
         embedvar.set_footer(text=f"Requested by {ctx.author}")
         await ctx.channel.send(embed=embedvar)
 
-    #@commands.command()
-    #async def feedback(self, ctx):
-    #    from discord_webhook import DiscordWebhook, DiscordEmbed
-    #    webhook = DiscordWebhook(url='https://discordapp.com/api/webhooks/764884602128957481/qSuHVbwQ0qaU6j9tBsIx3ZBCVgKW8Hn_BRmlBV9pbQI7hf1oF_u5HGb0uIiWPJMz58y-')
-    #    embed = DiscordEmbed(title=f"Feedback from user {ctx.author}/{ctx.author.id}",
-    #    description=f"Submitted from {ctx.channel}/{ctx.channel.id}")
-    #    embed.add_embed_field(name="Feedback", value=f"{ctx.message.content[10:]}")
-    #    webhook.add_embed(embed)
-    #    webhook.execute()
-
-    #    embedvar = discord.Embed(description="Feedback submitted, thank you for your time")
-    #    embedvar.set_footer(text=f"Requested by {ctx.author}")
-    #    await ctx.channel.send(embed=embedvar)
-
     @commands.command()
-    async def char_count(self, ctx):
+    async def char_count(self, ctx):  # todo add support for files? or make this more useful
         embedvar = discord.Embed(title=f"Total Number of Characters in this String = {len(ctx.message.content[12:])}")
         embedvar.set_footer(text=f"Requested by {ctx.author}")
         await ctx.channel.send(embed=embedvar)
 
     @commands.command()
-    async def emoji_letters(self, ctx):
+    async def emoji_letters(self, ctx):  # todo 2 versions output, do 1 or the other not both
         string = ""
         for i in ctx.message.content[15:]:
             if i == " ":
@@ -509,41 +499,18 @@ class Random(commands.Cog):
         await ctx.channel.send(embed=embedvar)
 
     @commands.command()
-    async def ttb(self, ctx):
-        send = cleverbotfreeapi.cleverbot(ctx.message.content[5:])
-        await ctx.channel.send(send)
-
-    #@commands.command()
-    #async def time(self, ctx, arg):
-        #from datetime import timedelta
-
-        #await ctx.channel.send(ctx.message.created_at)
-        #savedtime = ctx.message.created_at
-        #savedauthor = ctx.message.author.id
-        #savedauthornm = ctx.message.author
-        #allowcmd = 0
-        #msgnum = 0
-        #onmsg = 0
-        #if int(arg) > 25000:
-            #allowcmd = 1
-        #if not allowcmd == 1:
-            #async for message in ctx.history(limit=int(arg)):
-                #if message.author.id == savedauthor:
-                   # print(message.created_at, savedtime, message.created_at < savedtime + timedelta(seconds=-60))
-                    #if message.created_at < savedtime + timedelta(seconds=-60):
-                        #await message.delete()
-                        #msgnum = msgnum + 1
-                #if msgnum == 100:
-                    #await message.channel.send("Reached deletion limit of 50", delete_after=2.5)
-                    #break
-                #onmsg = onmsg + 1
-            #await message.channel.send("Success, looked at {} messages and cleaned {}\
-            #messages from {}".format(onmsg, msgnum, savedauthornm), delete_after=2.5)
+    async def ttb(self, ctx):  # todo fix, 1 work, 2 support context for prior convs
+        print(cleverbotfreeapi.cleverbot(stimulus="hello", ))
+        #send = cleverbotfreeapi.cleverbot(ctx.message.content[5:])
+        #print(send)
+        #await ctx.channel.send(send)
 
 
 class Bot_info(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+    # todo add more info to this section, maybe put it all in one command and one output embed
 
     @commands.command()
     async def botinv(self, ctx):
@@ -553,7 +520,7 @@ class Bot_info(commands.Cog):
         await ctx.channel.send(embed=embedvar)
 
     @commands.command()
-    async def botweb(self, ctx):
+    async def botweb(self, ctx):  # todo uses old website link, possibly remove
         embedvar = discord.Embed(title="Wanna see the bots website? Great! Here is the link you will need:\
         https://rapidslayer101.wixsite.com/rapidbot")
         embedvar.set_footer(text=f"Requested by {ctx.author}")
@@ -590,7 +557,7 @@ class Server(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    async def chat_links(self, ctx):
+    async def chat_links(self, ctx):  # todo resource intensive command, redo or remove, also broken atm
         async with ctx.typing():
             started_at = time.time()
             counter = 0
@@ -641,7 +608,7 @@ class Server(commands.Cog):
         \ndiscord.com/channels/{ctx.guild.id}/{ctx.channel.id}/{ctx.message.id}')
 
     @commands.command()
-    async def members(self, ctx):
+    async def members(self, ctx):  # todo this command may still be broken from before
         e4 = ""
         a5 = 0
         for item in ctx.guild.members:
@@ -652,7 +619,7 @@ class Server(commands.Cog):
         await ctx.channel.send(embed=embedvar)
 
     @commands.command()
-    async def roles(self, ctx):
+    async def roles(self, ctx):  # todo this command may still be broken from before
         e4 = ""
         rolecount = 0
         a5 = 0
@@ -665,7 +632,7 @@ class Server(commands.Cog):
         await ctx.channel.send(embed=embedvar)
 
     @commands.command()
-    async def inrole(self, ctx):
+    async def inrole(self, ctx):  # todo this command may still be broken from before
         if ctx.message.content[8:9] == "<":
             rolecheck1 = ctx.message.content[11:]
             rolecheck = rolecheck1.replace(">", "")
@@ -682,7 +649,7 @@ class Server(commands.Cog):
         await ctx.channel.send(embed=embedvar)
 
     @commands.command()
-    async def who_spoke(self, ctx, arg1):
+    async def who_spoke(self, ctx, arg1):  # todo resource intensive maybe redo
         started_at = time.time()
         async with ctx.typing():
             if int(arg1) > 1000:
@@ -708,28 +675,24 @@ class Currency(commands.Cog):
     @commands.command()
     async def currency_list(self, ctx):
         values = (ctx.message.content[15:18])
-        from forex_python.converter import CurrencyRates
         c = CurrencyRates()
         currencylistinput = c.get_rates(values)
         await ctx.channel.send(f"```glsl\n#{currencylistinput}\n\n#Requested by {ctx.author}```")
 
     @commands.command()
-    async def currency_convert(self, ctx, arg1, arg2, arg3):
-        from forex_python.converter import CurrencyRates
-        from forex_python.converter import CurrencyCodes
+    async def currency_convert(self, ctx, arg1, arg2, arg3):  # todo simplify horrible floats
         c = CurrencyRates()
         d = CurrencyCodes()
         values3 = float(arg3)
         output2 = d.get_symbol(arg2.upper())
         output = c.convert(arg1.upper(), arg2.upper(), values3)
-        embedvar = discord.Embed(title=f"Here is the value in {arg2}: {output2}{output}")
+        embedvar = discord.Embed(title=f"Here is the value in {arg2}: {output2}{round(output,2)}")
         embedvar.set_footer(text=f"Requested by {ctx.author}")
         await ctx.channel.send(embed=embedvar)
 
     @commands.command()
-    async def bitcoin(self, ctx):
+    async def bitcoin(self, ctx):  # todo remove or redo functionality
         global prex
-        import requests
         headers = {'Accept': 'text/plain'}
 
         inat = 10068.89
@@ -825,7 +788,7 @@ class Coloured_text(commands.Cog):
         await ctx.channel.send(f"```glsl\n#{ctx.message.content[12:]}\n\nRequested by {ctx.author}```")
 
     @commands.command()
-    async def greentext(self, ctx):
+    async def greentext(self, ctx):  # todo no longer works
         await ctx.channel.send(f"```css\n {ctx.message.content[11:]}\n\nRequested by {ctx.author}```")
 
     @commands.command()
@@ -863,8 +826,8 @@ class NSFW(commands.Cog):
                                            "\n\nIf your not and admin then ask an admin\nto turn nsfw on```")
 
     @commands.command()
-    async def nsfw_off(self, ctx):
-        if discord.utils.get(ctx.author.roles, name="admin") or discord.utils.get(ctx.author.roles,name="Admin"):
+    async def nsfw_off(self, ctx):  # todo show if it was on before or not not the current useless output
+        if discord.utils.get(ctx.author.roles, name="admin") or discord.utils.get(ctx.author.roles, name="Admin"):
             lists = []
             putin = f'{ctx.channel.id}'
             lists.append(putin)
@@ -889,7 +852,7 @@ class NSFW(commands.Cog):
         with open('settings/nsfw.txt', 'r') as f:
             isin = f'{f.read()}'
             if isin.find(str(ctx.channel.id)) > -1:
-                from pornhub_api import PornhubApi
+                from pornhub_api import PornhubApi  # todo module missing
                 api = PornhubApi()
                 search = ctx.message.content[7:]
                 data = api.search.search(f"{search}", ordering="mostviewed", period="weekly")
@@ -908,229 +871,218 @@ class NSFW(commands.Cog):
                 await ctx.channel.send("```NSFW is not enabled in this chat\n To enable it you must have role admin\n then type -nsfw_on```")
 
     @commands.command()
-    async def psi(self, ctx, arg):
-        with open('settings/nsfw.txt', 'r') as f:
-            isin = f'{f.read()}'
-            if isin.find(str(ctx.channel.id)) > -1:
-                import urllib.request, re
-                pagesearch2 = f'https://www.pornpics.com/?q={arg}/'.replace(" ", "+")
-                page = urllib.request.urlopen(pagesearch2)
-                a = (re.findall(r'(https?://[^\s]+)', str(page.read())))
-                b = (re.findall(r'(http?://[^\s]+)', str(page.read())))
-                c = ('\n'.join(a))
-                d = ('\n'.join(b))
-                e = c + d
-                e1 = e.replace("\\n", "").replace("'", "").replace("\"", "")
-                e4 = e1.split()
-                e5 = e4[26:]
-                imgsent = 0
-                for imgn in range(200):
-                    e6 = ''.join(e5[imgn:imgn + 1])
-                    if 'https://cdni.pornpics.com' in e6:
-                        embedvar = discord.Embed()
-                        embedvar.set_image(url=e6[:-1])
-                        embedvar.set_footer(text=f"Requested by {ctx.author}")
-                        await ctx.channel.send(embed=embedvar)
-                        time.sleep(2)
-                        imgsent = imgsent + 1
-                    if 'https://img.pornpics.com' in e6:
-                        embedvar = discord.Embed()
-                        embedvar.set_image(url=e6[:-1])
-                        embedvar.set_footer(text=f"Requested by {ctx.author}")
-                        await ctx.channel.send(embed=embedvar)
-                        time.sleep(2)
-                        imgsent = imgsent + 1
-                    if 'https://images.pornpics.com' in e6:
-                        embedvar = discord.Embed()
-                        embedvar.set_image(url=e6[:-1])
-                        embedvar.set_footer(text=f"Requested by {ctx.author}")
-                        await ctx.channel.send(embed=embedvar)
-                        time.sleep(2)
-                        imgsent = imgsent + 1
-                    if imgn == 199:
-                        if imgsent > 0:
-                            await ctx.channel.send(f"```diff\nWant more {ctx.message.content[5:]}? Try some galleries!\
-                            \n-psg 1 {ctx.message.content[5:]}\n\nWant something else?\nTry another -psi search```")
-                        else:
-                            await ctx.channel.send("```OH NO! There was no results for your search! try another search```")
-            else:
-                await ctx.channel.send("```NSFW is not enabled in this chat\n To enable it you must have role admin\n then type -nsfw_on```")
+    async def psi(self, ctx, arg):  # todo test this command
+        if is_nsfw_on(ctx.channel.id):
+            pagesearch2 = f'https://www.pornpics.com/?q={arg}/'.replace(" ", "+")
+            page = urllib.request.urlopen(pagesearch2)
+            a = (re.findall(r'(https?://[^\s]+)', str(page.read())))
+            b = (re.findall(r'(http?://[^\s]+)', str(page.read())))
+            c = ('\n'.join(a))
+            d = ('\n'.join(b))
+            e = c + d
+            e1 = e.replace("\\n", "").replace("'", "").replace("\"", "")
+            e4 = e1.split()
+            e5 = e4[26:]
+            imgsent = 0
+            for imgn in range(200):
+                e6 = ''.join(e5[imgn:imgn + 1])
+                if 'https://cdni.pornpics.com' in e6:
+                    embedvar = discord.Embed()
+                    embedvar.set_image(url=e6[:-1])
+                    embedvar.set_footer(text=f"Requested by {ctx.author}")
+                    await ctx.channel.send(embed=embedvar)
+                    time.sleep(2)
+                    imgsent = imgsent + 1
+                if 'https://img.pornpics.com' in e6:
+                    embedvar = discord.Embed()
+                    embedvar.set_image(url=e6[:-1])
+                    embedvar.set_footer(text=f"Requested by {ctx.author}")
+                    await ctx.channel.send(embed=embedvar)
+                    time.sleep(2)
+                    imgsent = imgsent + 1
+                if 'https://images.pornpics.com' in e6:
+                    embedvar = discord.Embed()
+                    embedvar.set_image(url=e6[:-1])
+                    embedvar.set_footer(text=f"Requested by {ctx.author}")
+                    await ctx.channel.send(embed=embedvar)
+                    time.sleep(2)
+                    imgsent = imgsent + 1
+                if imgn == 199:
+                    if imgsent > 0:
+                        await ctx.channel.send(f"```diff\nWant more {ctx.message.content[5:]}? Try some galleries!\
+                        \n-psg 1 {ctx.message.content[5:]}\n\nWant something else?\nTry another -psi search```")
+                    else:
+                        await ctx.channel.send("```OH NO! There was no results for your search! try another search```")
+        else:
+            await ctx.channel.send("```NSFW is not enabled in this chat\n To enable it you must have role admin\n then type -nsfw_on```")
 
     @commands.command()
-    async def psg(self, ctx, arg1, arg2):
-        with open('settings/nsfw.txt', 'r') as f:
-            isin = f'{f.read()}'
-            if isin.find(str(ctx.channel.id)) > -1:
-                global choicesz, choiceszz
-                choicesz = str(arg1)
-                choiceszz = choicesz.replace(" ", "")
-                import urllib.request, re
-                pagesearch2 = f'https://www.pornpics.com/?q={arg2}/'.replace(" ", "+")
-                page = urllib.request.urlopen(pagesearch2)
-                a = (re.findall(r'(https?://[^\s]+)', str(page.read())))
-                b = (re.findall(r'(http?://[^\s]+)', str(page.read())))
-                c = ('\n'.join(a))
-                d = ('\n'.join(b))
-                e = c + d
-                e1 = e.replace("\\n", "").replace("'", "").replace("\"", "")
-                e4 = e1.split()
-                e5 = e4[26:]
-                global PRNN
-                PRNN = 0
-                for imgn in range(200):
-                    e6 = ''.join(e5[imgn:imgn + 1])
-                    if 'https://www.pornpics.com/galleries/' in e6[:-1]:
-                        PRNN = PRNN + 1
-                        if str(PRNN) == (choiceszz):
-                            import urllib.request, re
-                            pagesearch4 = f'{e6[:-1]}'.replace(" ", "+")
-                            page = urllib.request.urlopen(pagesearch4)
-                            a = (re.findall(r'(https?://[^\s]+)', str(page.read())))
-                            b = (re.findall(r'(http?://[^\s]+)', str(page.read())))
-                            c = ('\n'.join(a))
-                            d = ('\n'.join(b))
-                            e = c + d
-                            e1 = e.replace("\\n", "").replace("'", "").replace("\"", "")
-                            e4 = e1.split()
-                            e5 = e4[26:]
-                            for imgn in range(200):
-                                e6 = ''.join(e5[imgn:imgn + 1])
-                                if 'https://cdni.pornpics.com/1280' in e6:
-                                    embedvar = discord.Embed()
-                                    embedvar.set_image(url=e6[:-1])
-                                    embedvar.set_footer(text=f"Requested by {ctx.author}")
-                                    await ctx.channel.send(embed=embedvar)
-                                    time.sleep(2)
-                                if 'https://img.pornpics.com/460' in e6:
-                                    embedvar = discord.Embed()
-                                    embedvar.set_image(url=e6[:-1])
-                                    embedvar.set_footer(text=f"Requested by {ctx.author}")
-                                    await ctx.channel.send(embed=embedvar)
-                                    time.sleep(2)
-                                if 'https://images.pornpics.com/1280' in e6:
-                                    embedvar = discord.Embed()
-                                    embedvar.set_image(url=e6[:-1])
-                                    embedvar.set_footer(text=f"Requested by {ctx.author}")
-                                    await ctx.channel.send(embed=embedvar)
-                                    time.sleep(2)
-                                if imgn == 199:
-                                    pgnum = ctx.message.content[5:7]
-                                    pgnum2 = pgnum2.replace(" ", "")
-                                    pgnum3 = int(pgnum) + 1
-                                    string = f"```diff\nWant even more?! try this command\n-psg\
-                                    {pgnum3} {ctx.message.content[7:]}\n\nWant something else?\
-                                    \nTry another -psi search```"
-                                    string2 = string.replace("  ", " ")
-                                    await ctx.channel.send(string2)
-                            else:
-                                await ctx.channel.send("```NSFW is not enabled in this chat\n To enable it you must have role admin\n then type -nsfw_on```")
-
-    @commands.command()
-    async def porngif(self, ctx, arg2):
-        with open('settings/nsfw.txt', 'r') as f:
-            isin = f'{f.read()}'
-            if isin.find(str(ctx.channel.id)) > -1:
-                import urllib.request, re
-                pgsearch = ctx.message.content[10:]
-                pagen = ctx.message.content[9:11].replace(" ", "")
-                pagesearch = f'https://www.pornhub.com/gifs/search?search={pgsearch}&page={pagen}'
-                pagesearch2 = pagesearch.replace(" ", "+")
-                page = urllib.request.urlopen(pagesearch2)
-                a = (re.findall(r'(data-mp4[^\s]+)', str(page.read())))
-                b = (re.findall(r'(https://cl.phncdn.com/pics/gifs/[^\s]+)', str(page.read())))
-                c = ('\n'.join(a))
-                d = ('\n'.join(b))
-                e = c + d
-                e1 = e.replace("<span", "").replace("\"", "").replace(">", "").replace("\\", "")
-                e4 = e1.split()
-                e5 = e4[9:]
-                imgsent = 0
-                for imgn in range(200):
-                    e6 = ''.join(e5[imgn:imgn + 1])
-                    print(e6)
-                    if 'https://cl.phncdn.com/pics/gifs/' or 'https://dl.phncdn.com/pics/gifs/' in e6:
-                        edit = e6[65:66]
-                        e7edit = edit.replace("<", "").replace("n", "").replace("t", "").replace("a", "")
-                        e7 = e6[9:65] + e7edit
-                        await ctx.channel.send(e7)
-                        print(e7)
-                        e7edit = e7[44:52]
-                        e7edit2 = e7edit.replace("<", "").replace("n", "").replace("t", "").replace("a", "")
-                        import urllib.request, re
-                        pagesearch4 = f'https://www.pornhub.com/gif/{e7edit2}'.replace(" ", "+")
+    async def psg(self, ctx, arg1, arg2):  # todo test this command
+        if is_nsfw_on(ctx.channel.id):
+            global choicesz, choiceszz
+            choicesz = str(arg1)
+            choiceszz = choicesz.replace(" ", "")
+            import urllib.request, re
+            pagesearch2 = f'https://www.pornpics.com/?q={arg2}/'.replace(" ", "+")
+            page = urllib.request.urlopen(pagesearch2)
+            a = (re.findall(r'(https?://[^\s]+)', str(page.read())))
+            b = (re.findall(r'(http?://[^\s]+)', str(page.read())))
+            c = ('\n'.join(a))
+            d = ('\n'.join(b))
+            e = c + d
+            e1 = e.replace("\\n", "").replace("'", "").replace("\"", "")
+            e4 = e1.split()
+            e5 = e4[26:]
+            global PRNN
+            PRNN = 0
+            for imgn in range(200):
+                e6 = ''.join(e5[imgn:imgn + 1])
+                if 'https://www.pornpics.com/galleries/' in e6[:-1]:
+                    PRNN = PRNN + 1
+                    if str(PRNN) == (choiceszz):
+                        pagesearch4 = f'{e6[:-1]}'.replace(" ", "+")
                         page = urllib.request.urlopen(pagesearch4)
-                        a = (re.findall(r'(href="/view_video.php[^\s]+)', str(page.read())))
-                        b = (re.findall(r'(href="/view_video.php[^\s]+)', str(page.read())))
+                        a = (re.findall(r'(https?://[^\s]+)', str(page.read())))
+                        b = (re.findall(r'(http?://[^\s]+)', str(page.read())))
                         c = ('\n'.join(a))
                         d = ('\n'.join(b))
                         e = c + d
                         e1 = e.replace("\\n", "").replace("'", "").replace("\"", "")
                         e4 = e1.split()
-                        for imgn1 in range(200):
-                            e6 = ''.join(e4[imgn1:imgn1 + 1])
-                            if 'href=/view_video.php?viewkey=' in e6:
-                                if '&amp;t=' in e6:
-                                    e7 = e6[:45]
-                                    e8 = e7[5:]
-                                    finale = "https://www.pornhub.com" + e8
-                                    embedvar = discord.Embed(title=f"Full video link: {finale}")
-                                    embedvar.set_footer(text=f"Requested by {ctx.author}")
-                                    await ctx.channel.send(embed=embedvar)
-                        time.sleep(4)
-                        imgsent = imgsent + 1
-                    if imgn == 199:
-                        pgnum2 = pagen.replace(" ", "")
-                        pgnum3 = int(pgnum2) + 1
-                        await ctx.channel.send(f"```diff\nWant more? Type this command:\n-porngif {pgnum3} {pgsearch}```")
-                        time.sleep(3)
-            else:
-                await ctx.channel.send("```NSFW is not enabled in this chat\n To enable it you must have role admin\n then type -nsfw_on```")
+                        e5 = e4[26:]
+                        for imgn in range(200):
+                            e6 = ''.join(e5[imgn:imgn + 1])
+                            if 'https://cdni.pornpics.com/1280' in e6:
+                                embedvar = discord.Embed()
+                                embedvar.set_image(url=e6[:-1])
+                                embedvar.set_footer(text=f"Requested by {ctx.author}")
+                                await ctx.channel.send(embed=embedvar)
+                                time.sleep(2)
+                            if 'https://img.pornpics.com/460' in e6:
+                                embedvar = discord.Embed()
+                                embedvar.set_image(url=e6[:-1])
+                                embedvar.set_footer(text=f"Requested by {ctx.author}")
+                                await ctx.channel.send(embed=embedvar)
+                                time.sleep(2)
+                            if 'https://images.pornpics.com/1280' in e6:
+                                embedvar = discord.Embed()
+                                embedvar.set_image(url=e6[:-1])
+                                embedvar.set_footer(text=f"Requested by {ctx.author}")
+                                await ctx.channel.send(embed=embedvar)
+                                time.sleep(2)
+                            if imgn == 199:
+                                pgnum = ctx.message.content[5:7]
+                                pgnum2 = pgnum2.replace(" ", "")
+                                pgnum3 = int(pgnum) + 1
+                                string = f"```diff\nWant even more?! try this command\n-psg\
+                                {pgnum3} {ctx.message.content[7:]}\n\nWant something else?\
+                                \nTry another -psi search```"
+                                string2 = string.replace("  ", " ")
+                                await ctx.channel.send(string2)
+                        else:
+                            await ctx.channel.send("```NSFW is not enabled in this chat\n To enable it you must have role admin\n then type -nsfw_on```")
 
     @commands.command()
-    async def hentai(self, ctx, arg1, arg2):
-        with open('settings/nsfw.txt', 'r') as f:
-            isin = f'{f.read()}'
-            if isin.find(str(ctx.channel.id)) > -1:
-                import urllib.request, re
-                hensearch = arg2.replace(" ", "")
-                pagesearch = f'https://konachan.com/post?page={arg1}&tags=uncensored+nude+{hensearch}'
-                pagesearch2 = pagesearch.replace(" ", "+")
-                page = urllib.request.urlopen(pagesearch2)
-                a = (re.findall(r'(https?://[^\s]+)', str(page.read())))
-                b = (re.findall(r'(http?://[^\s]+)', str(page.read())))
-                c = ('\n'.join(a))
-                d = ('\n'.join(b))
-                e = c + d
-                e1 = e.replace("<span", "").replace("\"", "").replace(">", "")
-                e4 = e1.split()
-                e5 = e4[9:]
-                imgsent = 0
-                for imgn in range(200):
-                    e6 = ''.join(e5[imgn:imgn + 1])
-                    if 'https://konachan.com/jpeg/' in e6:
-                        embedvar = discord.Embed()
-                        embedvar.set_image(url=e6)
-                        embedvar.set_footer(text=f"Requested by {ctx.author}")
-                        await ctx.channel.send(embed=embedvar)
-                        time.sleep(3)
-                        imgsent = imgsent + 1
-                    if 'https://konachan.com/image/' in e6:
-                        embedvar = discord.Embed()
-                        embedvar.set_image(url=e6)
-                        embedvar.set_footer(text=f"Requested by {ctx.author}")
-                        await ctx.channel.send(embed=embedvar)
-                        time.sleep(3)
-                        imgsent = imgsent + 1
-                    if imgn == 199:
-                        pgnum = arg1
-                        pgnum2 = pgnum.replace(" ", "")
-                        pgnum3 = int(pgnum2) + 1
-                        if imgsent > 0:
-                            await ctx.channel.send(f"```diff\nWant more? Type this command:\n-hentai {pgnum3} {hensearch}```")
-                        else:
-                            await ctx.channel.send("```OH NO! There was no results for your search! try another search```")
-                else:
-                    await ctx.channel.send("```NSFW is not enabled in this chat\n To enable it you must have role admin\n then type -nsfw_on```")
+    async def porngif(self, ctx, arg2):  # todo test this command
+        if is_nsfw_on(ctx.channel.id):
+            import urllib, re
+            pgsearch = ctx.message.content[10:]
+            pagen = ctx.message.content[9:11].replace(" ", "")
+            pagesearch = f'https://www.pornhub.com/gifs/search?search={pgsearch}&page={pagen}'
+            pagesearch2 = pagesearch.replace(" ", "+")
+            page = urllib.request.urlopen(pagesearch2)
+            a = (re.findall(r'(data-mp4[^\s]+)', str(page.read())))
+            b = (re.findall(r'(https://cl.phncdn.com/pics/gifs/[^\s]+)', str(page.read())))
+            c = ('\n'.join(a))
+            d = ('\n'.join(b))
+            e = c + d
+            e1 = e.replace("<span", "").replace("\"", "").replace(">", "").replace("\\", "")
+            e4 = e1.split()
+            e5 = e4[9:]
+            imgsent = 0
+            for imgn in range(200):
+                e6 = ''.join(e5[imgn:imgn + 1])
+                print(e6)
+                if 'https://cl.phncdn.com/pics/gifs/' or 'https://dl.phncdn.com/pics/gifs/' in e6:
+                    edit = e6[65:66]
+                    e7edit = edit.replace("<", "").replace("n", "").replace("t", "").replace("a", "")
+                    e7 = e6[9:65] + e7edit
+                    await ctx.channel.send(e7)
+                    print(e7)
+                    e7edit = e7[44:52]
+                    e7edit2 = e7edit.replace("<", "").replace("n", "").replace("t", "").replace("a", "")
+                    import urllib.request, re
+                    pagesearch4 = f'https://www.pornhub.com/gif/{e7edit2}'.replace(" ", "+")
+                    page = urllib.request.urlopen(pagesearch4)
+                    a = (re.findall(r'(href="/view_video.php[^\s]+)', str(page.read())))
+                    b = (re.findall(r'(href="/view_video.php[^\s]+)', str(page.read())))
+                    c = ('\n'.join(a))
+                    d = ('\n'.join(b))
+                    e = c + d
+                    e1 = e.replace("\\n", "").replace("'", "").replace("\"", "")
+                    e4 = e1.split()
+                    for imgn1 in range(200):
+                        e6 = ''.join(e4[imgn1:imgn1 + 1])
+                        if 'href=/view_video.php?viewkey=' in e6:
+                            if '&amp;t=' in e6:
+                                e7 = e6[:45]
+                                e8 = e7[5:]
+                                finale = "https://www.pornhub.com" + e8
+                                embedvar = discord.Embed(title=f"Full video link: {finale}")
+                                embedvar.set_footer(text=f"Requested by {ctx.author}")
+                                await ctx.channel.send(embed=embedvar)
+                    time.sleep(4)
+                    imgsent = imgsent + 1
+                if imgn == 199:
+                    pgnum2 = pagen.replace(" ", "")
+                    pgnum3 = int(pgnum2) + 1
+                    await ctx.channel.send(f"```diff\nWant more? Type this command:\n-porngif {pgnum3} {pgsearch}```")
+                    time.sleep(3)
+        else:
+            await ctx.channel.send("```NSFW is not enabled in this chat\n To enable it you must have role admin\n then type -nsfw_on```")
+
+    @commands.command()
+    async def hentai(self, ctx, arg1, arg2):  # todo test this command
+        if is_nsfw_on(ctx.channel.id):
+            hensearch = arg2.replace(" ", "")
+            pagesearch = f'https://konachan.com/post?page={arg1}&tags=uncensored+nude+{hensearch}'
+            pagesearch2 = pagesearch.replace(" ", "+")
+            page = urllib.request.urlopen(pagesearch2)
+            a = (re.findall(r'(https?://[^\s]+)', str(page.read())))
+            b = (re.findall(r'(http?://[^\s]+)', str(page.read())))
+            c = ('\n'.join(a))
+            d = ('\n'.join(b))
+            e = c + d
+            e1 = e.replace("<span", "").replace("\"", "").replace(">", "")
+            e4 = e1.split()
+            e5 = e4[9:]
+            imgsent = 0
+            for imgn in range(200):
+                e6 = ''.join(e5[imgn:imgn + 1])
+                if 'https://konachan.com/jpeg/' in e6:
+                    embedvar = discord.Embed()
+                    embedvar.set_image(url=e6)
+                    embedvar.set_footer(text=f"Requested by {ctx.author}")
+                    await ctx.channel.send(embed=embedvar)
+                    time.sleep(3)
+                    imgsent = imgsent + 1
+                if 'https://konachan.com/image/' in e6:
+                    embedvar = discord.Embed()
+                    embedvar.set_image(url=e6)
+                    embedvar.set_footer(text=f"Requested by {ctx.author}")
+                    await ctx.channel.send(embed=embedvar)
+                    time.sleep(3)
+                    imgsent = imgsent + 1
+                if imgn == 199:
+                    pgnum = arg1
+                    pgnum2 = pgnum.replace(" ", "")
+                    pgnum3 = int(pgnum2) + 1
+                    if imgsent > 0:
+                        await ctx.channel.send(f"```diff\nWant more? Type this command:\n-hentai {pgnum3} {hensearch}```")
+                    else:
+                        await ctx.channel.send("```OH NO! There was no results for your search! try another search```")
+            else:
+                await ctx.channel.send("```NSFW is not enabled in this chat\n To enable it you must have role admin\n then type -nsfw_on```")
 
 
 class Online_searching(commands.Cog):
@@ -1138,23 +1090,21 @@ class Online_searching(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    async def ggt_codes(self, ctx):
+    async def ggt_codes(self, ctx):  # todo make less horrible to read
         embedvar = discord.Embed(title="Here are the language codes:", description=str(googletrans.LANGCODES))
         embedvar.set_footer(text=f"Requested by {ctx.author}")
         await ctx.channel.send(embed=embedvar)
 
     @commands.command()
-    async def ggt_te(self, ctx, arg):
-        from googletrans import Translator
+    async def ggt_te(self, ctx):  # todo fix
         translator = Translator()
-        translated = translator.translate(arg)
+        translated = translator.translate(ctx.message.content[8:])
         embedvar = discord.Embed(title="Translated text:", description=translated.text)
         embedvar.set_footer(text=f"Requested by {ctx.author}")
         await ctx.channel.send(embed=embedvar)
 
     @commands.command()
-    async def ggt_ft(self, ctx, arg1, arg2):
-        from googletrans import Translator
+    async def ggt_ft(self, ctx, arg1, arg2):  # todo fix
         values5 = (ctx.message.content[14:])
         translator = Translator()
         translated = translator.translate(values5, src=arg1, dest=arg2)
@@ -1162,8 +1112,10 @@ class Online_searching(commands.Cog):
         embedvar.set_footer(text=f"Requested by {ctx.author}")
         await ctx.channel.send(embed=embedvar)
 
+    # todo, 3 practically identical commands, use def to turn much much smaller
+
     @commands.command()
-    async def ggsr(self, ctx, arg1):
+    async def ggsr(self, ctx, arg1):  # todo add more functionality, fix the currency requirement
         allowcmd = 0
         if int(arg1) > 1:
             if int(arg1) > 30:
@@ -1200,7 +1152,7 @@ class Online_searching(commands.Cog):
                 await ctx.channel.send(j)
 
     @commands.command()
-    async def ggsi(self, ctx, arg1):
+    async def ggsi(self, ctx, arg1):  # todo add more functionality, fix the currency requirement
         allowcmd = 0
         if int(arg1) > 1:
             if int(arg1) > 30:
@@ -1237,7 +1189,7 @@ class Online_searching(commands.Cog):
                 await ctx.channel.send(j)
 
     @commands.command()
-    async def ggsv(self, ctx, arg1):
+    async def ggsv(self, ctx, arg1):  # todo add more functionality, fix the currency requirement
         allowcmd = 0
         if int(arg1) > 1:
             if int(arg1) > 30:
@@ -1274,8 +1226,7 @@ class Online_searching(commands.Cog):
                 await ctx.channel.send(j)
 
     @commands.command()
-    async def reddits(self, ctx, arg1, arg2):
-        import praw
+    async def reddits(self, ctx, arg1, arg2):  # todo simplification possible
         reddit = praw.Reddit(client_id='RuvVgZ-jMqw9lw', client_secret='tj4cbJuTKAum0ZszB_DJwY5cFjo',user_agent='Reddit webscraper')
         hot_posts = reddit.subreddit(arg1).hot(limit=int(arg2))
         postcurrent = 0
@@ -1303,12 +1254,12 @@ class Online_searching(commands.Cog):
                     break
 
     @commands.command()
-    async def meme(self, ctx):
+    async def meme(self, ctx):  # todo sometimes not loading
         global postnum
-        import praw
-        reddit = praw.Reddit(client_id='RuvVgZ-jMqw9lw', client_secret='tj4cbJuTKAum0ZszB_DJwY5cFjo',user_agent='Reddit webscraper')
+        reddit = praw.Reddit(client_id='RuvVgZ-jMqw9lw', client_secret='tj4cbJuTKAum0ZszB_DJwY5cFjo',
+                             user_agent='Reddit webscraper')
         try:
-            postnum = postnum + 1
+            postnum += 1
         except NameError:
             postnum = 1
         hot_posts = reddit.subreddit('dankmemes').hot(limit=postnum)
@@ -1322,12 +1273,12 @@ class Online_searching(commands.Cog):
                 await ctx.channel.send(embed=embedvar)
 
 
-class Games(commands.Cog):
+class Games(commands.Cog):  # todo redo this whole thing
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command()
-    async def claim_token(self, ctx, arg):
+    async def claim_token(self, ctx, arg):  # todo readd this system, and better
         wasuserthere = 0
         lookup = str(arg)
         with open('settings/token.txt') as myFile:
@@ -2114,100 +2065,6 @@ class Admin(commands.Cog):
             await message.channel.send(f"Deleted {msgnum} messages(s)", delete_after=2.5)
 
 
-class Help(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-
-    @commands.command()
-    async def h(self, ctx):
-        if ctx.message.content == "-h" or ctx.message.content == "-help":
-            embedvar = discord.Embed(title="Rapidbot command sections", description="We have a wide range of commands! (66 total so far)\
-            \nAlso remember the prefix is '-'")
-            embedvar.add_field(name=":hash: Encryption (4)    :question: Random (11)    :information_source: Bot info (5)",
-            value="`-h encryption`    `-h rand`     `-h bot info`", inline=False)
-            embedvar.add_field(name=":page_facing_up: Server (9)      :dollar: Currency (2)    :rainbow: Coloured text (6)",
-            value="`-h server` `-h currency`  `-h color text`", inline=False)
-            with open('settings/nsfw.txt', 'r') as i:
-                isin = f'{i.read()}'
-                if isin.find(str(ctx.channel.id)) > -1:
-                    embedvar.add_field(name=":wink: NSFW (8)     :computer: Online searching (8)    :game_die: Games (12)",
-                    value="`-h nsfw`   `-h online search`     `-h games`", inline=False)
-                else:
-                    embedvar.add_field(name="Disabled (8)     :computer: Online searching (8)    :game_die: Games (12)",
-                    value="`disabled`   `-h online search`     `-h games`", inline=False)
-            await ctx.send(embed=embedvar)
-
-        if ctx.message.content == "-h encryption":
-            embedvar = discord.Embed(title=":hash: Encryption commands (4)", description="`encrypt`,`decrypt`,`shorte`,`shortd`")
-            embedvar.set_footer(text=f"Add -h to the beggining of a command for its help section! Requested by {ctx.message.author}")
-            await ctx.send(embed=embedvar)
-
-        if ctx.message.content == "-h rand":
-            embedvar = discord.Embed(title=":question: Random commands (11)", description="`randword`,`randnumber`,\
-            `randuni`,`eight_ball`,`leetify`,`repeat`,\n`joke`,`feedback`,`char_count`,`emoji_letters`,`ttb`")
-            embedvar.set_footer(text=f"Add -h to the beggining of a command for its help section! Requested by {ctx.message.author}")
-            await ctx.send(embed=embedvar)
-
-        if ctx.message.content == "-h bot info":
-            embedvar = discord.Embed(title=":information_source: Bot info commands (5)",
-            description="`botinv`,`botweb`,`botrt`,`ping`,`inservers`")
-            embedvar.set_footer(text=f"Add -h to the beggining of a command for its help section! Requested by {ctx.message.author}")
-            await ctx.send(embed=embedvar)
-
-        if ctx.message.content == "-h server":
-            embedvar = discord.Embed(title=":page_facing_up: Server commands (9)", description="\
-            `chat_links`,`userid`,`serverid`,`channelid`,`messageid`,\n`members`,`roles`,`inrole`,`who_spoke`")
-            embedvar.set_footer(text=f"Add -h to the beggining of a command for its help section! Requested by {ctx.message.author}")
-            await ctx.send(embed=embedvar)
-
-        if ctx.message.content == "-h currency":
-            embedvar = discord.Embed(title=":dollar: Currency commands (2)",description="`currency_list`,`currency_convert`")
-            embedvar.set_footer(text=f"Add -h to the beggining of a command for its help section! Requested by {ctx.message.author}")
-            await ctx.send(embed=embedvar)
-
-        if ctx.message.content == "-h color text":
-            embedvar = discord.Embed(title=":rainbow: Coloured text commands (6)",
-            description="`redtext`,`orangetext`,`greentext`,\n`yellowtext`,`bluetext`,`cyantext`")
-            embedvar.set_footer(text=f"Add -h to the beggining of a command for its help section! Requested by {ctx.message.author}")
-            await ctx.send(embed=embedvar)
-
-        if ctx.message.content == "-h nsfw":
-            with open('settings/nsfw.txt', 'r') as i:
-                isin = f'{i.read()}'
-                if isin.find(str(ctx.message.channel.id)) > -1:
-                    embedvar = discord.Embed(title=":wink: NSFW commands (8)",
-                    description="`nsfw_on`,`nsfw_off`,`porntags`,`phs`,`psi`,`psg`,`porngif`,`hentai`")
-                    embedvar.set_footer(text=f"Add -h to the beggining of a command for\
-                    its help section! Requested by {ctx.message.author}")
-                    await ctx.send(embed=embedvar)
-                else:
-                    embedvar = discord.Embed(title="This is not enabled in your server",
-                                             description="If your an admin type `-nsfw_on` to enable these commands")
-                    embedvar.set_footer(text=f"Requested by {ctx.message.author}")
-                    await ctx.send(embed=embedvar)
-
-        if ctx.message.content == "-h online search":
-            embedvar = discord.Embed(title=":computer: Online searching commands (8)", description="`ggt_codes`, `ggt_te`,`ggt_ft`,\
-            \n`ggsr`,`ggsi`,`ggsv`,`reddits`,`meme`")
-            embedvar.set_footer(text=f"Add -h to the beggining of a command for its help section! Requested by {ctx.message.author}")
-            await ctx.send(embed=embedvar)
-
-        if ctx.message.content == "-h games":
-            embedvar = discord.Embed(title=":game_die: Game commands (12)", description="`claim_token`,`reset_coins`,`bal`,`bet_flip`,\
-            `bet bj`,`bet_dice`,\n`bet_rps`,`bet_multi`,`bet_revup`,`bet_dubup`,`bet crash`,`quiz`")
-            embedvar.set_footer(text=f"Add -h to the beggining of a command for its help section! Requested by {ctx.message.author}")
-            await ctx.send(embed=embedvar)
-
-        if ctx.message.content == "-h admin":
-            embedvar = discord.Embed(title=":tools: Admin commands (2)", description="`purge`,`clean`")
-            embedvar.set_footer(text=f"Add -h to the beggining of a command for its help section! Requested by {ctx.message.author}")
-            await ctx.send(embed=embedvar)
-
-        websitesend = randint(1, 20)
-        if websitesend == 1:
-            await ctx.channel.send("Also check out the new website! https://rapidslayer101.wixsite.com/rapidbot")
-
-
 bot = commands.Bot(command_prefix=commands.when_mentioned_or("-"))
 bot.remove_command('help')
 
@@ -2234,10 +2091,9 @@ bot.add_cog(NSFW(bot))
 bot.add_cog(Online_searching(bot))
 bot.add_cog(Games(bot))
 bot.add_cog(Admin(bot))
-bot.add_cog(Help(bot))
 
 
-global theshit
+global theshit  # todo what to do with this stuff?
 
 try:
     with open("cum2.txt", "r", encoding="utf-8") as f:
@@ -2246,14 +2102,28 @@ except:
     theshit = "nio"
 
 
+def is_nsfw_on(channel_id):  # todo probably remove the makedir from here and do startup checks instead
+    try:
+        with open('settings/nsfw.txt', 'r') as i:
+            isin = f'{i.read()}'
+        if isin.find(str(channel_id)) > -1:
+            return True
+        else:
+            return False
+    except:
+        if not os.path.isdir("settings"):
+            os.mkdir("settings")
+        with open('settings/nsfw.txt', 'w') as i:
+            return False
+
+
 @bot.event
 async def on_message(message):
     message.content = str(message.content).lower()
     datetime.datetime.now()
-    datetime.datetime(2009, 1, 6, 15, 8, 24, 78915)
     global rtime
     rtime = datetime.datetime.now()
-    msg2 = message.content.replace("\n", " // ")
+    msg2 = message.content.replace("\n", " // ")  # todo remove triple repetition below
     yesid = f"TIME: {rtime} SERVER ID: {message.guild.id} CHANNEL ID: {message.channel.id} USER ID: {message.author} MESSAGE ID: {message.id}"
     yes = f"SERVER: {message.guild} CHANNEL: {message.channel} USER: {message.author} MESSAGE: {msg2}"
     print(yesid + ' - [ ' + yes + ' ]')
@@ -2267,7 +2137,6 @@ async def on_message(message):
                 f.write(str(' - [ ' + yes + ' ]' + "\n"))
                 f.close()
         except:
-            import os
             if not os.path.isdir("strs"):
                 os.mkdir("strs")
             with open('strs/msgstore.txt', 'a+') as f:
@@ -2277,11 +2146,102 @@ async def on_message(message):
                 f.write(str(' - [ ' + yes + ' ]' + "\n"))
                 f.close()
 
-    # inserted CUM shard
+    # help segment
 
-    if message.channel.id in [820626793064955906, 554338827330650119, 835208668441608262, 554338862516666368,
-                              779417114120945706, 835204586390028353, 798253955523018825, 835608090346389554,
-                              836719160431869973]:
+    if msg2 == "-h" or msg2 == "-help":
+        embedvar = discord.Embed(title="Rapidbot command sections", description="We have a wide range of commands! (66 total so far)\
+        \nAlso remember the prefix is '-'")
+        embedvar.add_field(name=":hash: Encryption (4)    :question: Random (11)    :information_source: Bot info (5)",
+                           value="`-h encryption`    `-h rand`     `-h bot info`", inline=False)
+        embedvar.add_field(name=":page_facing_up: Server (9)      :dollar: Currency (2)    :rainbow: Coloured text (6)",
+                           value="`-h server` `-h currency`  `-h color text`", inline=False)
+
+        if is_nsfw_on(message.channel.id):
+            embedvar.add_field(name=":wink: NSFW (8)     :computer: Online searching (8)    :game_die: Games (12)",
+                               value="`-h nsfw`   `-h online search`     `-h games`", inline=False)
+        else:
+            embedvar.add_field(name="Disabled (8)     :computer: Online searching (8)    :game_die: Games (12)",
+                               value="`disabled`   `-h online search`     `-h games`", inline=False)
+        await message.channel.send(embed=embedvar)
+
+    if msg2 == "-h encryption":
+        embedvar = discord.Embed(title=":hash: Encryption commands (4)",
+                                 description="`encrypt`,`decrypt`,`shorte`,`shortd`")
+        embedvar.set_footer(
+            text=f"Add -h to the beggining of a command for its help section! Requested by {message.author}")
+        await message.channel.send(embed=embedvar)
+
+    if msg2 == "-h rand":
+        embedvar = discord.Embed(title=":question: Random commands (11)", description="`randword`,`randnumber`,\
+        `randuni`,`eight_ball`,`leetify`,`repeat`,\n`joke`,`feedback`,`char_count`,`emoji_letters`,`ttb`")
+        embedvar.set_footer(
+            text=f"Add -h to the beggining of a command for its help section! Requested by {message.author}")
+        await message.channel.send(embed=embedvar)
+
+    if msg2 == "-h bot info":
+        embedvar = discord.Embed(title=":information_source: Bot info commands (5)",
+                                 description="`botinv`,`botweb`,`botrt`,`ping`,`inservers`")
+        embedvar.set_footer(
+            text=f"Add -h to the beggining of a command for its help section! Requested by {message.author}")
+        await message.channel.send(embed=embedvar)
+
+    if msg2 == "-h server":
+        embedvar = discord.Embed(title=":page_facing_up: Server commands (9)", description="\
+        `chat_links`,`userid`,`serverid`,`channelid`,`messageid`,\n`members`,`roles`,`inrole`,`who_spoke`")
+        embedvar.set_footer(
+            text=f"Add -h to the beggining of a command for its help section! Requested by {message.author}")
+        await message.channel.send(embed=embedvar)
+
+    if msg2 == "-h currency":
+        embedvar = discord.Embed(title=":dollar: Currency commands (2)",
+                                 description="`currency_list`,`currency_convert`")
+        embedvar.set_footer(
+            text=f"Add -h to the beggining of a command for its help section! Requested by {message.author}")
+        await message.channel.send(embed=embedvar)
+
+    if msg2 == "-h color text":
+        embedvar = discord.Embed(title=":rainbow: Coloured text commands (6)",
+                                 description="`redtext`,`orangetext`,`greentext`,\n`yellowtext`,`bluetext`,`cyantext`")
+        embedvar.set_footer(
+            text=f"Add -h to the beggining of a command for its help section! Requested by {message.author}")
+        await message.channel.send(embed=embedvar)
+
+    if msg2 == "-h nsfw":
+        if is_nsfw_on(message.channel.id):
+            embedvar = discord.Embed(title=":wink: NSFW commands (8)",
+                                     description="`nsfw_on`,`nsfw_off`,`porntags`,`phs`,`psi`,`psg`,`porngif`,`hentai`")
+            embedvar.set_footer(text=f"Add -h to the beggining of a command for\
+            its help section! Requested by {message.author}")
+            await message.channel.send(embed=embedvar)
+        else:
+            embedvar = discord.Embed(title="This is not enabled in your server",
+                                     description="If your an admin type `-nsfw_on` to enable these commands")
+            embedvar.set_footer(text=f"Requested by {message.author}")
+            await message.channel.send(embed=embedvar)
+
+    if msg2 == "-h online search":
+        embedvar = discord.Embed(title=":computer: Online searching commands (8)", description="`ggt_codes`, `ggt_te`,`ggt_ft`,\
+        \n`ggsr`,`ggsi`,`ggsv`,`reddits`,`meme`")
+        embedvar.set_footer(
+            text=f"Add -h to the beggining of a command for its help section! Requested by {message.author}")
+        await message.channel.send(embed=embedvar)
+
+    if msg2 == "-h games":
+        embedvar = discord.Embed(title=":game_die: Game commands (12)", description="`claim_token`,`reset_coins`,`bal`,`bet_flip`,\
+        `bet bj`,`bet_dice`,\n`bet_rps`,`bet_multi`,`bet_revup`,`bet_dubup`,`bet crash`,`quiz`")
+        embedvar.set_footer(
+            text=f"Add -h to the beggining of a command for its help section! Requested by {message.author}")
+        await message.channel.send(embed=embedvar)
+
+    if msg2 == "-h admin":
+        embedvar = discord.Embed(title=":tools: Admin commands (2)", description="`purge`,`clean`")
+        embedvar.set_footer(
+            text=f"Add -h to the beggining of a command for its help section! Requested by {message.author}")
+        await message.channel.send(embed=embedvar)
+
+    # inserted CUM shard  # todo what to do with this?
+
+    if message.channel.id in []:
         print(message.content)
         if message.content.lower().startswith("-search"):
             search = message.content[8:]
@@ -2429,17 +2389,12 @@ async def on_message(message):
             if message.content.lower() == "-data-log":
                 await message.channel.send(file=discord.File(r'indexed_data.txt'))
 
-    # inserted CUM shard
+    # inserted CUM shard above
 
-    # encrypt/decrypt
     if message.content.startswith("-") and message.author.bot is False:
-        feedbackq = randint(0, 300)
-        if feedbackq == 150:
-            await message.channel.send("```Have you got any feedback for the bot,\nif so i would love to hear it!\n\nSend feedback by using the -feedback command!```")
-            await message.channel.send("https://hpbbnews.files.wordpress.com/2017/03/fotolia_112305269_subscription_monthly_m.jpg")
 
         # TOKEN DROPS
-        tokenluck = randint(0, 100)
+        tokenluck = randint(0, 100)  # todo make certain users more or less lucky
         if tokenluck == 50:
             import string, random
             token = ""
@@ -2460,7 +2415,7 @@ async def on_message(message):
             embedvar = discord.Embed(title=f"{token}",description=f"Claim the above {tokenvalue} coin token by typing -claim_token <token>")
             await message.channel.send(embed=embedvar)
 
-        # cooldown
+        # cooldown  # todo fix this piece of crap
         global msgcounter, userlastmsg
         if msgcounter == 0:
             userlastmsg = f"{datetime.datetime.now()},{message.author.id},{message.content}"
@@ -2505,7 +2460,7 @@ async def on_message(message):
 
             if message.content.startswith("-h randnumber"):  # RANDOM # not reworked
                 embedvar = discord.Embed(title="RANDNUMBER HELP:",description="The random number command picks a number between two numbers")
-                embedvar.add_field(name="Here is how to use it",value="`randnumber <1'st number> <2'nd number>`",inline=False)
+                embedvar.add_field(name="Here is how to use it",value="`randnumber <1st number> <2nd number>`", inline=False)
                 await message.channel.send(embed=embedvar)
 
             if message.content.startswith("-h randuni"):  # RANDOM
@@ -2663,66 +2618,54 @@ async def on_message(message):
                 await message.channel.send(embed=embedvar)
 
             if message.content.startswith("-h porntags"):  # NSFW
-                with open('settings/nsfw.txt', 'r') as i:
-                    isin = f'{i.read()}'
-                    if isin.find(str(message.channel.id)) > -1:
-                        embedvar = discord.Embed(title="PORNTAGS HELP:",description="The porn tags command provides suggestions for tags to be used in nsfw searches")
-                        await message.channel.send(embed=embedvar)
-                    else:
-                        await message.channel.send("```This command is not enabled in this chat```")
+                if is_nsfw_on(message.channel.id):
+                    embedvar = discord.Embed(title="PORNTAGS HELP:",description="The porn tags command provides suggestions for tags to be used in nsfw searches")
+                    await message.channel.send(embed=embedvar)
+                else:
+                    await message.channel.send("```This command is not enabled in this chat```")
 
             if message.content.startswith("-h phs"):  # NSFW
-                with open('settings/nsfw.txt', 'r') as i:
-                    isin = f'{i.read()}'
-                    if isin.find(str(message.channel.id)) > -1:
-                        embedvar = discord.Embed(title="PHS HELP:",description="The pornhub search command searches for up to 20 videos")
-                        embedvar.add_field(name="Here is how to use it",value="`-phs <num of results> <search>`",inline=False)
-                        await message.channel.send(embed=embedvar)
-                    else:
-                        await message.channel.send("```This command is not enabled in this chat```")
+                if is_nsfw_on(message.channel.id):
+                    embedvar = discord.Embed(title="PHS HELP:",description="The pornhub search command searches for up to 20 videos")
+                    embedvar.add_field(name="Here is how to use it",value="`-phs <num of results> <search>`",inline=False)
+                    await message.channel.send(embed=embedvar)
+                else:
+                    await message.channel.send("```This command is not enabled in this chat```")
 
             if message.content.startswith("-h psi"):  # NSFW
-                with open('settings/nsfw.txt', 'r') as i:
-                    isin = f'{i.read()}'
-                    if isin.find(str(message.channel.id)) > -1:
-                        embedvar = discord.Embed(title="PSI HELP:",description="The porn search image command searches for porn images")
-                        embedvar.add_field(name="Here is how to use it",value="`-psi x`\nx is the thing your searching for", inline=False)
-                        await message.channel.send(embed=embedvar)
-                    else:
-                        await message.channel.send("```This command is not enabled in this chat```")
+                if is_nsfw_on(message.channel.id):
+                    embedvar = discord.Embed(title="PSI HELP:",description="The porn search image command searches for porn images")
+                    embedvar.add_field(name="Here is how to use it",value="`-psi x`\nx is the thing your searching for", inline=False)
+                    await message.channel.send(embed=embedvar)
+                else:
+                    await message.channel.send("```This command is not enabled in this chat```")
 
             if message.content.startswith("-h psg"):  # NSFW
-                with open('settings/nsfw.txt', 'r') as i:
-                    isin = f'{i.read()}'
-                    if isin.find(str(message.channel.id)) > -1:
-                        embedvar = discord.Embed(title="PSG HELP:",description="The porn search galleries command searches for images in galleries")
-                        embedvar.add_field(name="Here is how to use it",value="`-psg n x`\nn is the \
-                        gallery number to search\nx is the thing/tag your searching for",inline=False)
-                        await message.channel.send(embed=embedvar)
-                    else:
-                        await message.channel.send("```This command is not enabled in this chat```")
+                if is_nsfw_on(message.channel.id):
+                    embedvar = discord.Embed(title="PSG HELP:",description="The porn search galleries command searches for images in galleries")
+                    embedvar.add_field(name="Here is how to use it",value="`-psg n x`\nn is the \
+                    gallery number to search\nx is the thing/tag your searching for",inline=False)
+                    await message.channel.send(embed=embedvar)
+                else:
+                    await message.channel.send("```This command is not enabled in this chat```")
 
             if message.content.startswith("-h porngif"):  # NSFW
-                with open('settings/nsfw.txt', 'r') as i:
-                    isin = f'{i.read()}'
-                    if isin.find(str(message.channel.id)) > -1:
-                        embedvar = discord.Embed(title="PORNGIF HELP:",description="The porn gif command finds some gifs and sends them back")
-                        embedvar.add_field(name="Here is how to use it",value="`-porngif n x`\nn is the\
-                         page number to search\nx is the thing/tag your searching for",inline=False)
-                        await message.channel.send(embed=embedvar)
-                    else:
-                        await message.channel.send("```This command is not enabled in this chat```")
+                if is_nsfw_on(message.channel.id):
+                    embedvar = discord.Embed(title="PORNGIF HELP:",description="The porn gif command finds some gifs and sends them back")
+                    embedvar.add_field(name="Here is how to use it",value="`-porngif n x`\nn is the\
+                     page number to search\nx is the thing/tag your searching for",inline=False)
+                    await message.channel.send(embed=embedvar)
+                else:
+                    await message.channel.send("```This command is not enabled in this chat```")
 
             if message.content.startswith("-h hentai"):  # NSFW
-                with open('settings/nsfw.txt', 'r') as i:
-                    isin = f'{i.read()}'
-                    if isin.find(str(message.channel.id)) > -1:
-                        embedvar = discord.Embed(title="HENTAI HELP:",description="The hentai search command finds hentai and sends it back")
-                        embedvar.add_field(name="Here is how to use it",value="`-hentai n x`\nn is the page \
-                        number to search\nx is the thing/tag your searching for (you can leave this blank)",inline=False)
-                        await message.channel.send(embed=embedvar)
-                    else:
-                        await message.channel.send("```This command is not enabled in this chat```")
+                if is_nsfw_on(message.channel.id):
+                    embedvar = discord.Embed(title="HENTAI HELP:",description="The hentai search command finds hentai and sends it back")
+                    embedvar.add_field(name="Here is how to use it",value="`-hentai n x`\nn is the page \
+                    number to search\nx is the thing/tag your searching for (you can leave this blank)",inline=False)
+                    await message.channel.send(embed=embedvar)
+                else:
+                    await message.channel.send("```This command is not enabled in this chat```")
 
             if message.content.startswith("-h ggt_codes"):  # ONLINE SEARCHING
                 embedvar = discord.Embed(title="GGT_CODES HELP:",description="The Google translate language codes command shows you the abbreviated letters for that language")
@@ -2845,29 +2788,6 @@ async def on_message(message):
                 embedvar = discord.Embed(title="CLEAN HELP:",description="The clean command individualy deleted messages where purge cant")
                 embedvar.add_field(name="Here is how to use it", value="`-clean <bot/self/all> <num of msg>`", inline=False)
                 await message.channel.send(embed=embedvar)
-
-        if message.content.startswith("-empcv"):
-            if message.author.id == 425373518566260766:
-                from forex_python.converter import CurrencyRates
-                c = CurrencyRates()
-                valuess = float(message.content[7:])
-                values = valuess * 0.62103592767
-                output = c.convert('EUR', 'GBP', values)
-                outputp = output * 1.20
-                outputs = outputp * 1.15
-                await message.channel.send(f"```Here is the value: £{output}```")
-                await message.channel.send(f"```profit value for 20% prof: £{outputp}```")
-                await message.channel.send(f"```Profit + Steam tax: £{outputs}```")
-            else:
-                await message.channel.send("```you dont have perms to use this command```")
-
-        if message.content.startswith("-steam tax"):
-            if message.author.id == 425373518566260766:
-                valuess = float(message.content[11:])
-                values = valuess * 0.85
-                await message.channel.send(f"```Here is the value: £{values}```")
-            else:
-                await message.channel.send("```you dont have perms to use this command```")
 
         if message.content.startswith("-update strs"):
             if message.author.id == 425373518566260766:
@@ -3069,345 +2989,6 @@ async def on_message(message):
             tts.save("temp.mp3")
             vc.play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source="temp.mp3"))
 
-        if message.content.startswith("-update"):
-            if message.author.id == 425373518566260766:
-                from discord_webhook import DiscordWebhook, DiscordEmbed
-                webhook = DiscordWebhook(url='https://discordapp.com/api/webhooks/746835238319292487/8fUZx7YAOH47g0m7FbydDJBH6tQuyWRQEyIL-HsTO33bWnqDo7b_ui3JiXeRW9reFLnH')
-                embed = DiscordEmbed(title="Rapidbot update!",description=f"Rapidbot V{message.content[8:14]} released")
-                embed.add_embed_field(name="Change log", value=f"{message.content[15:]}")
-                webhook.add_embed(embed)
-                webhook.execute()
-
-        if message.content.startswith("-revisboard"):
-            wasuserthere = 0
-            addbal = 0
-            if message.content[12:] == "":
-                lookup = str(message.author.id)
-            else:
-                lookup = message.content[15:33]
-                addbal = 1
-            with open('strs/revision/questionstried.txt') as myFile:
-                for num, line in enumerate(myFile, 1):
-                    if lookup in line:
-                        import decimal
-                        line20 = decimal.Decimal(line[20:])
-                        with open('strs/revision/questionscorrect.txt') as myFil:
-                            for num1, line1 in enumerate(myFil, 1):
-                                if lookup in line1:
-                                    import decimal
-                                    line21 = decimal.Decimal(line1[20:])
-                                    line22 = line20 - line21
-                                    line23 = line21 / line20
-                                    if not addbal == 1:
-                                        embedvar = discord.Embed(title="Your stats:", description=f"Questions attempted: {line20}\
-                                        \nQuestions correct: {line21}\nQuestions incorrect: {line22}\
-                                        \nCorrect answers percentage: {line23}")
-                                        embedvar.set_footer(text=f"Requested by {message.author}")
-                                        await message.channel.send(embed=embedvar)
-                                    else:
-                                        embedvar = discord.Embed(title="Stats:",description=f"Questions attempted: {line20}\
-                                        \nQuestions correct: {line21}\nQuestions incorrect: {line22}\nCorrect answers percentage: {line23}")
-                                        embedvar.set_footer(text=f"Requested by {message.author}")
-                                        await message.channel.send(embed=embedvar)
-                        wasuserthere = wasuserthere + 1
-                if not addbal == 1:
-                    if wasuserthere == 0:
-                        embedvar = discord.Embed(description="You just attempted your first question!")
-                        embedvar.set_footer(text=f"Requested by {message.author}")
-                        await message.channel.send(embed=embedvar)
-                        with open('strs/revision/questionstried.txt', 'a+') as f:
-                            f.write(f"{message.author.id}, 1 \n")
-                        with open('strs/revision/questionscorrect.txt', 'a+') as f:
-                            f.write(f"{message.author.id}, 1 \n")
-                else:
-                    if wasuserthere == 0:
-                        embedvar = discord.Embed(description="This user does not have any scores yet")
-                        embedvar.set_footer(text=f"Requested by {message.author}")
-                        await message.channel.send(embed=embedvar)
-
-        global revactive, revawn, revchannel
-        if message.content.startswith("-revision"):
-
-            arg = message.content.split()
-            try:
-                print(arg[1])
-                try:
-                    print(arg[2])
-                    try:
-                        print(arg[3])
-                        arg3 = arg[3]
-                        linetopick = int(arg3)
-                        question_file = f'strs/revision/{arg[1]}/{arg[2]}.txt'
-                    except:
-                        question_file = f'strs/revision/{arg[1]}/{arg[2]}.txt'
-                except:
-                    await message.channel.send("No topic chosen or there was an error")
-                    #subject no topic
-            except:
-                await message.channel.send("No subject chosen or there was an error")
-                #no subject or topic
-
-            try:
-                linetopick
-            except:
-                with open(question_file, encoding='utf-8') as question_file1:
-                    for lnum3, line in enumerate(question_file1, 1):
-                        print(lnum3)
-                linetopick = randint(1, int(lnum3))
-            with open(question_file, encoding='utf-8') as question_file1:
-                for lnum, line in enumerate(question_file1, 1):
-                    if int(lnum) == linetopick:
-                        ques = re.findall('".+?"', line)
-
-                        ques1 = ques[0]
-                        ques1 = str(ques1)
-                        ques1 = ques1[1:]
-                        ques1 = ques1[:-1]
-
-                        revawn = ques[1]
-                        revawn = str(revawn)
-                        revawn = revawn[1:]
-                        revawn = revawn[:-1]
-
-                        questype = ques[2]
-                        questype = str(questype)
-                        questype = questype[1:]
-                        questype = questype[:-1]
-
-                        quesnum = ques[3]
-                        quesnum = str(quesnum)
-                        quesnum = quesnum[1:]
-                        quesnum = quesnum[:-1]
-
-                        print(ques1, revawn, questype, quesnum)
-
-            revactive = 1
-            revchannel = message.channel.id
-
-            embedvar = discord.Embed(title="Here is your revision question to awnser", description=ques1)
-            embedvar.add_field(name="question info:", value=f"Question type: {questype}, question number: {quesnum}")
-            embedvar.set_footer(text=f"Requested by {message.author}")
-            await message.channel.send(embed=embedvar)
-
-            global start_time_revision
-            start_time_revision = time.time()
-
-        if message.content.startswith("-a"):
-            global linenum2
-            wasuserthere = 0
-            lookup = str(message.author.id)
-            with open('strs/revision/questionstried.txt') as myFile:
-                for lnum, line in enumerate(myFile, 1):
-                    if lookup in line:
-                        import decimal
-                        line20 = decimal.Decimal(line[20:])
-                        wasuserthere = wasuserthere + 1
-                        questried = line20
-                        linenum2 = int(lnum)
-                        with open('strs/revision/questionscorrect.txt') as myFil:
-                            for num1, line1 in enumerate(myFil, 1):
-                                if lookup in line1:
-                                    import decimal
-                                    line21 = decimal.Decimal(line1[20:])
-                                    quescorrect = line21
-                if wasuserthere == 0:
-                    embedvar = discord.Embed(description="You just attempted your first question!")
-                    embedvar.set_footer(text=f"Requested by {message.author}")
-                    await message.channel.send(embed=embedvar)
-                    with open('strs/revision/questionstried.txt', 'a+') as f:
-                        f.write(f"{message.author.id}, 0 \n")
-                    with open('strs/revision/questionscorrect.txt', 'a+') as f:
-                        f.write(f"{message.author.id}, 0 \n")
-            try:
-                revactive
-            except NameError:
-                placeholder = 0
-            else:
-                if int(message.channel.id) == int(revchannel):
-                    if revactive == 1:
-                        if message.content[3:] == str(revawn):
-                            revactive = 0
-                            wasuserthere = 0
-                            lookup = str(message.author.id)
-                            with open('settings/coin.txt') as myFile:
-                                for lnum, line in enumerate(myFile, 1):
-                                    if lookup in line:
-                                        import decimal
-                                        line20 = decimal.Decimal(line[20:])
-                                        wasuserthere = wasuserthere + 1
-                                        coin = line20
-                                        linenum = int(lnum)
-                                if wasuserthere == 0:
-                                    embedvar = discord.Embed(description="You dont have a balance yet! Dont worry i just made you one")
-                                    embedvar.set_footer(text=f"Requested by {message.author}")
-                                    await message.channel.send(embed=embedvar)
-                                    with open('settings/coin.txt', 'a+') as f:
-                                        f.write(f"{message.author.id}, 100 \n")
-
-                            coin2 = coin + 0 #change back later
-                            coin = coin2
-
-                            with open('settings/coin.txt', 'r') as file:
-                                data = file.readlines()
-                            data[linenum - 1] = f'{message.author.id}, {coin}\n'
-                            file.close()
-
-                            with open('settings/coin.txt', 'w') as file:
-                                file.writelines(data)
-                            embedvar = discord.Embed(title=f"That is the correct answer {message.author}",
-                            description=f"you just won 0 coins and your bal is now {coin}")
-                            embedvar.add_field(name="Time taken:", value="%s seconds" % (time.time() - start_time_revision))
-                            embedvar.set_footer(text=f"Requested by {message.author}")
-                            await message.channel.send(embed=embedvar)
-
-                            with open('strs/revision/questionscorrect.txt', 'r') as file:
-                                data = file.readlines()
-                            data[linenum2 - 1] = f'{message.author.id}, {quescorrect+1}\n'
-                            file.close()
-
-                            with open('strs/revision/questionscorrect.txt', 'w') as file:
-                                file.writelines(data)
-
-                            with open('strs/revision/questionstried.txt', 'r') as file:
-                                data = file.readlines()
-                            data[linenum2 - 1] = f'{message.author.id}, {questried+1}\n'
-                            file.close()
-
-                            with open('strs/revision/questionstried.txt', 'w') as file:
-                                file.writelines(data)
-
-                        else:
-                            print(str(revawn))
-                            global goeslft1
-                            try:
-                                goeslft1
-                            except NameError:
-                                if revactive == 1:
-                                    goeslft1 = 2
-                            else:
-                                if goeslft1 == 1:
-                                    embedvar = discord.Embed(title=f"The correct answer was {revawn}",
-                                    description="This quiz has now finished")
-                                    embedvar.set_footer(text=f"Requested by {message.author}")
-                                    await message.channel.send(embed=embedvar)
-                                    revactive = 0
-                                    with open('strs/revision/questionstried.txt', 'r') as file:
-                                        data = file.readlines()
-                                    data[linenum2 - 1] = f'{message.author.id}, {questried + 1}\n'
-                                    file.close()
-
-                                    with open('strs/revision/questionstried.txt', 'w') as file:
-                                        file.writelines(data)
-                                else:
-                                    goeslft1 = goeslft1 - 1
-                                    await message.channel.send("1 Go left")
-
-        if message.content.startswith("-quiz"):
-            global quizactive, questionawn, quizchannel
-            import aiopentdb
-            global questionawn
-
-            client = aiopentdb.Client()
-
-            try:
-                questions = await client.fetch_questions(amount=1, category_type=aiopentdb.CategoryType.computers, )
-
-                for question in questions:
-                    print(f'Question: {question.content}\nAnswer: {question.correct_answer}', end='\n\n')
-                    embedvar = discord.Embed(title="Here is your question to awnser", description=question.content)
-                    embedvar.set_footer(text=f"Requested by {message.author}")
-                    await message.channel.send(embed=embedvar)
-                questionawn = question.correct_answer
-
-            finally:
-                await client.close()
-
-            quizactive = 1
-            quizchannel = message.channel.id
-
-        if message.content.startswith("-a"):
-            try:
-                quizactive
-            except NameError:
-                placeholder = 0
-            else:
-                if int(message.channel.id) == int(quizchannel):
-                    if quizactive == 1:
-                        print("quiz active, reponse noted: ", message.content)
-                        if message.content[3:] == questionawn:
-                            quizactive = 0
-                            wasuserthere = 0
-                            lookup = str(message.author.id)
-                            with open('settings/coin.txt') as myFile:
-                                for lnum, line in enumerate(myFile, 1):
-                                    if lookup in line:
-                                        import decimal
-                                        line20 = decimal.Decimal(line[20:])
-                                        wasuserthere = wasuserthere + 1
-                                        coin = line20
-                                        linenum = int(lnum)
-                                if wasuserthere == 0:
-                                    embedvar = discord.Embed(
-                                        description="You dont have a balance yet! Dont worry i just made you one")
-                                    embedvar.set_footer(text=f"Requested by {message.author}")
-                                    await message.channel.send(embed=embedvar)
-                                    with open('settings/coin.txt', 'a+') as f:
-                                        f.write(f"{message.author.id}, 100 \n")
-
-                            coin2 = coin + 5
-                            coin = coin2
-
-                            with open('settings/coin.txt', 'r') as file:
-                                data = file.readlines()
-                            data[linenum - 1] = f'{message.author.id}, {coin}\n'
-                            file.close()
-
-                            with open('settings/coin.txt', 'w') as file:
-                                file.writelines(data)
-                            embedvar = discord.Embed(title=f"That is the correct answer {message.author}",
-                            description=f"you just won 5 coins and your bal is now {coin}")
-                            embedvar.set_footer(text=f"Requested by {message.author}")
-                            await message.channel.send(embed=embedvar)
-
-                        else:
-                            print(str(questionawn))
-                            if str(questionawn) == "True":
-                                embedvar = discord.Embed(title=f"The correct answer was {questionawn}",
-                                description="This quiz has now finished")
-                                embedvar.set_footer(text=f"Requested by {message.author}")
-                                await message.channel.send(embed=embedvar)
-                                quizactive = 0
-                            if str(questionawn) == "False":
-                                embedvar = discord.Embed(title=f"The correct answer was {questionawn}",
-                                description="This quiz has now finished")
-                                embedvar.set_footer(text=f"Requested by {message.author}")
-                                await message.channel.send(embed=embedvar)
-                                quizactive = 0
-                            else:
-                                global goeslft
-                                try:
-                                    goeslft
-                                except NameError:
-                                    if quizactive == 1:
-                                        goeslft = 2
-                                        await message.channel.send("2 Goes left")
-                                else:
-                                    if goeslft == 1:
-                                        embedvar = discord.Embed(title=f"The correct answer was {questionawn}",
-                                        description="This quiz has now finished")
-                                        embedvar.set_footer(text=f"Requested by {message.author}")
-                                        await message.channel.send(embed=embedvar)
-                                        quizactive = 0
-                                    else:
-                                        goeslft = goeslft - 1
-                                        await message.channel.send("1 Go left")
-
-        if message.content.startswith("-simp"):
-            if message.author.id == 425373518566260766:
-                from pyinsta.download import post
-                msg = message.content.split()
-                print(post(msg[1], int(msg[2])))
-
 #@bot.event
 #async def on_reaction_add(reaction, user):
     #if not int(user.id) == 711578412103368707:
@@ -3443,9 +3024,9 @@ async def on_disconnect():
 
 @bot.event
 async def on_guild_join(guild):
-    async def find_channel(guild):
+    async def find_channel(guild_):
         for c in guild.text_channels:
-            if not c.permissions_for(guild.me).send_messages:
+            if not c.permissions_for(guild_.me).send_messages:
                 continue
             return c
 
@@ -3454,4 +3035,4 @@ async def on_guild_join(guild):
      try -help to see a commands list", colour=discord.Color.gold())
     await channel.send(embed=embedvar)
 
-bot.run('NzExNTc4NDEyMTAzMzY4NzA3.XsFGcw.kuaqIiivBkE0Ji1Bq2koZWnfFLw') # actual bot
+bot.run('NzExNTc4NDEyMTAzMzY4NzA3.XsFGcw.kuaqIiivBkE0Ji1Bq2koZWnfFLw')  # actual bot

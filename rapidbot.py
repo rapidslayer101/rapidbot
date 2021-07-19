@@ -14,11 +14,17 @@ msgcounter = 0
 startt = time.time()
 startr = datetime.datetime.utcnow()
 
-# todo add decrypt command in
 # todo redo the cooldown system
 # todo fix the help section
-# todo add file directory checks
+# todo color embeds
 
+# file system checks
+if not os.path.isdir("settings"):
+    os.mkdir("settings")
+if not os.path.isdir("strs"):
+    os.mkdir("strs")
+if not os.path.isfile("settings/nsfw.txt"):
+    open("settings/nsfw.txt", "w")
 
 # encrypt def stuff
 
@@ -230,7 +236,7 @@ while True:
 
 
         try:
-            with open("enc-key.txt", encoding="utf-8") as f:
+            with open("settings/enc-key.txt", encoding="utf-8") as f:
                 master_key = str(f.readlines())[2:-2]
         except:
             print(f"Input an encrypt key below, leave blank to autogenerate a key")
@@ -249,10 +255,10 @@ while True:
                     alpha1 = key_data[2]
                     alpha2 = key_data[3]
                     break
-            with open("enc-key.txt", "w", encoding="utf-8") as f:
+            with open("settings/enc-key.txt", "w", encoding="utf-8") as f:
                 f.write(master_key)
 
-        with open("enc-key.txt") as f:
+        with open("settings/enc-key.txt") as f:
             for line in f.readlines():
                 master_key = line
         mkey_data = convert(master_key)
@@ -273,9 +279,7 @@ class Encryption(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    async def encrypt(self, ctx):
-
-        print(ctx.message.content[9:])
+    async def encrypt(self, ctx):  # todo the new output probably means over 2k chars error could occur
         plaintext = base64.b85encode(zlib.compress(ctx.message.content[9:].encode('utf-8'), 9)).decode('utf-8')
         global prime_numbers
         prime_numbers = get_prime_number(random.randint(100000, 800000))
@@ -310,43 +314,41 @@ class Encryption(commands.Cog):
             await ctx.channel.send(embed=embedvar)
             await ctx.channel.send(file=discord.File('config/temp.txt'))
         if len(etext2) < 2000:
-            embedvar = discord.Embed(title=f"Here is your encrypted text ({len(etext2)} chars):", description=etext2)
-            embedvar.set_footer(text=f"Requested by {ctx.author}")
-            await ctx.channel.send(embed=embedvar)
+            await ctx.channel.send(f"```Here is your encrypted text ({len(ctx.message.content[9:])} --> {len(etext2)})"
+                                   f" chars:\n{etext2}\n\nRequested by {ctx.author}```")
 
-    #@commands.command()
-    #async def decrypt(self, ctx):
-    #    try:
-    #        b = str(fib_iter(ctx.message.content[9:], num2))
-    #        num = 0
-    #        print(ctx.message.content[9:])
-    #        dtext = shifter(ctx.message.content[9:], b, num, num2, alpha2, False, False)
-    #        content = str(dtext[:6]).replace("g", "0").replace("e", "1").replace("k", "2").replace("i", "3") \
-    #            .replace("u", "4").replace("d", "5").replace("r", "6").replace("w", "7").replace("q", "8").replace("p", "9")
+    @commands.command()
+    async def decrypt(self, ctx):
+        print(ctx.message.content)
+        try:
+            b = str(fib_iter(ctx.message.content[9:], num2))
+            num = 0
+            print(ctx.message.content[9:])
+            dtext = shifter(ctx.message.content[9:], b, num, num2, alpha2, False, False)
+            content = str(dtext[:6]).replace("g", "0").replace("e", "1").replace("k", "2").replace("i", "3") \
+                .replace("u", "4").replace("d", "5").replace("r", "6").replace("w", "7").replace("q", "8").replace("p", "9")
 
+            prime_numbers = get_prime_number(int(content))
+            while True:
+                x = next(prime_numbers)
+                if x == int(content):
+                    num = x
+                    break
 
-    #        prime_numbers = get_prime_number(int(content))
-    #        while True:
-    #            x = next(prime_numbers)
-    #            if x == int(content):
-    #                num = x
-    #                break
+            newnum = ""
+            run = 0
+            while len(newnum) < len(dtext) * 2 + 100:
+                run += 1
+                newnum = str(newnum) + str(next(prime_numbers))
+                if run % 1000 == 0:
+                    print(run, len(dtext), len(str(newnum)))
 
-    #        newnum = ""
-    #        run = 0
-    #        while len(newnum) < len(dtext) * 2 + 100:
-    #            run += 1
-    #            newnum = str(newnum) + str(next(prime_numbers))
-    #            if run % 1000 == 0:
-    #                print(run, len(dtext), len(str(newnum)))
-
-    #       outputend = shifter(dtext[6:], newnum, num, num2, alpha1, False, False)
-    #    except:
-     #       return "[CND] " + ctx.message.content[9:]
-
-    #    embedvar = discord.Embed(title="Here is your message:", description=decompress(b85decode(outputend)).decode('utf-8'))
-    #    embedvar.set_footer(text=f"Requested by {ctx.author}")
-     #   await ctx.channel.send(embed=embedvar)
+            output_end = shifter(dtext[6:], newnum, num, num2, alpha1, False, False)
+        except:
+            print("[CND] " + ctx.message.content[9:])
+        await ctx.channel.send(f"```Here is your message:\n"
+                               f"{zlib.decompress(base64.b85decode(output_end)).decode('utf-8')}"
+                               f"\n\nRequested by {ctx.author}```")
 
 
 class Random(commands.Cog):
@@ -382,7 +384,7 @@ class Random(commands.Cog):
             await ctx.channel.send("```The minimum words is 1!```")
             allowcmd = 1
         if not allowcmd == 1:
-            from nltk.corpus import words # todo fix, module missing
+            from nltk.corpus import words  # todo fix, module missing
             from random import sample
             rand_words = ' '.join(sample(words.words(), n))
             embedvar = discord.Embed(title="Random words:", description=rand_words)
@@ -804,6 +806,15 @@ class Coloured_text(commands.Cog):
         await ctx.channel.send(f"```xl\n'{ctx.message.content[10:]}\n\nRequested by {ctx.author}```")
 
 
+def is_nsfw_on(channel_id):  # todo probably remove the makedir from here and do startup checks instead
+    with open('settings/nsfw.txt', 'r') as i:
+        isin = f'{i.read()}'
+    if isin.find(str(channel_id)) > -1:
+        return True
+    else:
+        return False
+
+
 class NSFW(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -826,7 +837,7 @@ class NSFW(commands.Cog):
                                            "\n\nIf your not and admin then ask an admin\nto turn nsfw on```")
 
     @commands.command()
-    async def nsfw_off(self, ctx):  # todo show if it was on before or not not the current useless output
+    async def nsfw_off(self, ctx):  # todo show if it was on before or not not the current useless output, redo command better
         if discord.utils.get(ctx.author.roles, name="admin") or discord.utils.get(ctx.author.roles, name="Admin"):
             lists = []
             putin = f'{ctx.channel.id}'
@@ -849,26 +860,24 @@ class NSFW(commands.Cog):
 
     @commands.command()
     async def phs(self, ctx):
-        with open('settings/nsfw.txt', 'r') as f:
-            isin = f'{f.read()}'
-            if isin.find(str(ctx.channel.id)) > -1:
-                from pornhub_api import PornhubApi  # todo module missing
-                api = PornhubApi()
-                search = ctx.message.content[7:]
-                data = api.search.search(f"{search}", ordering="mostviewed", period="weekly")
-                limit = int(ctx.message.content[5:7])
+        if is_nsfw_on(ctx.channel.id):
+            from pornhub_api import PornhubApi  # todo module missing
+            api = PornhubApi()
+            search = ctx.message.content[7:]
+            data = api.search.search(f"{search}", ordering="mostviewed", period="weekly")
+            limit = int(ctx.message.content[5:7])
 
-                if limit > 20:
-                    await ctx.channel.send("```You cant have more than 20 searches per phs search!```")
-                else:
-                    for vid in data.videos:
-                        await ctx.channel.send(f"https://www.pornhub.com/view_video.php?viewkey={vid.video_id}")
-                        time.sleep(4)
-                        limit = limit - 1
-                        if limit == 0:
-                            break
+            if limit > 20:
+                await ctx.channel.send("```You cant have more than 20 searches per phs search!```")
             else:
-                await ctx.channel.send("```NSFW is not enabled in this chat\n To enable it you must have role admin\n then type -nsfw_on```")
+                for vid in data.videos:
+                    await ctx.channel.send(f"https://www.pornhub.com/view_video.php?viewkey={vid.video_id}")
+                    time.sleep(4)
+                    limit = limit - 1
+                    if limit == 0:
+                        break
+        else:
+            await ctx.channel.send("```NSFW is not enabled in this chat\n To enable it you must have role admin\n then type -nsfw_on```")
 
     @commands.command()
     async def psi(self, ctx, arg):  # todo test this command
@@ -2102,25 +2111,9 @@ except:
     theshit = "nio"
 
 
-def is_nsfw_on(channel_id):  # todo probably remove the makedir from here and do startup checks instead
-    try:
-        with open('settings/nsfw.txt', 'r') as i:
-            isin = f'{i.read()}'
-        if isin.find(str(channel_id)) > -1:
-            return True
-        else:
-            return False
-    except:
-        if not os.path.isdir("settings"):
-            os.mkdir("settings")
-        with open('settings/nsfw.txt', 'w') as i:
-            return False
-
-
 @bot.event
 async def on_message(message):
-    message.content = str(message.content).lower()
-    datetime.datetime.now()
+    #message.content = str(message.content).lower()  # todo redo this so it does not break things
     global rtime
     rtime = datetime.datetime.now()
     msg2 = message.content.replace("\n", " // ")  # todo remove triple repetition below
@@ -2429,6 +2422,9 @@ async def on_message(message):
                         await message.channel.send("Duplicate command, please try again in a second")
                         message.content = ""
         msgcounter = msgcounter + 1
+
+        # new cooldown here
+
         await bot.process_commands(message)
 
         # COMMANDS HELP LIST BELOW
@@ -2789,66 +2785,64 @@ async def on_message(message):
                 embedvar.add_field(name="Here is how to use it", value="`-clean <bot/self/all> <num of msg>`", inline=False)
                 await message.channel.send(embed=embedvar)
 
-        if message.content.startswith("-update strs"):
-            if message.author.id == 425373518566260766:
-                with open('strs/msgstore.txt', 'r') as f:
-                    sendback = f.read()
-                    with open('strs/linkstore.txt', 'w') as i:
-                        a = (re.findall(r'(https?://[^\s]+)', sendback))
-                        b = (re.findall(r'(http?://[^\s]+)', sendback))
-                        c = ('\n'.join(a))
-                        d = ('\n'.join(b))
-                        write = f'{c},{d}'
-                        i.write(write)
-                        i.close()
-                        with open('strs/linkstore.txt') as result:
-                            uniqlines = set(result.readlines())
-                            with open('strs/linkndp.txt', 'w') as rmdup:
-                                rmdup.writelines(set(uniqlines))
+        if message.author.id == 425373518566260766:
+            if message.content.startswith("-update strs"):
+                    with open('strs/msgstore.txt', 'r') as f:
+                        sendback = f.read()
+                        with open('strs/linkstore.txt', 'w') as i:
+                            a = (re.findall(r'(https?://[^\s]+)', sendback))
+                            b = (re.findall(r'(http?://[^\s]+)', sendback))
+                            c = ('\n'.join(a))
+                            d = ('\n'.join(b))
+                            write = f'{c},{d}'
+                            i.write(write)
+                            i.close()
+                            with open('strs/linkstore.txt') as result:
+                                uniqlines = set(result.readlines())
+                                with open('strs/linkndp.txt', 'w') as rmdup:
+                                    rmdup.writelines(set(uniqlines))
 
-                                bad_words = ['https://discord.com/channels/']
-                                with open('strs/linkndp.txt') as oldfile, open('strs/linknd-ndsc.txt', 'w') as newfile:
-                                    for line in oldfile:
-                                        if not any(bad_word in line for bad_word in bad_words):
-                                            newfile.write(line)
+                                    bad_words = ['https://discord.com/channels/']
+                                    with open('strs/linkndp.txt') as oldfile, open('strs/linknd-ndsc.txt', 'w') as newfile:
+                                        for line in oldfile:
+                                            if not any(bad_word in line for bad_word in bad_words):
+                                                newfile.write(line)
 
-                await message.channel.send("```Lnk data Success```")
-                file_name = ("strs/msgstore.txt")
-                file1 = open(file_name, "r")
-                d = dict()
+                    await message.channel.send("```Lnk data Success```")
+                    file_name = ("strs/msgstore.txt")
+                    file1 = open(file_name, "r")
+                    d = dict()
 
-                for line in file1:
-                    line = line.strip()
-                    line = line.lower()
-                    words = line.split(" ")
+                    for line in file1:
+                        line = line.strip()
+                        line = line.lower()
+                        words = line.split(" ")
 
-                    for word in words:
-                        if word in d:
-                            d[word] = d[word] + 1
-                        else:
-                            d[word] = 1
+                        for word in words:
+                            if word in d:
+                                d[word] = d[word] + 1
+                            else:
+                                d[word] = 1
 
-                with open('strs/occurdata.txt', 'w') as f:
-                    f.write("\n\nNumber of occurrences of each word in file is:")
-                    f.write("\n ===============\n")
+                    with open('strs/occurdata.txt', 'w') as f:
+                        f.write("\n\nNumber of occurrences of each word in file is:")
+                        f.write("\n ===============\n")
 
-                    for key in list(d.keys()):
-                        yeis = f'{key},":",{d[key]} \n'
-                        writethat = str(yeis)
-                        f.write(writethat)
+                        for key in list(d.keys()):
+                            yeis = f'{key},":",{d[key]} \n'
+                            writethat = str(yeis)
+                            f.write(writethat)
 
-                    file1.close()
-                    await message.channel.send("```Occr data Success```")
+                        file1.close()
+                        await message.channel.send("```Occr data Success```")
 
-        if message.content.startswith("-randlink"):
-            if message.author.id == 425373518566260766:
+            if message.content.startswith("-randlink"):
                 import random
                 lines = open('strs/linknd-ndsc.txt').read().splitlines()
                 myline = random.choice(lines)
                 await message.channel.send(myline)
 
-        if message.content.startswith("-allmsg without"):
-            if message.author.id == 425373518566260766:
+            if message.content.startswith("-allmsg without"):
                 bad_word = message.content[16:]
                 bad_words = bad_word.split()
                 await message.channel.send(bad_words)
@@ -2860,8 +2854,7 @@ async def on_message(message):
                     await message.channel.send("```SUCCESS```")
                     await message.channel.send(file=discord.File(f'strs/edits/allmsg-withoutwords-{message.content[16:]}.txt'))
 
-        if message.content.startswith("-allmsg only"):
-            if message.author.id == 425373518566260766:
+            if message.content.startswith("-allmsg only"):
                 bad_word = message.content[13:]
                 bad_words = bad_word.split()
                 await message.channel.send(bad_words)
@@ -2874,13 +2867,11 @@ async def on_message(message):
                     await message.channel.send(
                         file=discord.File(f'strs/edits/allmsg-findwords-{message.content[13:]}.txt'))
 
-        if message.content.startswith("-admin upload"):
-            if message.author.id == 425373518566260766:
+            if message.content.startswith("-admin upload"):
                 await message.channel.send(file=discord.File(f'{message.content[14:]}'))
 
-        # data not admin
-        if message.content.startswith("-thischat msg"):
-            if message.author.id == 425373518566260766:
+            # data not admin
+            if message.content.startswith("-thischat msg"):
                 lists = []
                 putin = f'{message.channel.id}'
                 lists.append(putin)
@@ -2893,6 +2884,18 @@ async def on_message(message):
                             newfile.write(line)
                     await message.channel.send("```SUCCESS```")
                     await message.channel.send(file=discord.File(f'strs/edits/chatmsg-{message.channel.id}.txt'))
+
+            if message.content.startswith("-status dev"):
+                game = discord.Game("Currently programming")
+                await bot.change_presence(status=discord.Status.online, activity=game)
+
+            if message.content.startswith("-status on"):
+                game = discord.Game(f"On since {datetime.datetime.now()}")
+                await bot.change_presence(status=discord.Status.online, activity=game)
+
+            if message.content.startswith("-status make"):
+                game = discord.Game(f"{message.content[13:]}")
+                await bot.change_presence(status=discord.Status.online, activity=game)
 
         if message.content.startswith("-beta access"):
             giveto = message.content[13:]
@@ -2911,44 +2914,8 @@ async def on_message(message):
             else:
                 await message.channel.send("```You will need to ask rapidslayer101 for access to the beta rank")
 
-        if message.content.startswith("-status dev"):
-            if message.author.id == 425373518566260766:
-                game = discord.Game("Currently programming")
-                await bot.change_presence(status=discord.Status.online, activity=game)
+        #if message.content.startswith("-token make"):  # todo redo this command
 
-        if message.content.startswith("-status on"):
-            if message.author.id == 425373518566260766:
-                game = discord.Game(f"On since {datetime.datetime.now()}")
-                await bot.change_presence(status=discord.Status.online, activity=game)
-
-        if message.content.startswith("-status make"):
-            if message.author.id == 425373518566260766:
-                game = discord.Game(f"{message.content[13:]}")
-                await bot.change_presence(status=discord.Status.online, activity=game)
-
-        if message.content.startswith("-token make"):
-            if message.author.id == 425373518566260766:
-                import string
-                token = ""
-                for i in range(25):
-                    token = token + (random.choice(string.ascii_uppercase))
-                    if i == 4:
-                        token = token + "-"
-                    if i == 9:
-                        token = token + "-"
-                    if i == 14:
-                        token = token + "-"
-                    if i == 19:
-                        token = token + "-"
-                with open('settings/token.txt', 'a+') as f:
-                    f.write(token + ", " + message.content[12:] + "\n")
-
-                from discord_webhook import DiscordWebhook, DiscordEmbed
-                webhook = DiscordWebhook(url='https://discordapp.com/api/webhooks/747795345295278101/bI1yWpdM0g_XudLzDcDdCoX4MjuOYGgSBaqWipZ5oQ4FX9mK8Hr0Dj0YJRxfWRx58Y3a')
-                embed = DiscordEmbed(title=f"{token}",description=f"Claim the above {message.content[12:]} coin token by\
-                typing -claim token <token>")
-                webhook.add_embed(embed)
-                webhook.execute()
         # beta commands
 
         if message.content.startswith("-join vc"):
@@ -3012,9 +2979,7 @@ async def on_connect():
 
 @bot.event
 async def on_ready():
-    print("Bot is now ready, starting configs...")
-    print("Configs finished, bot now fully operational")
-    print('-----------------------------------------------')
+    print("Bot is now ready\n-----------------------------------------------")
 
 
 @bot.event

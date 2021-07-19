@@ -17,8 +17,14 @@ start_time = datetime.datetime.utcnow()
 
 # socket testing
 
+HEROKU_PORT = os.environ.get('HEROKU_PORT')
+if HEROKU_PORT:
+    # get the heroku port
+    SERVER_PORT = int(os.environ.get('PORT', 17995))  # as per OP comments default is 17995
+else:
+    SERVER_PORT = 8079
 SERVER_HOST = "0.0.0.0"
-SERVER_PORT = 8079
+#SERVER_PORT = 8079
 separator_token = "<SEP>"
 
 client_sockets = set()

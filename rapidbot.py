@@ -1,9 +1,7 @@
 # MADE BY RAPIDSLAYER101#260, DO NOT COPY, DO NOT SHARE, DO NOT USE
 
-global time, sys, googletrans, google, random, os, zlib, base64, re, asyncio, randint
+global time, sys, googletrans, google, random, os, zlib, base64, re, asyncio
 import datetime, time, os, random, zlib, base64, re, socket  # inbuilt
-from threading import Thread
-from random import randint
 
 import googletrans, asyncio, discord, requests, cleverbotfreeapi, urllib, praw  # installed modules
 from discord.ext import commands
@@ -15,21 +13,18 @@ global start_time, msgcounter
 msgcounter = 0  # todo this is used in cooldown, remember to remove once cooldown redone
 start_time = datetime.datetime.utcnow()
 
-# socket testing
-
 # todo impliment this usefull info into the big info command being made, maybe an admin version of it tho
 
 print(socket.gethostname(), socket.getfqdn())
-
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.connect(("8.8.8.8", 80))
 print(socket.gethostbyname(socket.gethostname()), s.getsockname()[0])
 s.close()
 
-
 # todo redo the cooldown system
 # todo fix the help section
 # todo color embeds
+# todo maybe move all print statements to a webhook and a debug console
 
 # file system checks
 if not os.path.isdir("settings"):
@@ -109,18 +104,15 @@ while True:
                     except: xx = 0
 
                 master_key = rand_base_alpha + hexadecimal
-                p1_key = master_key[:hexlen]
-                p1_e = master_key[hexlen:]
 
                 conversion_table = {}
                 cvtable_counter = 0
-                for i in p1_key:
+                for i in master_key[:hexlen]:
                     conversion_table.__setitem__(i, cvtable_counter)
                     cvtable_counter += 1
 
-                hexadecimal = p1_e.strip().upper()
+                hexadecimal = master_key[hexlen:].strip().upper()
                 num1 = 0
-
                 power = len(hexadecimal) - 1
 
                 for digit in hexadecimal:
@@ -138,13 +130,10 @@ while True:
                                 break
                         return rand_base_alpha
 
-                    rand_alpha1 = alpha_make()
-                    rand_alpha2 = alpha_make()
-
-                    master_key = rand_alpha1 + master_key + rand_alpha2
+                    master_key = alpha_make() + master_key + alpha_make()
                     master_key = base64.b85encode(zlib.compress(master_key.encode('utf-8'), 9)).decode('utf-8')
                     break
-            return master_key, num1, rand_alpha1, rand_alpha2
+            return master_key
 
 
         def shifter(plaintext, newnum, num, num2, alphabet, replace, forwards):
@@ -260,11 +249,11 @@ while True:
                     except:
                         print("key convert error")
                 else:
-                    key_data = generator()
-                    master_key = key_data[0]
-                    num1 = key_data[1]
-                    alpha1 = key_data[2]
-                    alpha2 = key_data[3]
+                    master_key = generator()
+                    mkey_data = convert(master_key)
+                    alpha1 = mkey_data[0]
+                    alpha2 = mkey_data[1]
+                    num2 = mkey_data[2]  # todo was num1 now num2, why was this diff
                     break
             with open("settings/enc-key.txt", "w", encoding="utf-8") as f:
                 f.write(master_key)
@@ -1622,10 +1611,9 @@ class Games(commands.Cog):  # todo redo this whole thing
                 with open('settings/coin.txt', 'a+') as f:
                     f.write(f"{ctx.author.id}, 100 \n")
 
-        from random import randint
 
         t = ["R", "P", "S"]
-        computer = t[randint(0, 2)]
+        computer = t[random.randint(0, 2)]
         player = False
 
         while player is False:
@@ -1740,7 +1728,7 @@ class Games(commands.Cog):  # todo redo this whole thing
                     await ctx.channel.send(embed=embedvar)
 
                 player = True
-                computer = t[randint(0, 2)]
+                computer = t[random.randint(0, 2)]
 
     @commands.command()
     async def bet_multi(self, ctx, arg1, arg2):
@@ -1791,7 +1779,7 @@ class Games(commands.Cog):  # todo redo this whole thing
             if lookup in str(multiplyerunedit):
                 head, sep, tail = str(multiplyerunedit).partition('.')
 
-            botmultichoice = randint(1, int(head))
+            botmultichoice = random.randint(1, int(head))
             print(str(botmultichoice) + "/" + str(multiplyerunedit))
             if botmultichoice < 11:
                 coins2 = coin + (int(betmultiamount) * int(betmultiplyer))
@@ -2296,8 +2284,9 @@ async def on_message(message):
                 time.sleep(1.25)
 
         if message.content.lower() == "-pick":
+            import random
             len(theshit)
-            counter = randint(0, len(theshit))
+            counter = random.randint(0, len(theshit))
             line = theshit[counter]
             line = str(counter) + line
             await message.channel.send(line)
@@ -2370,8 +2359,9 @@ async def on_message(message):
                     time.sleep(1.25)
 
             if message.content.lower() == "-pick":
+                import random
                 len(theshit)
-                counter = randint(0, len(theshit))
+                counter = random.randint(0, len(theshit))
                 line = theshit[counter]
                 line = str(counter) + line
                 await message.channel.send(line)
@@ -2398,26 +2388,32 @@ async def on_message(message):
     if message.content.startswith("-") and message.author.bot is False:
 
         # TOKEN DROPS
-        tokenluck = randint(0, 100)  # todo make certain users more or less lucky
-        if tokenluck == 50:
-            import string, random
-            token = ""
-            for i in range(25):
-                token = token + (random.choice(string.ascii_uppercase))
-                if i == 4:
-                    token = token + "-"
-                if i == 9:
-                    token = token + "-"
-                if i == 14:
-                    token = token + "-"
-                if i == 19:
-                    token = token + "-"
-                tokenvalue = randint(10, 100)
-            with open('settings/token.txt', 'a+') as f:
-                f.write(token + ", " + str(tokenvalue) + "\n")
+        token_drops_on = False
 
-            embedvar = discord.Embed(title=f"{token}",description=f"Claim the above {tokenvalue} coin token by typing -claim_token <token>")
-            await message.channel.send(embed=embedvar)
+        if token_drops_on:
+            import random
+            tokenluck = random.randint(0, 100)  # todo make certain users more or less lucky
+            if tokenluck == 50:
+                import string
+                token = ""
+                for i in range(25):
+                    token = token + (random.choice(string.ascii_uppercase))
+                    if i == 4:
+                        token = token + "-"
+                    if i == 9:
+                        token = token + "-"
+                    if i == 14:
+                        token = token + "-"
+                    if i == 19:
+                        token = token + "-"
+                    tokenvalue = random.randint(10, 100)
+                with open('settings/token.txt', 'a+') as f:
+                    f.write(token + ", " + str(tokenvalue) + "\n")
+
+                embedvar = discord.Embed(title=f"{token}",
+                                         description=f"Claim the above {tokenvalue}"
+                                                     f" coin token by typing -claim_token <token>")
+                await message.channel.send(embed=embedvar)
 
         # cooldown  # todo fix this piece of crap
         global msgcounter, userlastmsg

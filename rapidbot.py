@@ -1,18 +1,55 @@
 # MADE BY RAPIDSLAYER101#260, DO NOT COPY, DO NOT SHARE, DO NOT USE
 
 global time, sys, googletrans, google, random, os, zlib, base64, re, asyncio, randint
-import datetime, time, os, random, zlib, base64, re  # inbuilt
+import datetime, time, os, random, zlib, base64, re, socket  # inbuilt
+from threading import Thread
+from random import randint
+
 import googletrans, asyncio, discord, requests, cleverbotfreeapi, urllib, praw  # installed modules
 from discord.ext import commands
-from random import randint
 from forex_python.converter import CurrencyRates, CurrencyCodes
 from googletrans import Translator
 
 
-global startt, startr, msgcounter
-msgcounter = 0
-startt = time.time()
-startr = datetime.datetime.utcnow()
+global start_time, msgcounter
+msgcounter = 0  # todo this is used in cooldown, remember to remove once cooldown redone
+start_time = datetime.datetime.utcnow()
+
+# socket testing
+
+SERVER_HOST = "0.0.0.0"
+SERVER_PORT = 8079
+separator_token = "<SEP>"
+
+client_sockets = set()
+s = socket.socket()
+s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+s.bind((SERVER_HOST, SERVER_PORT))
+print(s)
+h_name = socket.gethostname()
+IP_address = socket.gethostbyname(h_name)
+print("Host Name is:" + h_name)
+print("Computer IP Address is:" + IP_address)
+s.listen(5)
+
+
+def listen_for_client(cs):
+    while True:
+        msg = cs.recv(1024).decode()
+        with open("socket_return.txt", "w", encoding="utf-8") as f:
+            msg_write = "~" + msg + f" ___TIME: {datetime.now()}"
+            f.write(msg_write)
+
+
+while True:
+    client_socket, client_address = s.accept()
+    client_sockets.add(client_socket)
+    print("Client connecting")
+    t = Thread(target=listen_for_client, args=(client_socket,))
+    t.daemon = True
+    t.start()
+    break
+
 
 # todo redo the cooldown system
 # todo fix the help section
@@ -27,8 +64,6 @@ if not os.path.isfile("settings/nsfw.txt"):
     open("settings/nsfw.txt", "w")
 
 # encrypt def stuff
-
-
 while True:
     try:
         # the manual setup version of this is found within enc 5.x versions
@@ -530,8 +565,8 @@ class Bot_info(commands.Cog):
 
     @commands.command()
     async def botrt(self, ctx):
-        startx = datetime.datetime.utcnow() - startr
-        embedvar = discord.Embed(title=f"Runtime: {startx}", description=f"Started/restarted at: {startr}")
+        startx = datetime.datetime.utcnow() - start_time
+        embedvar = discord.Embed(title=f"Runtime: {startx}", description=f"Started/restarted at: {start_time}")
         embedvar.set_footer(text=f"Requested by {ctx.author}")
         await ctx.channel.send(embed=embedvar)
 

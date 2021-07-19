@@ -17,35 +17,14 @@ start_time = datetime.datetime.utcnow()
 
 # socket testing
 
+# todo impliment this usefull info into the big info command being made, maybe an admin version of it tho
+
 print(socket.gethostname(), socket.getfqdn())
-print(socket.gethostbyname(socket.gethostname()))
 
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.connect(("8.8.8.8", 80))
-print(s.getsockname()[0])
+print(socket.gethostbyname(socket.gethostname()), s.getsockname()[0])
 s.close()
-
-socket_test = True
-
-if socket_test:
-    HEROKU_PORT = os.environ.get('HEROKU_PORT')
-    if HEROKU_PORT:
-        SERVER_PORT = int(os.environ.get('PORT', 17995))  # as per OP comments default is 17995
-    else:
-        SERVER_PORT = int(input("Socket: "))
-
-    s = socket.socket()
-    s.bind(('', SERVER_PORT))
-    print("socket binded to %s" % (SERVER_PORT))
-
-    s.listen(5)
-    print("socket is listening")
-
-    while True:
-        c, addr = s.accept()
-        print('Got connection from', addr)
-        c.send('Thank you for connecting'.encode())
-        c.close()
 
 
 # todo redo the cooldown system

@@ -13,7 +13,7 @@ global start_time, msgcounter
 msgcounter = 0  # todo this is used in cooldown, remember to remove once cooldown redone
 start_time = datetime.datetime.utcnow()
 
-# todo impliment this usefull info into the big info command being made, maybe an admin version of it tho
+# todo implement this useful info into the big info command being made, maybe an admin version of it tho
 
 print(socket.gethostname(), socket.getfqdn())
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -39,8 +39,11 @@ while True:
     try:
         # the manual setup version of this is found within enc 5.x versions
         # for this version of the script enter a config key below
-        config_key = "c-k{jF#Rxp+l&N5BV!X&Gjj_|16|ugYZR3ZEml#DQ`6GWjMpwKPc15`EX~X>h>i^mcMS@O4E6L6sIE;" \
-                     "cPDxA8$jZ*KR#$cmc5!p}@bdPta;S@`sz@$N%FET!tBHzm4s-JJwXw6;2ian1V4z@WU|;|MM3pDP"
+        #config_key = "c-k{jF#Rxp+l&N5BV!X&Gjj_|16|ugYZR3ZEml#DQ`6GWjMpwKPc15`EX~X>h>i^mcMS@O4E6L6sIE;" \
+        #             "cPDxA8$jZ*KR#$cmc5!p}@bdPta;S@`sz@$N%FET!tBHzm4s-JJwXw6;2ian1V4z@WU|;|MM3pDP"
+
+        config_key = "c-k{jF#Rxp+l&N5BV!X&Gjj_|16|ugYZMQyKeSjyHBL=SLo;5xuspS>q_Q+KzaTm`Fx)jLBr?>~KcKocu{" \
+                     "b3yJtHeS$68(4G1$e;-NVb<$I78Drm7;jEGaKnN3SL-!a2;z&)3GzULRzQp@D&drGbF~0LUgO5d"
 
         c_key = zlib.decompress(base64.b85decode(config_key)).decode('utf-8').split("🶘")
         hex_head, hex_tail = c_key[0].split(" ")
@@ -139,6 +142,7 @@ while True:
         def shifter(plaintext, newnum, num, num2, alphabet, replace, forwards):
             output_enc = ""
             counter = 0
+            print(newnum)
             for msg in plaintext:
                 counter = counter + 2
                 if msg in alphabet:
@@ -164,9 +168,10 @@ while True:
                 else:
                     output_enc = output_enc + msg
 
-                if replace:
-                    num = str(num).replace("0", "g").replace("1", "e").replace("2", "k").replace("3", "i").replace("4", "u") \
-                        .replace("5", "d").replace("6", "r").replace("7", "w").replace("8", "q").replace("9", "p")
+            if replace:
+                print("num", num)
+                num = str(num).replace("0", "g").replace("1", "e").replace("2", "k").replace("3", "i").replace("4", "u") \
+                    .replace("5", "d").replace("6", "r").replace("7", "w").replace("8", "q").replace("9", "p")
             if replace:
                 return num + output_enc
             if not replace:
@@ -191,6 +196,7 @@ while True:
 
 
         def fib_iter(text, num2):
+            print("num2", num2)
             a = 1
             b = 1
             c = 1
@@ -250,10 +256,6 @@ while True:
                         print("key convert error")
                 else:
                     master_key = generator()
-                    mkey_data = convert(master_key)
-                    alpha1 = mkey_data[0]
-                    alpha2 = mkey_data[1]
-                    num2 = mkey_data[2]  # todo was num1 now num2, why was this diff
                     break
             with open("settings/enc-key.txt", "w", encoding="utf-8") as f:
                 f.write(master_key)
@@ -261,14 +263,22 @@ while True:
         with open("settings/enc-key.txt") as f:
             for line in f.readlines():
                 master_key = line
-        mkey_data = convert(master_key)
+        mkey_data = convert(master_key)  # todo if fails key is invalid, possible to edit the txt file, no checks
         alpha1 = mkey_data[0]
         alpha2 = mkey_data[1]
-        num2 = mkey_data[2]
-        break
+        num2 = mkey_data[2]  # todo 99 and 309 output, made so only 309, temporary fix, key change WILL break this
+        if num2 == 309:
+            break
     except: xx = 0
 
 print(f"\nENCRYPTION KEY:\n{master_key}\n\nSETTINGS KEY:\n{config_key}\n")
+
+
+def convert_tuple(tup):
+    string_ = ''
+    for item in tup:
+        string_ += item + " "
+    return string_
 
 
 print("Opening connection to discord")
@@ -278,9 +288,12 @@ class Encryption(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
-    async def encrypt(self, ctx):  # todo the new output probably means over 2k chars error could occur
-        plaintext = base64.b85encode(zlib.compress(ctx.message.content[9:].encode('utf-8'), 9)).decode('utf-8')
+    # todo potential chars causing errors still, restart decrypt error, new output 2k+ char possible error
+    # todo can the restart error be fixed with another restart and a test system? not sure atm if that would fix
+
+    @commands.command(aliases=['enc'])
+    async def encrypt(self, ctx, *args):
+        plaintext = base64.b85encode(zlib.compress(convert_tuple(args).encode('utf-8'), 9)).decode('utf-8')
         global prime_numbers
         prime_numbers = get_prime_number(random.randint(100000, 800000))
         while True:
@@ -317,14 +330,12 @@ class Encryption(commands.Cog):
             await ctx.channel.send(f"```Here is your encrypted text ({len(ctx.message.content[9:])} --> {len(etext2)})"
                                    f" chars:\n{etext2}\n\nRequested by {ctx.author}```")
 
-    @commands.command()
-    async def decrypt(self, ctx):
-        print(ctx.message.content)
+    @commands.command(aliases=['dec'])
+    async def decrypt(self, ctx, *args):
         try:
-            b = str(fib_iter(ctx.message.content[9:], num2))
+            b = str(fib_iter(convert_tuple(args), num2))
             num = 0
-            print(ctx.message.content[9:])
-            dtext = shifter(ctx.message.content[9:], b, num, num2, alpha2, False, False)
+            dtext = shifter(convert_tuple(args), b, num, num2, alpha2, False, False)
             content = str(dtext[:6]).replace("g", "0").replace("e", "1").replace("k", "2").replace("i", "3") \
                 .replace("u", "4").replace("d", "5").replace("r", "6").replace("w", "7").replace("q", "8").replace("p", "9")
 
@@ -343,9 +354,9 @@ class Encryption(commands.Cog):
                 if run % 1000 == 0:
                     print(run, len(dtext), len(str(newnum)))
 
-            output_end = shifter(dtext[6:], newnum, num, num2, alpha1, False, False)
+            output_end = shifter(dtext[6:], newnum, num, num2, alpha1, False, False).replace(" ", "")
         except:
-            print("[CND] " + ctx.message.content[9:])
+           print("[CND] " + convert_tuple(args))
         await ctx.channel.send(f"```Here is your message:\n"
                                f"{zlib.decompress(base64.b85decode(output_end)).decode('utf-8')}"
                                f"\n\nRequested by {ctx.author}```")
@@ -454,7 +465,7 @@ class Random(commands.Cog):
         "Signs point to yes.", "Reply hazy,try again.", "Ask again later.", "Better not tell you now.",
         "Cannot predict now.", "Concentrate and ask again.", "Don’t count on it.", "My reply is no.",
         "My sources say no.", "Outlook not so good", "Very doubtful"]
-        embedvar = discord.Embed(title=ballchoice[randint(0, 20)])
+        embedvar = discord.Embed(title=ballchoice[random.randint(0, 20)])
         embedvar.set_footer(text=f"Requested by {ctx.author}")
         await ctx.channel.send(embed=embedvar)
 
@@ -2073,7 +2084,7 @@ class Admin(commands.Cog):
             await message.channel.send(f"Deleted {msgnum} messages(s)", delete_after=2.5)
 
 
-bot = commands.Bot(command_prefix=commands.when_mentioned_or("-"))
+bot = commands.Bot(command_prefix=commands.when_mentioned_or("-"), case_insensitive=True)
 bot.remove_command('help')
 
 

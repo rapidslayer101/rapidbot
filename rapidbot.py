@@ -21,6 +21,11 @@ s.connect(("8.8.8.8", 80))
 print(socket.gethostbyname(socket.gethostname()), s.getsockname()[0])
 s.close()
 
+if socket.gethostname() == "RAPIDSLAYER101":
+    device = "RAPIDSLAYER101"
+else:
+    device = "24/7-HEROKU"
+
 # todo redo the cooldown system
 # todo fix the help section
 # todo color embeds
@@ -523,28 +528,7 @@ class Bot_info(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    # todo add more info to this section, maybe put it all in one command and one output embed
-
-    @commands.command()
-    async def botinv(self, ctx):
-        embedvar = discord.Embed(title="Wanna invite this bot to another server? Great!", description="\
-        [Click to add bot to your server](https://discord.com/oauth2/authorize?client_id=711578412103368707&scope=bot&permissions=8)")
-        embedvar.set_footer(text=f"Requested by {ctx.author}")
-        await ctx.channel.send(embed=embedvar)
-
-    @commands.command()
-    async def botweb(self, ctx):  # todo uses old website link, possibly remove
-        embedvar = discord.Embed(title="Wanna see the bots website? Great! Here is the link you will need:\
-        https://rapidslayer101.wixsite.com/rapidbot")
-        embedvar.set_footer(text=f"Requested by {ctx.author}")
-        await ctx.channel.send(embed=embedvar)
-
-    @commands.command()
-    async def botrt(self, ctx):
-        startx = datetime.datetime.utcnow() - start_time
-        embedvar = discord.Embed(title=f"Runtime: {startx}", description=f"Started/restarted at: {start_time}")
-        embedvar.set_footer(text=f"Requested by {ctx.author}")
-        await ctx.channel.send(embed=embedvar)
+    # todo put ping inside the info command
 
     @commands.command()
     async def ping(self, ctx):
@@ -558,26 +542,23 @@ class Bot_info(commands.Cog):
         pongping2 = str(pongping)
         await msg.edit(content=f"pong,{pongping2[:10]}s respone time")
 
-    @commands.command()
-    async def inservers(self, ctx):
-        embedvar = discord.Embed(title="I'm in " + str(len(bot.guilds)) + " servers")
-        embedvar.set_footer(text=f"Requested by {ctx.author}")
-        await ctx.channel.send(embed=embedvar)
-
-    @commands.command()
+    @commands.command(aliases=["botinv", "botweb", "botrt", "inservers"])
     async def info(self, ctx):
-        await ctx.channel.send("This command is work in progress")
         startx = datetime.datetime.utcnow() - start_time
-        embedvar = discord.Embed(title=f"Bot info:\n\nRuntime: {str(startx)[:-7]}\n"
-                f"Started at: {str(start_time)[:-7]}\n"
-                f'Cpu: {psutil.cpu_percent()}% of {psutil.cpu_count(logical=False)} cores\n'
-                f'Ram: {psutil.virtual_memory().percent}% in use, '
-                f'{round(psutil.virtual_memory().available * 100 / psutil.virtual_memory().total, 1)}% free '
-                f'({round(psutil.virtual_memory().used/1024/1024, 0)}/'
-                f'{round(psutil.virtual_memory().total/1024/1024, 0)}MB)\n'
-                f'Storage: {psutil.disk_usage("/").percent}% used, {round(psutil.disk_usage("/").used/1024/1024, 2)}'
-                f'/{round(psutil.disk_usage("/").total/1024/1024, 2)}MB\n')
-
+        embedvar = discord.Embed(title=f"Bot info:", description=f"\n\nRuntime: {str(startx)[:-7]}\n"
+            f"Started at: {str(start_time)[:-7]}\n"
+            f'Cpu: {psutil.cpu_percent()}% of {psutil.cpu_count(logical=False)} cores\n'
+            f'Ram: {psutil.virtual_memory().percent}% in use, '
+            f'{round(psutil.virtual_memory().available * 100 / psutil.virtual_memory().total, 1)}% free '
+            f'({round(psutil.virtual_memory().used/1024/1024, 0)}/'
+            f'{round(psutil.virtual_memory().total/1024/1024, 0)}MB)\n'
+            f'Storage: {psutil.disk_usage("/").percent}% used, {round(psutil.disk_usage("/").used/1024/1024, 2)}'
+            f'/{round(psutil.disk_usage("/").total/1024/1024, 2)}MB\n'
+            f'This bot is in {str(len(bot.guilds))} servers\n'
+            f'\nInvite link: [Click to add bot to another server](https://discord.com/oauth2/'
+            f'authorize?client_id=711578412103368707&scope=bot&permissions=8)\n'
+            f'Website link: [Go to website](https://rapidslayer101.wixsite.com/rapidslayer)\n'
+            f'\nDevice bot is running on: {device}')
         embedvar.set_footer(text=f"Requested by {ctx.author}")
         await ctx.channel.send(embed=embedvar)
 
@@ -2101,6 +2082,116 @@ class Admin(commands.Cog):
             await message.channel.send(f"Deleted {msgnum} messages(s)", delete_after=2.5)
 
 
+class Help(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @commands.command(aliases=["h"])  # todo the plain h command spacing issue is likely discord removing blank spaces
+    async def help(self, ctx, *args):  # todo this command wont work at all with commands like -h colour text
+        print(args)
+        if convert_tuple(args) == "":
+            embedvar = discord.Embed(title="Rapidbot command sections", description="We have a wide range of commands!\
+                    \nAlso remember the prefix is '-'")
+            embedvar.add_field(name=":hash: Encryption (4)    :question: Random (11)    :information_source: Bot info (2)",
+                               value="`-h encryption`    `-h rand`     `-h bot info`", inline=False)
+            embedvar.add_field(name=":page_facing_up: Server (9)      :dollar: Currency (2)    :rainbow: Coloured text (6)",
+                               value="`-h server` `-h currency`  `-h color text`", inline=False)
+
+            if is_nsfw_on(ctx.channel.id):
+                embedvar.add_field(name=":wink: NSFW (8)     :computer: Online searches (8)    :game_die: Games (12)",
+                                   value="`-h nsfw`   `-h search`     `-h games`", inline=False)
+            else:
+                embedvar.add_field(name="Disabled (8)     :computer: Online searches (8)    :game_die: Games (12)",
+                                   value="`disabled`   `-h search`     `-h games`", inline=False)
+            await ctx.channel.send(embed=embedvar)
+        else:
+            if args[0] in ["encryption", "encrypt"]:
+                embedvar = discord.Embed(title=":hash: Encryption commands (4)",
+                                         description="`encrypt`,`decrypt`,`shorte`,`shortd`")
+                embedvar.set_footer(
+                    text=f"Add -h to the beggining of a command for its help section! "
+                         f"Requested by {ctx.message.author}")
+
+                await ctx.channel.send(embed=embedvar)
+            if args[0] in ["random", "rand"]:
+                embedvar = discord.Embed(title=":question: Random commands (11)", description="`randword`,`randnumber`,\
+                        `randuni`,`eight_ball`,`leetify`,`repeat`,\n`joke`,`feedback`,`char_count`,`emoji_letters`,`ttb`")
+                embedvar.set_footer(
+                    text=f"Add -h to the beggining of a command for its help section!"
+                         f" Requested by {ctx.message.author}")
+                await ctx.channel.send(embed=embedvar)
+
+            if args[0] in ["info", "bot_info"]:  # todo reformat after ping and info merge
+                embedvar = discord.Embed(title=":information_source: Bot info commands (2)",
+                                         description="`ping`,`info`")
+                embedvar.set_footer(
+                    text=f"Add -h to the beggining of a command for its help section! "
+                         f"Requested by {ctx.message.author}")
+                await ctx.channel.send(embed=embedvar)
+
+            if args[0] in ["server"]:
+                embedvar = discord.Embed(title=":page_facing_up: Server commands (9)", description="\
+                        `chat_links`,`userid`,`serverid`,`channelid`,`messageid`,\n`members`,`roles`,`inrole`,`who_spoke`")
+                embedvar.set_footer(
+                    text=f"Add -h to the beggining of a command for its help section! "
+                         f"Requested by {ctx.message.author}")
+                await ctx.channel.send(embed=embedvar)
+
+            if args[0] in ["currency", "cur"]:
+                embedvar = discord.Embed(title=":dollar: Currency commands (2)",
+                                         description="`currency_list`,`currency_convert`")
+                embedvar.set_footer(
+                    text=f"Add -h to the beggining of a command for its help section! "
+                         f"Requested by {ctx.message.author}")
+                await ctx.channel.send(embed=embedvar)
+
+            if args[0] in ["color text", "colored text", "color_text", "colored_text"]:
+                embedvar = discord.Embed(title=":rainbow: Coloured text commands (6)",
+                                         description="`redtext`,`orangetext`,`greentext`,\n`yellowtext`,`bluetext`,`cyantext`")
+                embedvar.set_footer(
+                    text=f"Add -h to the beggining of a command for its help section! "
+                         f"Requested by {ctx.message.author}")
+                await ctx.channel.send(embed=embedvar)
+
+            if args[0] in ["nsfw"]:
+                if is_nsfw_on(ctx.channel.id):
+                    embedvar = discord.Embed(title=":wink: NSFW commands (8)",
+                                             description="`nsfw_on`,`nsfw_off`,`porntags`,"
+                                                         "`phs`,`psi`,`psg`,`porngif`,`hentai`")
+                    embedvar.set_footer(text=f"Add -h to the beggining of a command for\
+                    its help section! Requested by {ctx.message.author}")
+                    await ctx.channel.send(embed=embedvar)
+                else:
+                    embedvar = discord.Embed(title="This is not enabled in your server",
+                                             description="If your an admin type `-nsfw_on` to enable these commands")
+                    embedvar.set_footer(text=f"Requested by {ctx.message.author}")
+                    await ctx.channel.send(embed=embedvar)
+
+            if args[0] in ["search", "online search", "online_search"]:
+                embedvar = discord.Embed(title=":computer: Online searches commands (8)",
+                                         description="`ggt_codes`, `ggt_te`,`ggt_ft`,\
+                        \n`ggsr`,`ggsi`,`ggsv`,`reddits`,`meme`")
+                embedvar.set_footer(
+                    text=f"Add -h to the beggining of a command for its help section! "
+                         f"Requested by {ctx.message.author}")
+                await ctx.channel.send(embed=embedvar)
+
+            if args[0] in ["games", "bet"]:
+                embedvar = discord.Embed(title=":game_die: Game commands (12)", description="`claim_token`,`reset_coins`,`bal`,`bet_flip`,\
+                        `bet bj`,`bet_dice`,\n`bet_rps`,`bet_multi`,`bet_revup`,`bet_dubup`,`bet crash`,`quiz`")
+                embedvar.set_footer(
+                    text=f"Add -h to the beggining of a command for its help section! "
+                         f"Requested by {ctx.message.author}")
+                await ctx.channel.send(embed=embedvar)
+
+            if args[0] in ["admin"]:
+                embedvar = discord.Embed(title=":tools: Admin commands (2)", description="`purge`,`clean`")
+                embedvar.set_footer(
+                    text=f"Add -h to the beggining of a command for its help section! "
+                         f"Requested by {ctx.message.author}")
+                await ctx.channel.send(embed=embedvar)
+
+
 bot = commands.Bot(command_prefix=commands.when_mentioned_or("-"), case_insensitive=True)
 bot.remove_command('help')
 
@@ -2127,6 +2218,7 @@ bot.add_cog(NSFW(bot))
 bot.add_cog(Online_searching(bot))
 bot.add_cog(Games(bot))
 bot.add_cog(Admin(bot))
+bot.add_cog(Help(bot))
 
 
 global theshit  # todo what to do with this stuff?
@@ -2140,7 +2232,6 @@ except:
 
 @bot.event
 async def on_message(message):
-    #message.content = str(message.content).lower()  # todo redo this so it does not break things
     global rtime
     rtime = datetime.datetime.now()
     msg2 = message.content.replace("\n", " // ")  # todo remove triple repetition below
@@ -2165,99 +2256,6 @@ async def on_message(message):
                 yes = f"SERVER: {message.guild} CHANNEL: {message.channel} USER: {message.author} MESSAGE: {msg2}"
                 f.write(str(' - [ ' + yes + ' ]' + "\n"))
                 f.close()
-
-    # help segment
-
-    if msg2 == "-h" or msg2 == "-help":
-        embedvar = discord.Embed(title="Rapidbot command sections", description="We have a wide range of commands! (66 total so far)\
-        \nAlso remember the prefix is '-'")
-        embedvar.add_field(name=":hash: Encryption (4)    :question: Random (11)    :information_source: Bot info (5)",
-                           value="`-h encryption`    `-h rand`     `-h bot info`", inline=False)
-        embedvar.add_field(name=":page_facing_up: Server (9)      :dollar: Currency (2)    :rainbow: Coloured text (6)",
-                           value="`-h server` `-h currency`  `-h color text`", inline=False)
-
-        if is_nsfw_on(message.channel.id):
-            embedvar.add_field(name=":wink: NSFW (8)     :computer: Online searching (8)    :game_die: Games (12)",
-                               value="`-h nsfw`   `-h online search`     `-h games`", inline=False)
-        else:
-            embedvar.add_field(name="Disabled (8)     :computer: Online searching (8)    :game_die: Games (12)",
-                               value="`disabled`   `-h online search`     `-h games`", inline=False)
-        await message.channel.send(embed=embedvar)
-
-    if msg2 == "-h encryption":
-        embedvar = discord.Embed(title=":hash: Encryption commands (4)",
-                                 description="`encrypt`,`decrypt`,`shorte`,`shortd`")
-        embedvar.set_footer(
-            text=f"Add -h to the beggining of a command for its help section! Requested by {message.author}")
-        await message.channel.send(embed=embedvar)
-
-    if msg2 == "-h rand":
-        embedvar = discord.Embed(title=":question: Random commands (11)", description="`randword`,`randnumber`,\
-        `randuni`,`eight_ball`,`leetify`,`repeat`,\n`joke`,`feedback`,`char_count`,`emoji_letters`,`ttb`")
-        embedvar.set_footer(
-            text=f"Add -h to the beggining of a command for its help section! Requested by {message.author}")
-        await message.channel.send(embed=embedvar)
-
-    if msg2 == "-h bot info":
-        embedvar = discord.Embed(title=":information_source: Bot info commands (5)",
-                                 description="`botinv`,`botweb`,`botrt`,`ping`,`inservers`")
-        embedvar.set_footer(
-            text=f"Add -h to the beggining of a command for its help section! Requested by {message.author}")
-        await message.channel.send(embed=embedvar)
-
-    if msg2 == "-h server":
-        embedvar = discord.Embed(title=":page_facing_up: Server commands (9)", description="\
-        `chat_links`,`userid`,`serverid`,`channelid`,`messageid`,\n`members`,`roles`,`inrole`,`who_spoke`")
-        embedvar.set_footer(
-            text=f"Add -h to the beggining of a command for its help section! Requested by {message.author}")
-        await message.channel.send(embed=embedvar)
-
-    if msg2 == "-h currency":
-        embedvar = discord.Embed(title=":dollar: Currency commands (2)",
-                                 description="`currency_list`,`currency_convert`")
-        embedvar.set_footer(
-            text=f"Add -h to the beggining of a command for its help section! Requested by {message.author}")
-        await message.channel.send(embed=embedvar)
-
-    if msg2 == "-h color text":
-        embedvar = discord.Embed(title=":rainbow: Coloured text commands (6)",
-                                 description="`redtext`,`orangetext`,`greentext`,\n`yellowtext`,`bluetext`,`cyantext`")
-        embedvar.set_footer(
-            text=f"Add -h to the beggining of a command for its help section! Requested by {message.author}")
-        await message.channel.send(embed=embedvar)
-
-    if msg2 == "-h nsfw":
-        if is_nsfw_on(message.channel.id):
-            embedvar = discord.Embed(title=":wink: NSFW commands (8)",
-                                     description="`nsfw_on`,`nsfw_off`,`porntags`,`phs`,`psi`,`psg`,`porngif`,`hentai`")
-            embedvar.set_footer(text=f"Add -h to the beggining of a command for\
-            its help section! Requested by {message.author}")
-            await message.channel.send(embed=embedvar)
-        else:
-            embedvar = discord.Embed(title="This is not enabled in your server",
-                                     description="If your an admin type `-nsfw_on` to enable these commands")
-            embedvar.set_footer(text=f"Requested by {message.author}")
-            await message.channel.send(embed=embedvar)
-
-    if msg2 == "-h online search":
-        embedvar = discord.Embed(title=":computer: Online searching commands (8)", description="`ggt_codes`, `ggt_te`,`ggt_ft`,\
-        \n`ggsr`,`ggsi`,`ggsv`,`reddits`,`meme`")
-        embedvar.set_footer(
-            text=f"Add -h to the beggining of a command for its help section! Requested by {message.author}")
-        await message.channel.send(embed=embedvar)
-
-    if msg2 == "-h games":
-        embedvar = discord.Embed(title=":game_die: Game commands (12)", description="`claim_token`,`reset_coins`,`bal`,`bet_flip`,\
-        `bet bj`,`bet_dice`,\n`bet_rps`,`bet_multi`,`bet_revup`,`bet_dubup`,`bet crash`,`quiz`")
-        embedvar.set_footer(
-            text=f"Add -h to the beggining of a command for its help section! Requested by {message.author}")
-        await message.channel.send(embed=embedvar)
-
-    if msg2 == "-h admin":
-        embedvar = discord.Embed(title=":tools: Admin commands (2)", description="`purge`,`clean`")
-        embedvar.set_footer(
-            text=f"Add -h to the beggining of a command for its help section! Requested by {message.author}")
-        await message.channel.send(embed=embedvar)
 
     # inserted CUM shard  # todo what to do with this?
 
@@ -2534,28 +2532,17 @@ async def on_message(message):
                 await message.channel.send(embed=embedvar)
 
             if message.content.startswith("-h ttb"):  # RANDOM
-                embedvar = discord.Embed(title="TTB HELP:",description="The talk to bot command asks an AI your message/question")
+                embedvar = discord.Embed(title="TTB HELP:", description="The talk to bot command asks an AI your message/question")
                 embedvar.add_field(name="Here is how to use it", value="`-ttb <message/question>`", inline=False)
                 await message.channel.send(embed=embedvar)
 
-            if message.content.startswith("-h botinv"):  # BOT INFO
-                embedvar = discord.Embed(title="BOT INVITE HELP:",description="The bot invite command gives you a link to invite the bot to another server!")
-                await message.channel.send(embed=embedvar)
-
-            if message.content.startswith("-h botweb"):  # BOT INFO
-                embedvar = discord.Embed(title="BOT WEB HELP:",description="The bot website command gives you the link to the bots website!")
-                await message.channel.send(embed=embedvar)
-
-            if message.content.startswith("-h botrt"):  # BOT INFO
-                embedvar = discord.Embed(title="BOTRT HELP:",description="The bot runtime command shows how long the bot has been running")
-                await message.channel.send(embed=embedvar)
-
             if message.content.startswith("-h ping"):  # BOT INFO
-                embedvar = discord.Embed(title="PING HELP:",description="The ping command shows the bots delay to messages")
+                embedvar = discord.Embed(title="PING HELP:", description="The ping command shows the bots response delay to messages")
                 await message.channel.send(embed=embedvar)
 
-            if message.content.startswith("-h inservers"):  # BOT INFO
-                embedvar = discord.Embed(title="INSERVERS HELP:",description="The in servers command tells you how many servers the bots in!")
+            if message.content.startswith("-h info"):  # BOT INFO
+                embedvar = discord.Embed(title="INFO HELP:", description="The info command shows data about the bot"
+                    "\n\nThis commands aliases are: `botinv`,`botweb`,`botrt`,`inservers`")
                 await message.channel.send(embed=embedvar)
 
             if message.content.startswith("-h chat_links"):  # SERVER INFO
@@ -2698,41 +2685,41 @@ async def on_message(message):
                 else:
                     await message.channel.send("```This command is not enabled in this chat```")
 
-            if message.content.startswith("-h ggt_codes"):  # ONLINE SEARCHING
+            if message.content.startswith("-h ggt_codes"):  # ONLINE SEARCHES
                 embedvar = discord.Embed(title="GGT_CODES HELP:",description="The Google translate language codes command shows you the abbreviated letters for that language")
                 await message.channel.send(embed=embedvar)
 
-            if message.content.startswith("-h ggt_te"):  # ONLINE SEARCHING
+            if message.content.startswith("-h ggt_te"):  # ONLINE SEARCHES
                 embedvar = discord.Embed(title="GGT_TE HELP:",description="The Google translate to english command attempts to convert a message to english")
                 embedvar.add_field(name="Here is how to use it", value="`-ggt_te <message>`", inline=False)
                 await message.channel.send(embed=embedvar)
 
-            if message.content.startswith("-h ggt_ft"):  # ONLINE SEARCHING
+            if message.content.startswith("-h ggt_ft"):  # ONLINE SEARCHES
                 embedvar = discord.Embed(title="GGT_FT HELP:",description="The Google translate from to command translates a message from one language to another")
                 embedvar.add_field(name="Here is how to use it", value="`-ggt_ft <lang from> <lang to> <message>`",inline=False)
                 await message.channel.send(embed=embedvar)
 
-            if message.content.startswith("-h ggsr"):  # ONLINE SEARCHING
+            if message.content.startswith("-h ggsr"):  # ONLINE SEARCHES
                 embedvar = discord.Embed(title="GGSR HELP:",description="The google search result command searches \n google for x amount of results")
                 embedvar.add_field(name="Here is how to use it",value="`-ggsr <num of results> <search>`",inline=False)
                 await message.channel.send(embed=embedvar)
 
-            if message.content.startswith("-h ggsi"):  # ONLINE SEARCHING
+            if message.content.startswith("-h ggsi"):  # ONLINE SEARCHES
                 embedvar = discord.Embed(title="GGSI HELP:",description="The google search image command searches \n google for x amount of images")
                 embedvar.add_field(name="Here is how to use it",value="`-ggsi <num of images> <search>`", inline=False)
                 await message.channel.send(embed=embedvar)
 
-            if message.content.startswith("-h ggsv"):  # ONLINE SEARCHING
+            if message.content.startswith("-h ggsv"):  # ONLINE SEARCHES
                 embedvar = discord.Embed(title="GGSV HELP:",description="The google search videos command searches \n google for x amount of videos")
                 embedvar.add_field(name="Here is how to use it",value="`-ggsv <num of videos> <search>`", inline=False)
                 await message.channel.send(embed=embedvar)
 
-            if message.content.startswith("-h reddits"):  # ONLINE SEARCHING
+            if message.content.startswith("-h reddits"):  # ONLINE SEARCHES
                 embedvar = discord.Embed(title="REDDITS HELP:",description="The reddit search command retrieves a img/gif/vid from a subreddit")
                 embedvar.add_field(name="Here is how to use it",value="`-reddits <subreddit> <post number>` Suggest post num of 1", inline=False)
                 await message.channel.send(embed=embedvar)
 
-            if message.content.startswith("-h meme"):  # ONLINE SEARCHING
+            if message.content.startswith("-h meme"):  # ONLINE SEARCHES
                 embedvar = discord.Embed(title="MEME HELP:", description="The meme command retrieves a meme!")
                 await message.channel.send(embed=embedvar)
 

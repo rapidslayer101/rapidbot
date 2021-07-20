@@ -3,7 +3,7 @@
 global time, sys, googletrans, google, random, os, zlib, base64, re, asyncio
 import datetime, time, os, random, zlib, base64, re, socket  # inbuilt
 
-import googletrans, asyncio, discord, requests, cleverbotfreeapi, urllib, praw  # installed modules
+import googletrans, asyncio, discord, requests, cleverbotfreeapi, urllib, praw, psutil  # installed modules
 from discord.ext import commands
 from forex_python.converter import CurrencyRates, CurrencyCodes
 from googletrans import Translator
@@ -289,7 +289,7 @@ class Encryption(commands.Cog):
         self.bot = bot
 
     # todo potential chars causing errors still, restart decrypt error, new output 2k+ char possible error
-    # todo can the restart error be fixed with another restart and a test system? not sure atm if that would fix
+    # todo char error from " needs to be fixed
 
     @commands.command(aliases=['enc'])
     async def encrypt(self, ctx, *args):
@@ -356,7 +356,7 @@ class Encryption(commands.Cog):
 
             output_end = shifter(dtext[6:], newnum, num, num2, alpha1, False, False).replace(" ", "")
         except:
-           print("[CND] " + convert_tuple(args))
+            print("[CND] " + convert_tuple(args))
         await ctx.channel.send(f"```Here is your message:\n"
                                f"{zlib.decompress(base64.b85decode(output_end)).decode('utf-8')}"
                                f"\n\nRequested by {ctx.author}```")
@@ -461,10 +461,10 @@ class Random(commands.Cog):
     @commands.command()
     async def eight_ball(self, ctx):
         ballchoice = ["It is certain.", "It is decidedly so.", "Without a doubt.", "Yes – definitely.",
-        "You may rely on it.", "As I see it,yes.", "Most likely.", "Outlook good.", "Yes.",
-        "Signs point to yes.", "Reply hazy,try again.", "Ask again later.", "Better not tell you now.",
-        "Cannot predict now.", "Concentrate and ask again.", "Don’t count on it.", "My reply is no.",
-        "My sources say no.", "Outlook not so good", "Very doubtful"]
+            "You may rely on it.", "As I see it,yes.", "Most likely.", "Outlook good.", "Yes.",
+            "Signs point to yes.", "Reply hazy,try again.", "Ask again later.", "Better not tell you now.",
+            "Cannot predict now.", "Concentrate and ask again.", "Don’t count on it.", "My reply is no.",
+            "My sources say no.", "Outlook not so good", "Very doubtful"]
         embedvar = discord.Embed(title=ballchoice[random.randint(0, 20)])
         embedvar.set_footer(text=f"Requested by {ctx.author}")
         await ctx.channel.send(embed=embedvar)
@@ -561,6 +561,23 @@ class Bot_info(commands.Cog):
     @commands.command()
     async def inservers(self, ctx):
         embedvar = discord.Embed(title="I'm in " + str(len(bot.guilds)) + " servers")
+        embedvar.set_footer(text=f"Requested by {ctx.author}")
+        await ctx.channel.send(embed=embedvar)
+
+    @commands.command()
+    async def info(self, ctx):
+        await ctx.channel.send("This command is work in progress")
+        startx = datetime.datetime.utcnow() - start_time
+        embedvar = discord.Embed(title=f"Bot info:\n\nRuntime: {str(startx)[:-7]}\n"
+                f"Started at: {str(start_time)[:-7]}\n"
+                f'Cpu: {psutil.cpu_percent()}% of {psutil.cpu_count(logical=False)} cores\n'
+                f'Ram: {psutil.virtual_memory().percent}% in use, '
+                f'{round(psutil.virtual_memory().available * 100 / psutil.virtual_memory().total, 1)}% free '
+                f'({round(psutil.virtual_memory().used/1024/1024, 0)}/'
+                f'{round(psutil.virtual_memory().total/1024/1024, 0)}MB)\n'
+                f'Storage: {psutil.disk_usage("/").percent}% used, {round(psutil.disk_usage("/").used/1024/1024, 2)}'
+                f'/{round(psutil.disk_usage("/").total/1024/1024, 2)}MB\n')
+
         embedvar.set_footer(text=f"Requested by {ctx.author}")
         await ctx.channel.send(embed=embedvar)
 
@@ -2986,13 +3003,23 @@ async def on_message(message):
 
 @bot.event
 async def on_connect():
-    import psutil
     print(f'Connection established to discord, Logged in as {bot.user} ({bot.user.id})')
     print(f'-----------------------------------------------\n'
-          f'cpu percent used: {psutil.cpu_percent()}\n'
-          f'ram percent used: {psutil.virtual_memory().percent}\n'
-          f'ram percent free: {round(psutil.virtual_memory().available * 100 / psutil.virtual_memory().total,1)}\n'
+          f'cpu: {psutil.cpu_percent()}% of {psutil.cpu_count(logical=False)} cores\n'
+          f'ram: {psutil.virtual_memory().percent}% in use, '
+          f'{round(psutil.virtual_memory().available * 100 / psutil.virtual_memory().total,1)}% free '
+          f'({round(psutil.virtual_memory().used/1024/1024,0)}/{round(psutil.virtual_memory().total/1024/1024,0)}MB)\n'
+          f'storage: {psutil.disk_usage("/").percent}% used, {round(psutil.disk_usage("/").used/1024/1024,2)}'
+          f'/{round(psutil.disk_usage("/").total/1024/1024,2)}MB\n'
           f'-----------------------------------------------')
+
+    print("\n")
+    print(psutil.cpu_freq())
+    print(psutil.net_if_addrs())
+    print(psutil.net_connections(kind='tcp'))
+    print(psutil.net_if_stats())
+    print(psutil.users())
+    print("\n")
 
 
 @bot.event

@@ -1,3 +1,8 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:5cb2240b051322544e0bf2cf6dff06b72a29dc197dadc828a7766601d4c14bf7
-size 268
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/rapidbot.iml" filepath="$PROJECT_DIR$/.idea/rapidbot.iml" />
+    </modules>
+  </component>
+</project>

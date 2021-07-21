@@ -147,7 +147,6 @@ while True:
         def shifter(plaintext, newnum, num, num2, alphabet, replace, forwards):
             output_enc = ""
             counter = 0
-            print(newnum)
             for msg in plaintext:
                 counter = counter + 2
                 if msg in alphabet:
@@ -174,7 +173,6 @@ while True:
                     output_enc = output_enc + msg
 
             if replace:
-                print("num", num)
                 num = str(num).replace("0", "g").replace("1", "e").replace("2", "k").replace("3", "i").replace("4", "u") \
                     .replace("5", "d").replace("6", "r").replace("7", "w").replace("8", "q").replace("9", "p")
             if replace:
@@ -201,7 +199,6 @@ while True:
 
 
         def fib_iter(text, num2):
-            print("num2", num2)
             a = 1
             b = 1
             c = 1
@@ -293,12 +290,9 @@ class Encryption(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    # todo potential chars causing errors still, restart decrypt error, new output 2k+ char possible error
-    # todo char error from " needs to be fixed
-
     @commands.command(aliases=['enc'])
-    async def encrypt(self, ctx, *args):
-        plaintext = base64.b85encode(zlib.compress(convert_tuple(args).encode('utf-8'), 9)).decode('utf-8')
+    async def encrypt(self, ctx, *, arg):
+        plaintext = base64.b85encode(zlib.compress(arg.encode('utf-8'), 9)).decode('utf-8')
         global prime_numbers
         prime_numbers = get_prime_number(random.randint(100000, 800000))
         while True:
@@ -323,16 +317,16 @@ class Encryption(commands.Cog):
         b = str(fib_iter(etext, num2))
         etext2 = shifter(etext, b, num, num2, alpha2, False, True)
 
-        if len(etext2) > 2000:
-            with open('config/temp.txt', 'w') as i:
+        if len(etext2) > 1900:
+            with open('strs/temp.txt', 'w') as i:
                 i.write(etext2)
-            embedvar = discord.Embed(title=f"Your encrypted text is over the 2000 char limit as it is {len(etext2)}"
+            embedvar = discord.Embed(title=f"Your encrypted text is over the 1900 char limit as it is {len(etext2)}"
                                            f" chars so has to be sent as a file")
             embedvar.set_footer(text=f"Requested by {ctx.author}")
             await ctx.channel.send(embed=embedvar)
-            await ctx.channel.send(file=discord.File('config/temp.txt'))
-        if len(etext2) < 2000:
-            await ctx.channel.send(f"```Here is your encrypted text ({len(ctx.message.content[9:])} --> {len(etext2)})"
+            await ctx.channel.send(file=discord.File('strs/temp.txt'))
+        if len(etext2) < 1900:
+            await ctx.channel.send(f"```Encrypted text ({len(ctx.message.content[9:])} --> {len(etext2)}):"
                                    f" chars:\n{etext2}\n\nRequested by {ctx.author}```")
 
     @commands.command(aliases=['dec'])
@@ -362,9 +356,21 @@ class Encryption(commands.Cog):
             output_end = shifter(dtext[6:], newnum, num, num2, alpha1, False, False).replace(" ", "")
         except:
             print("[CND] " + convert_tuple(args))
-        await ctx.channel.send(f"```Here is your message:\n"
-                               f"{zlib.decompress(base64.b85decode(output_end)).decode('utf-8')}"
-                               f"\n\nRequested by {ctx.author}```")
+
+        final_output = zlib.decompress(base64.b85decode(output_end)).decode('utf-8')
+
+        if len(final_output) > 1900:
+            with open('strs/temp.txt', 'w') as i:
+                i.write(final_output)
+            embedvar = discord.Embed(title=f"Your encrypted text is over the 1900 char limit as it is {len(final_output)}"
+                                           f" chars so has to be sent as a file")
+            embedvar.set_footer(text=f"Requested by {ctx.author}")
+            await ctx.channel.send(embed=embedvar)
+            await ctx.channel.send(file=discord.File('strs/temp.txt'))
+        if len(final_output) < 1900:
+            await ctx.channel.send(f"```Decrypted text:\n"
+                                   f"{zlib.decompress(base64.b85decode(output_end)).decode('utf-8')}"
+                                   f"\n\nRequested by {ctx.author}```")
 
 
 class Random(commands.Cog):
@@ -2092,32 +2098,32 @@ class Help(commands.Cog):
         if convert_tuple(args) == "":
             embedvar = discord.Embed(title="Rapidbot command sections", description="We have a wide range of commands!\
                     \nAlso remember the prefix is '-'")
-            embedvar.add_field(name=":hash: Encryption (4)    :question: Random (11)    :information_source: Bot info (2)",
-                               value="`-h encryption`    `-h rand`     `-h bot info`", inline=False)
-            embedvar.add_field(name=":page_facing_up: Server (9)      :dollar: Currency (2)    :rainbow: Coloured text (6)",
-                               value="`-h server` `-h currency`  `-h color text`", inline=False)
+            embedvar.add_field(name=":hash: Encryption (2)    :question: Random (11)    :information_source: Bot info (2)",
+                               value="`-h encrypt`    `-h rand`     `-h bot info`", inline=False)
+            embedvar.add_field(name=":page_facing_up: Server (9)   :dollar: Currency (2)  :rainbow: Coloured text (6)",
+                               value="`-h server`    `-h currency`    `-h color text`", inline=False)
 
             if is_nsfw_on(ctx.channel.id):
                 embedvar.add_field(name=":wink: NSFW (8)     :computer: Online searches (8)    :game_die: Games (12)",
-                                   value="`-h nsfw`   `-h search`     `-h games`", inline=False)
+                                   value="`-h nsfw`   `-h search`           `-h games`", inline=False)
             else:
                 embedvar.add_field(name="Disabled (8)     :computer: Online searches (8)    :game_die: Games (12)",
-                                   value="`disabled`   `-h search`     `-h games`", inline=False)
+                                   value="`disabled`   `-h search`           `-h games`", inline=False)
             await ctx.channel.send(embed=embedvar)
         else:
-            if args[0] in ["encryption", "encrypt"]:
-                embedvar = discord.Embed(title=":hash: Encryption commands (4)",
-                                         description="`encrypt`,`decrypt`,`shorte`,`shortd`")
-                embedvar.set_footer(
-                    text=f"Add -h to the beggining of a command for its help section! "
-                         f"Requested by {ctx.message.author}")
-
+            if args[0] in ["encryption", "encrypt", "enc", "decryption", "decrypt", "dec"]:  # todo maybe add more desc
+                embedvar = discord.Embed(title=":hash: Encryption commands (2)",
+                                         description="`encrypt`,`decrypt`")
+                embedvar.add_field(name="Here is how to use them",
+                                   value="`-encrypt <message>`\n`-decrypt <encrypted message>`", inline=False)
+                embedvar.set_footer(text=f"Requested by {ctx.message.author}")
                 await ctx.channel.send(embed=embedvar)
+
             if args[0] in ["random", "rand"]:
-                embedvar = discord.Embed(title=":question: Random commands (11)", description="`randword`,`randnumber`,\
-                        `randuni`,`eight_ball`,`leetify`,`repeat`,\n`joke`,`feedback`,`char_count`,`emoji_letters`,`ttb`")
+                embedvar = discord.Embed(title=":question: Random commands (10)", description="`randword`,`randnumber`,\
+                        `randuni`,`eight_ball`,`leetify`,`repeat`,\n`joke`,`char_count`,`emoji_letters`,`ttb`")
                 embedvar.set_footer(
-                    text=f"Add -h to the beggining of a command for its help section!"
+                    text=f"Add -h to the beginning of a command for its help section!"
                          f" Requested by {ctx.message.author}")
                 await ctx.channel.send(embed=embedvar)
 
@@ -2125,7 +2131,7 @@ class Help(commands.Cog):
                 embedvar = discord.Embed(title=":information_source: Bot info commands (2)",
                                          description="`ping`,`info`")
                 embedvar.set_footer(
-                    text=f"Add -h to the beggining of a command for its help section! "
+                    text=f"Add -h to the beginning of a command for its help section! "
                          f"Requested by {ctx.message.author}")
                 await ctx.channel.send(embed=embedvar)
 
@@ -2133,7 +2139,7 @@ class Help(commands.Cog):
                 embedvar = discord.Embed(title=":page_facing_up: Server commands (9)", description="\
                         `chat_links`,`userid`,`serverid`,`channelid`,`messageid`,\n`members`,`roles`,`inrole`,`who_spoke`")
                 embedvar.set_footer(
-                    text=f"Add -h to the beggining of a command for its help section! "
+                    text=f"Add -h to the beginning of a command for its help section! "
                          f"Requested by {ctx.message.author}")
                 await ctx.channel.send(embed=embedvar)
 
@@ -2141,7 +2147,7 @@ class Help(commands.Cog):
                 embedvar = discord.Embed(title=":dollar: Currency commands (2)",
                                          description="`currency_list`,`currency_convert`")
                 embedvar.set_footer(
-                    text=f"Add -h to the beggining of a command for its help section! "
+                    text=f"Add -h to the beginning of a command for its help section! "
                          f"Requested by {ctx.message.author}")
                 await ctx.channel.send(embed=embedvar)
 
@@ -2149,7 +2155,7 @@ class Help(commands.Cog):
                 embedvar = discord.Embed(title=":rainbow: Coloured text commands (6)",
                                          description="`redtext`,`orangetext`,`greentext`,\n`yellowtext`,`bluetext`,`cyantext`")
                 embedvar.set_footer(
-                    text=f"Add -h to the beggining of a command for its help section! "
+                    text=f"Add -h to the beginning of a command for its help section! "
                          f"Requested by {ctx.message.author}")
                 await ctx.channel.send(embed=embedvar)
 
@@ -2158,7 +2164,7 @@ class Help(commands.Cog):
                     embedvar = discord.Embed(title=":wink: NSFW commands (8)",
                                              description="`nsfw_on`,`nsfw_off`,`porntags`,"
                                                          "`phs`,`psi`,`psg`,`porngif`,`hentai`")
-                    embedvar.set_footer(text=f"Add -h to the beggining of a command for\
+                    embedvar.set_footer(text=f"Add -h to the beginning of a command for\
                     its help section! Requested by {ctx.message.author}")
                     await ctx.channel.send(embed=embedvar)
                 else:
@@ -2172,7 +2178,7 @@ class Help(commands.Cog):
                                          description="`ggt_codes`, `ggt_te`,`ggt_ft`,\
                         \n`ggsr`,`ggsi`,`ggsv`,`reddits`,`meme`")
                 embedvar.set_footer(
-                    text=f"Add -h to the beggining of a command for its help section! "
+                    text=f"Add -h to the beginning of a command for its help section! "
                          f"Requested by {ctx.message.author}")
                 await ctx.channel.send(embed=embedvar)
 
@@ -2180,14 +2186,14 @@ class Help(commands.Cog):
                 embedvar = discord.Embed(title=":game_die: Game commands (12)", description="`claim_token`,`reset_coins`,`bal`,`bet_flip`,\
                         `bet bj`,`bet_dice`,\n`bet_rps`,`bet_multi`,`bet_revup`,`bet_dubup`,`bet crash`,`quiz`")
                 embedvar.set_footer(
-                    text=f"Add -h to the beggining of a command for its help section! "
+                    text=f"Add -h to the beginning of a command for its help section! "
                          f"Requested by {ctx.message.author}")
                 await ctx.channel.send(embed=embedvar)
 
             if args[0] in ["admin"]:
                 embedvar = discord.Embed(title=":tools: Admin commands (2)", description="`purge`,`clean`")
                 embedvar.set_footer(
-                    text=f"Add -h to the beggining of a command for its help section! "
+                    text=f"Add -h to the beginning of a command for its help section! "
                          f"Requested by {ctx.message.author}")
                 await ctx.channel.send(embed=embedvar)
 
@@ -2462,26 +2468,6 @@ async def on_message(message):
 
         # COMMANDS HELP LIST BELOW
         if message.content.startswith("-h"):  # HELP SECTION
-            if message.content.startswith("-h encrypt"):  # ENCRYPT/DECRYPT
-                embedvar = discord.Embed(title="ENCRYPT HELP:", description="The encryption command encrypts a message")
-                embedvar.add_field(name="Here is how to use it", value="`-encrypt <message>`", inline=False)
-                await message.channel.send(embed=embedvar)
-
-            if message.content.startswith("-h decrypt"):  # ENCRYPT/DECRYPT
-                embedvar = discord.Embed(title="DECRYPT HELP:",description="The decryption command decrypt's an encrypted message")
-                embedvar.add_field(name="Here is how to use it", value="`-decrypt <encrypted message>`", inline=False)
-                await message.channel.send(embed=embedvar)
-
-            if message.content.startswith("-h shorte"):  # ENCRYPT/DECRYPT
-                embedvar = discord.Embed(title="SHORTE HELP:",description="The short encryption command encrypts a message")
-                embedvar.add_field(name="Here is how to use it", value="`-shorte <encrypted message>`", inline=False)
-                await message.channel.send(embed=embedvar)
-
-            if message.content.startswith("-h shortd"):  # ENCRYPT/DECRYPT
-                embedvar = discord.Embed(title="SHORTD HELP:",description="The short decryption command decrypt's an encrypted message")
-                embedvar.add_field(name="Here is how to use it", value="`-shortd <encrypted message>`", inline=False)
-                await message.channel.send(embed=embedvar)
-
             if message.content.startswith("-h randword"):  # RANDOM
                 embedvar = discord.Embed(title="RANDWORD HELP:", description="The random word command picks x random words")
                 embedvar.add_field(name="Here is how to use it", value="`-randword <number of words>`", inline=False)
@@ -2514,11 +2500,6 @@ async def on_message(message):
 
             if message.content.startswith("-h joke"):  # RANDOM # not reworked
                 embedvar = discord.Embed(title="JOKE HELP:", description="The joke command sends a funny joke!")
-                await message.channel.send(embed=embedvar)
-
-            if message.content.startswith("-h feedback"):  # RANDOM
-                embedvar = discord.Embed(title="FEEDBACK HELP:",description="The feedback command sends your feedback to the developer of the bot")
-                embedvar.add_field(name="Here is how to use it", value="`-feedback <your feedback>`", inline=False)
                 await message.channel.send(embed=embedvar)
 
             if message.content.startswith("-h char_count"):  # RANDOM

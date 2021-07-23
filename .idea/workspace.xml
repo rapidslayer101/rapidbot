@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="a4216da4-c4ef-4c08-be3a-2444a9d19dc3" name="Default Changelist" comment="Fixed up help, merged ping into info, some other fixes">
+    <list default="true" id="a4216da4-c4ef-4c08-be3a-2444a9d19dc3" name="Default Changelist" comment="Channel id command redo">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/rapidbot.py" beforeDir="false" afterPath="$PROJECT_DIR$/rapidbot.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/strs/msgstore.txt" beforeDir="false" afterPath="$PROJECT_DIR$/strs/msgstore.txt" afterDir="false" />
@@ -107,7 +107,14 @@
       <option name="project" value="LOCAL" />
       <updated>1627047473004</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Channel id command redo">
+      <created>1627057076606</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1627057076606</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -129,6 +136,7 @@
     <MESSAGE value="Encryption key loading completely fixed, ttb fixed and its module requirement gone" />
     <MESSAGE value="restore files from lfs" />
     <MESSAGE value="Fixed up help, merged ping into info, some other fixes" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed up help, merged ping into info, some other fixes" />
+    <MESSAGE value="Channel id command redo" />
+    <option name="LAST_COMMIT_MESSAGE" value="Channel id command redo" />
   </component>
 </project>

@@ -1,14 +1,12 @@
 # MADE BY RAPIDSLAYER101#260, DO NOT COPY, DO NOT SHARE, DO NOT USE
 
 global time, sys, googletrans, google, random, os, zlib, base64, re, asyncio
-import datetime, time, os, random, zlib, base64, re, socket, hashlib  # inbuilt
+import datetime, decimal, time, os, random, zlib, base64, re, socket, hashlib  # inbuilt
 
-import googletrans, asyncio, discord, requests, urllib, praw, psutil  # installed modules
 import googletrans, asyncio, discord, requests, urllib, praw, psutil  # installed modules
 from discord.ext import commands
 from forex_python.converter import CurrencyRates, CurrencyCodes
 from googletrans import Translator
-
 
 global start_time
 start_time = datetime.datetime.utcnow()
@@ -529,36 +527,7 @@ class Random(commands.Cog):
 
     @commands.command()
     async def ttb(self, ctx):  # todo add support context for prior conversations
-        def cleverbot(stimulus, context=[], session=None):
-            sessions = dict()
-            req = requests.get("https://www.cleverbot.com/")
-            cookies = {'XVIS': re.search(r"\w+(?=;)", req.headers["Set-cookie"]).group()}
-            payload = f"stimulus={requests.utils.requote_uri(stimulus)}&"
-            _context = context[:]
-            reverse_context = list(reversed(_context))
-
-            for i in range(len(_context)):
-                payload += f"vText{i + 2}={requests.utils.requote_uri(reverse_context[i])}&"
-
-            if session:
-                if session not in sessions.keys():
-                    sessions[session] = list()
-
-                _session = list(reversed(sessions[session]))
-                for i in range(len(sessions[session])):
-                    payload += f"vText{i + len(_context) + 2}={requests.utils.requote_uri(_session[i])}&"
-                sessions[session] = _context + sessions[session]
-
-            payload += "cb_settings_scripting=no&islearning=1&icognoid=wsf&icognocheck="
-            payload += hashlib.md5(payload[7:33].encode()).hexdigest()
-            req = requests.post(
-                "https://www.cleverbot.com/webservicemin?uc=UseOfficialCleverbotAPI",
-                cookies=cookies,
-                data=payload)
-            response = str(req.content)[2:].split("\\r")
-            return response[0]
-
-        send = cleverbot(ctx.message.content[5:])
+        send = ttb.run(0, ctx.message.content[5:])
         await ctx.channel.send(send)
 
 
@@ -658,31 +627,28 @@ class Server(commands.Cog):
         await ctx.channel.send(embed=embed)
 
     @commands.command()
-    async def messageid(self, ctx):
+    async def messageid(self, ctx):  # todo make this a message search and return id or remove
         await ctx.channel.send(f'The ID for the message you sent made output is: {ctx.message.id}\n\nTo get to this message online copy this link: \
         \ndiscord.com/channels/{ctx.guild.id}/{ctx.channel.id}/{ctx.message.id}')
 
     @commands.command()
-    async def members(self, ctx):  # todo this command may still be broken from before
+    async def members(self, ctx):
         e4 = ""
         a5 = 0
-        ctx.guild.members
         for item in ctx.guild.members:
-            e4 = e4 + "\n" + "<@!" + str(item.id) + ">"
-            a5 = a5 + 1
+            e4 += f"\n<@!{item.id}>"
+            a5 += 1
         embed = discord.Embed(title=f"Member count: {a5}", description=str(e4))
         embed.set_footer(text=f"Requested by {ctx.author}")
         await ctx.channel.send(embed=embed)
 
     @commands.command()
-    async def roles(self, ctx):  # todo this command may still be broken from before
+    async def roles(self, ctx):
         e4 = ""
         rolecount = 0
-        a5 = 0
         for item in ctx.guild.roles:
-            e4 = e4 + "\n" + "<@&" + str(item.id) + ">"
-            a5 = a5 + 1
-            rolecount = rolecount + 1
+            e4 = e4 + f"\n{item.id} <@&{item.id}>"
+            rolecount += 1
         embed = discord.Embed(title=f"Role count: {rolecount}", description=str(e4))
         embed.set_footer(text=f"Requested by {ctx.author}")
         await ctx.channel.send(embed=embed)
@@ -694,13 +660,14 @@ class Server(commands.Cog):
             rolecheck = rolecheck1.replace(">", "")
         else:
             rolecheck = ctx.message.content[8:]
-        withrolenum = 0
+        with_num = 0
         e4 = ""
         for item in ctx.guild.members:
             if str(rolecheck) in str(ctx.guild.get_member(item.id).roles):
-                e4 = e4 + "\n" + "<@!" + str(item.id) + ">"
-                withrolenum = withrolenum + 1
-        embed = discord.Embed(title=f"Members with role {ctx.guild.get_role(int(rolecheck))}: {withrolenum}", description=str(e4))
+                e4 += f"\n<@!{item.id}>"
+                with_num += 1
+        embed = discord.Embed(title=f"Members with role {ctx.guild.get_role(int(rolecheck))} ({with_num}):",
+                              description=str(e4))
         embed.set_footer(text=f"Requested by {ctx.author}")
         await ctx.channel.send(embed=embed)
 
@@ -1192,7 +1159,6 @@ class Online_searching(commands.Cog):
                 with open('settings/coin.txt') as myFile:
                     for line in myFile:
                         if lookup in line:
-                            import decimal
                             balance = decimal.Decimal(line[20:])
                             balance = balance / 100
                             head, sep, tail = str(balance).partition('.')
@@ -1229,7 +1195,6 @@ class Online_searching(commands.Cog):
                 with open('settings/coin.txt') as myFile:
                     for line in myFile:
                         if lookup in line:
-                            import decimal
                             balance = decimal.Decimal(line[20:])
                             balance = balance / 100
                             head, sep, tail = str(balance).partition('.')
@@ -1266,7 +1231,6 @@ class Online_searching(commands.Cog):
                 with open('settings/coin.txt') as myFile:
                     for line in myFile:
                         if lookup in line:
-                            import decimal
                             balance = decimal.Decimal(line[20:])
                             balance = balance / 100
                             head, sep, tail = str(balance).partition('.')
@@ -1414,7 +1378,6 @@ class Games(commands.Cog):  # todo redo this whole thing
         with open('settings/resetclaims.txt') as myFile:
             for lnum, line in enumerate(myFile, 1):
                 if lookup in line:
-                    import decimal
                     line20 = decimal.Decimal(line[20:])
                     wasuserthere = wasuserthere + 1
                     claimnum = line20
@@ -1478,7 +1441,6 @@ class Games(commands.Cog):  # todo redo this whole thing
         with open('settings/coin.txt') as myFile:
             for num, line in enumerate(myFile, 1):
                 if lookup in line:
-                    import decimal
                     line20 = decimal.Decimal(line[20:])
                     if not addbal == 1:
                         embed = discord.Embed(title=f"Your balance is {line20}")
@@ -1509,7 +1471,6 @@ class Games(commands.Cog):  # todo redo this whole thing
         with open('settings/coin.txt') as myFile:
             for lnum, line in enumerate(myFile, 1):
                 if lookup in line:
-                    import decimal
                     line20 = decimal.Decimal(line[20:])
                     wasuserthere = wasuserthere + 1
                     coin = line20
@@ -1580,7 +1541,6 @@ class Games(commands.Cog):  # todo redo this whole thing
         with open('settings/coin.txt') as myFile:
             for lnum, line in enumerate(myFile, 1):
                 if lookup in line:
-                    import decimal
                     line20 = decimal.Decimal(line[20:])
                     wasuserthere = wasuserthere + 1
                     coin = line20
@@ -1654,7 +1614,6 @@ class Games(commands.Cog):  # todo redo this whole thing
         with open('settings/coin.txt') as myFile:
             for lnum, line in enumerate(myFile, 1):
                 if lookup in line:
-                    import decimal
                     line20 = decimal.Decimal(line[20:])
                     wasuserthere = wasuserthere + 1
                     coin = line20
@@ -1792,7 +1751,6 @@ class Games(commands.Cog):  # todo redo this whole thing
         with open('settings/coin.txt') as myFile:
             for lnum, line in enumerate(myFile, 1):
                 if lookup in line:
-                    import decimal
                     line20 = decimal.Decimal(line[20:])
                     wasuserthere = wasuserthere + 1
                     coin = line20
@@ -1876,7 +1834,6 @@ class Games(commands.Cog):  # todo redo this whole thing
         with open('settings/coin.txt') as myFile:
             for lnum, line in enumerate(myFile, 1):
                 if lookup in line:
-                    import decimal
                     line20 = decimal.Decimal(line[20:])
                     wasuserthere = wasuserthere + 1
                     coin = line20
@@ -1903,7 +1860,6 @@ class Games(commands.Cog):  # todo redo this whole thing
                 with open('settings/coin.txt') as myFile:
                     for line in myFile:
                         if lookup in line:
-                            import decimal
                             balance = decimal.Decimal(line[20:])
                             balance = balance / 100
                             head, sep, tail = str(balance).partition('.')
@@ -1932,7 +1888,6 @@ class Games(commands.Cog):  # todo redo this whole thing
                     await ctx.channel.send(embed=embed)
                     allowbet = 1
                 if not allowbet == 1:
-                    import decimal
                     revupdivider = decimal.Decimal(random.randrange(0, 2750))  # change multiplier here
                     revupmulti = decimal.Decimal(random.randrange(0, 1000)) / revupdivider
                     revupmulti = revupmulti.as_integer_ratio()
@@ -1972,7 +1927,6 @@ class Games(commands.Cog):  # todo redo this whole thing
         with open('settings/coin.txt') as myFile:
             for lnum, line in enumerate(myFile, 1):
                 if lookup in line:
-                    import decimal
                     line20 = decimal.Decimal(line[20:])
                     wasuserthere = wasuserthere + 1
                     coin = line20
@@ -1999,7 +1953,6 @@ class Games(commands.Cog):  # todo redo this whole thing
                 with open('settings/coin.txt') as myFile:
                     for line in myFile:
                         if lookup in line:
-                            import decimal
                             balance = decimal.Decimal(line[20:])
                             balance = balance / 100
                             head, sep, tail = str(balance).partition('.')
@@ -2028,7 +1981,6 @@ class Games(commands.Cog):  # todo redo this whole thing
                     await ctx.channel.send(embed=embed)
                     allowbet = 1
                 if not allowbet == 1:
-                    import decimal
                     revupdivider = decimal.Decimal(random.randrange(0, 1000))  # change multiplier here
                     revupmulti = (decimal.Decimal(random.randrange(0, 200)) / revupdivider)
                     revupmulti2 = (decimal.Decimal(random.randrange(0, 200)) / revupdivider)
@@ -2587,18 +2539,20 @@ class Help(commands.Cog):
             await ctx.channel.send(message)
 
 
-bot = commands.Bot(command_prefix=commands.when_mentioned_or("-"), case_insensitive=True)
+intents = discord.Intents.default()
+intents.members = True
+bot = commands.Bot(command_prefix=commands.when_mentioned_or("-"), case_insensitive=True, intents=intents)
 bot.remove_command('help')
 
 
 @bot.event
 async def on_command_error(ctx, error):
     print(error)
-    errorcheck = str(error)
-    if not errorcheck.startswith("Command \""):
+    error_check = str(error)
+    if not error_check.startswith("Command \""):
         message = ctx.message.content[1:]
         message = message.split()
-        embed = discord.Embed(title=f"Command error, {errorcheck}", description=f"Need help? `-h {message[0]}`")
+        embed = discord.Embed(title=f"Command error, {error_check}", description=f"Need help? `-h {message[0]}`")
         embed.set_footer(text=f"Requested by {ctx.author}")
         await ctx.channel.send(embed=embed)
 
@@ -2641,6 +2595,41 @@ class cooldown():
                 return f"Command sent to fast, please wait {round(cooldown_data[1] - diff,2)}s"
             else:
                 del cooldown_ids[userid]
+
+
+ttb_data = {}
+
+
+class ttb():  # todo add ttb prev conv functionality
+    def run(self, stimulus, context=[], session=None):
+        sessions = dict()
+        req = requests.get("https://www.cleverbot.com/")
+        cookies = {'XVIS': re.search(r"\w+(?=;)", req.headers["Set-cookie"]).group()}
+        payload = f"stimulus={requests.utils.requote_uri(stimulus)}&"
+        _context = context[:]
+        reverse_context = list(reversed(_context))
+
+        for i in range(len(_context)):
+            payload += f"vText{i + 2}={requests.utils.requote_uri(reverse_context[i])}&"
+
+        if session:
+            if session not in sessions.keys():
+                sessions[session] = list()
+
+            _session = list(reversed(sessions[session]))
+            for i in range(len(sessions[session])):
+                payload += f"vText{i + len(_context) + 2}={requests.utils.requote_uri(_session[i])}&"
+            sessions[session] = _context + sessions[session]
+        print("sesh", sessions)
+
+        payload += "cb_settings_scripting=no&islearning=1&icognoid=wsf&icognocheck="
+        payload += hashlib.md5(payload[7:33].encode()).hexdigest()
+        req = requests.post(
+            "https://www.cleverbot.com/webservicemin?uc=UseOfficialCleverbotAPI",
+            cookies=cookies,
+            data=payload)
+        response = str(req.content)[2:].split("\\r")
+        return response[0]
 
 
 @bot.event
@@ -2709,7 +2698,6 @@ async def on_message(message):
                 time.sleep(1.25)
 
         if message.content.lower() == "-pick":
-            import random
             len(theshit)
             counter = random.randint(0, len(theshit))
             line = theshit[counter]
@@ -2783,7 +2771,6 @@ async def on_message(message):
                     time.sleep(1.25)
 
             if message.content.lower() == "-pick":
-                import random
                 len(theshit)
                 counter = random.randint(0, len(theshit))
                 line = theshit[counter]
@@ -2815,7 +2802,6 @@ async def on_message(message):
         token_drops_on = False
 
         if token_drops_on:
-            import random
             tokenluck = random.randint(0, 100)  # todo make certain users more or less lucky
             if tokenluck == 50:
                 import string
@@ -2900,7 +2886,6 @@ async def on_message(message):
                         await message.channel.send("```Occr data Success```")
 
             if message.content.startswith("-randlink"):
-                import random
                 lines = open('strs/linknd-ndsc.txt').read().splitlines()
                 myline = random.choice(lines)
                 await message.channel.send(myline)
@@ -3041,13 +3026,12 @@ async def on_connect():
           f'/{round(psutil.disk_usage("/").total/1024/1024,2)}MB\n'
           f'-----------------------------------------------')
 
-    print("\n")
-    print(psutil.cpu_freq())
-    print(psutil.net_if_addrs())
-    print(psutil.net_connections(kind='tcp'))
-    print(psutil.net_if_stats())
-    print(psutil.users())
-    print("\n")
+    #print("\n")
+    #print(psutil.net_if_addrs())
+    #print(psutil.net_connections(kind='tcp'))
+    #print(psutil.net_if_stats())
+    #print(psutil.users())
+    #print("\n")
 
 
 @bot.event

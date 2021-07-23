@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="a4216da4-c4ef-4c08-be3a-2444a9d19dc3" name="Default Changelist" comment="Encryption key loading completely fixed, ttb fixed and its module requirement gone" />
+    <list default="true" id="a4216da4-c4ef-4c08-be3a-2444a9d19dc3" name="Default Changelist" comment="restore files from lfs">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rapidbot.py" beforeDir="false" afterPath="$PROJECT_DIR$/rapidbot.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/strs/msgstore.txt" beforeDir="false" afterPath="$PROJECT_DIR$/strs/msgstore.txt" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -82,7 +86,21 @@
       <option name="project" value="LOCAL" />
       <updated>1627001075230</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="restore files from lfs">
+      <created>1627001810335</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1627001810335</updated>
+    </task>
+    <task id="LOCAL-00005" summary="restore files from lfs">
+      <created>1627001888299</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1627001888299</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -102,6 +120,7 @@
     <MESSAGE value="Git lfs broke the entire IDE lol, this commit fixes that" />
     <MESSAGE value="Help commands rewrite complete, cooldown system rewrite mostly complete" />
     <MESSAGE value="Encryption key loading completely fixed, ttb fixed and its module requirement gone" />
-    <option name="LAST_COMMIT_MESSAGE" value="Encryption key loading completely fixed, ttb fixed and its module requirement gone" />
+    <MESSAGE value="restore files from lfs" />
+    <option name="LAST_COMMIT_MESSAGE" value="restore files from lfs" />
   </component>
 </project>

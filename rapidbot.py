@@ -418,8 +418,8 @@ class Random(commands.Cog):
             embed.set_footer(text=f"Requested by {ctx.author}")
             await ctx.channel.send(embed=embed)
 
-    @commands.command()
-    async def randnumber(self, ctx, arg1, arg2):
+    @commands.command(aliases=["randnumber"])
+    async def randnum(self, ctx, arg1, arg2):
         outputn = random.randint(int(arg1), int(arg2))
         string = f"Your random number between {int(arg1)} and {int(arg2)} is:"
         embed = discord.Embed(title=string, description=outputn)
@@ -566,22 +566,10 @@ class Bot_info(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    # todo put ping inside the info command
-
-    @commands.command()
-    async def ping(self, ctx):
-        rtimepong = str(rtime)
-        rtimepong2 = (rtimepong[17:])
-        msg = await ctx.channel.send("pong")
-        pongtime = str(datetime.datetime.now())
-        ptime = pongtime[17:]
-        pongping = float(ptime) - float(rtimepong2)
-        pongping = round(pongping, 2)
-        pongping2 = str(pongping)
-        await msg.edit(content=f"pong,{pongping2[:10]}s respone time")
-
     @commands.command(aliases=["botinv", "botweb", "botrt", "inservers"])
     async def info(self, ctx):
+        timestr = str(ctx.message.created_at - datetime.datetime.utcnow())
+        diff = sum([a * b for a, b in zip([3600, 60, 1], map(float, timestr.split(':')))])
         startx = datetime.datetime.utcnow() - start_time
         embed = discord.Embed(title=f"Bot info:", description=f"\n\nRuntime: {str(startx)[:-7]}\n"
             f"Started at: {str(start_time)[:-7]}\n"
@@ -593,6 +581,7 @@ class Bot_info(commands.Cog):
             f'Storage: {psutil.disk_usage("/").percent}% used, {round(psutil.disk_usage("/").used/1024/1024, 2)}'
             f'/{round(psutil.disk_usage("/").total/1024/1024, 2)}MB\n'
             f'This bot is in {str(len(bot.guilds))} servers\n'
+            f'The current ping is: {round(diff,2)}s\n'
             f'\nInvite link: [Click to add bot to another server](https://discord.com/oauth2/'
             f'authorize?client_id=711578412103368707&scope=bot&permissions=8)\n'
             f'Website link: [Go to website](https://rapidslayer101.wixsite.com/rapidslayer)\n'
@@ -660,6 +649,7 @@ class Server(commands.Cog):
     async def members(self, ctx):  # todo this command may still be broken from before
         e4 = ""
         a5 = 0
+        ctx.guild.members
         for item in ctx.guild.members:
             e4 = e4 + "\n" + "<@!" + str(item.id) + ">"
             a5 = a5 + 1
@@ -898,12 +888,13 @@ class NSFW(commands.Cog):
 
     @commands.command()
     async def porntags(self, ctx):
-        embed = discord.Embed(title="porntags HELP:",description="suggested tags that can be used with the many nsfw search commands")
-        embed.add_field(name="Tags", value="`69`,`Amateur`,`Anal`,`Animated`,`Asian`,`Ass`,`Bbc`,`Bbw`,`Bdsm`,`Big Ass`,`Big Dick`,`Big Tits`,`Blonde`,`Blowjob`,`Bondage`,`Boobs`\
-        `Caption`,`Cartoon`,`Cheating`,`Cosplay`,`Cowgirl`,`Creampie`,`Cuckold`,`Cum`,`Cumshot`,`Deepthroat`,`Dildo`,`Doggystyle`,`Dp`,`Ebony`,\
-        `Feet`,`Ffm`,`Fingering`,`Foursome`,`Fuck`,`Funny`,`Handjob`", inline=False)
-        embed.set_footer(text=f"Requested by {ctx.author}")
-        await ctx.channel.send(embed=embed)
+        if is_nsfw_on(ctx.channel.id):
+            embed = discord.Embed(title="porntags HELP:",description="suggested tags that can be used with the many nsfw search commands")
+            embed.add_field(name="Tags", value="`69`,`Amateur`,`Anal`,`Animated`,`Asian`,`Ass`,`Bbc`,`Bbw`,`Bdsm`,`Big Ass`,`Big Dick`,`Big Tits`,`Blonde`,`Blowjob`,`Bondage`,`Boobs`\
+            `Caption`,`Cartoon`,`Cheating`,`Cosplay`,`Cowgirl`,`Creampie`,`Cuckold`,`Cum`,`Cumshot`,`Deepthroat`,`Dildo`,`Doggystyle`,`Dp`,`Ebony`,\
+            `Feet`,`Ffm`,`Fingering`,`Foursome`,`Fuck`,`Funny`,`Handjob`", inline=False)
+            embed.set_footer(text=f"Requested by {ctx.author}")
+            await ctx.channel.send(embed=embed)
 
     @commands.command()
     async def phs(self, ctx):
@@ -2127,46 +2118,45 @@ class Help(commands.Cog):
     @commands.command(aliases=["h"])  # todo the plain h command spacing issue is likely discord removing blank spaces
     async def help(self, ctx, *args):  # todo this command wont work at all with commands like -h colour text
         c_args = convert_tuple(args)[:-1]
-        mode = "Embed"
+        embed = None
+        message = None
         if c_args == "":
             embed = discord.Embed(title="Rapidbot command sections", description="We have a wide range of commands!\
                     \nAlso remember the prefix is '-'")
-            embed.add_field(name=":hash: Encrypt (2)    :question: Random (11)    :information_source: Bot info (2)",
-                               value="`-h encrypt`    `-h rand`     `-h bot info`", inline=False)
+            embed.add_field(name=":hash: Encrypt (2)    :question: Random (11)    :information_source: Info (1)",
+                            value="`-h enc`       `-h rand`      `-h info`", inline=False)
             embed.add_field(name=":page_facing_up: Server (9)   :dollar: Currency (2)  :rainbow: Coloured text (6)",
-                               value="`-h server`    `-h currency`    `-h color text`", inline=False)
+                            value="`-h server`    `-h currency`    `-h color text`", inline=False)
 
             if is_nsfw_on(ctx.channel.id):
                 embed.add_field(name=":wink: NSFW (8)     :computer: Online searches (8)    :game_die: Games (12)",
-                                   value="`-h nsfw`   `-h search`           `-h games`", inline=False)
+                                value="`-h nsfw`   `-h search`           `-h games`", inline=False)
             else:
                 embed.add_field(name="Disabled (8)     :computer: Online searches (8)    :game_die: Games (12)",
-                                   value="`disabled`   `-h search`           `-h games`", inline=False)
+                                value="`disabled`   `-h search`           `-h games`", inline=False)
         else:
             if c_args in ["encryption", "encrypt", "enc", "decryption", "decrypt", "dec"]:  # todo maybe add more desc
                 embed = discord.Embed(title=":hash: Encryption commands (2)",
-                                         description="`encrypt`,`decrypt`")
+                                      description="`encrypt`,`decrypt`")
                 embed.add_field(name="Here is how to use them",
-                                   value="`-encrypt <message>`\n`-decrypt <encrypted message>`", inline=False)
+                                value="`-encrypt <message>`\n`-decrypt <encrypted message>`", inline=False)
                 embed.set_footer(text=f"Requested by {ctx.message.author}")
 
             if c_args in ["random", "rand"]:
-                embed = discord.Embed(title=":question: Random commands (10)", description="`randword`,`randnumber`,\
+                embed = discord.Embed(title=":question: Random commands (10)", description="`randword`,`randnum`,\
                         `randuni`,`eight_ball`,`leetify`,`repeat`,\n`joke`,`char_count`,`emoji_letters`,`ttb`")
-                embed.set_footer(
-                    text=f"Add -h to the beginning of a command for its help section!"
-                         f" Requested by {ctx.message.author}")
+                embed.set_footer(text=f"Add -h to the beginning of a command for its help section!"
+                                      f" Requested by {ctx.message.author}")
 
-            if c_args in ["info", "bot_info", "bot info"]:  # todo reformat after ping and info merge
-                embed = discord.Embed(title=":information_source: Bot info commands (2)",
-                                         description="`ping`,`info`")
-                embed.set_footer(
-                    text=f"Add -h to the beginning of a command for its help section! "
-                         f"Requested by {ctx.message.author}")
+            if c_args in ["info", "bot_info", "bot info"]:  # BOT INFO
+                embed = discord.Embed(title="INFO HELP:",
+                                      description="The info command shows data about the bot"
+                                                  "\n\nThis commands aliases are: `botinv`,`botweb`,`botrt`,`inservers`")
 
             if c_args in ["server"]:
                 embed = discord.Embed(title=":page_facing_up: Server commands (9)", description="\
-                        `chat_links`,`userid`,`serverid`,`channelid`,`messageid`,\n`members`,`roles`,`inrole`,`who_spoke`")
+                        `chat_links`,`userid`,`serverid`,`channelid`,`messageid`,"
+                        "\n`members`,`roles`,`inrole`,`who_spoke`")
                 embed.set_footer(
                     text=f"Add -h to the beginning of a command for its help section! "
                          f"Requested by {ctx.message.author}")
@@ -2180,7 +2170,8 @@ class Help(commands.Cog):
 
             if c_args in ["color text", "colored text", "color_text", "colored_text"]:
                 embed = discord.Embed(title=":rainbow: Coloured text commands (6)",
-                                      description="`redtext`,`orange_text`,`greentext`,\n`yellowtext`,`blue_text`,`cyantext`")
+                                      description="`redtext`,`orange_text`,`greentext`,"
+                                                  "\n`yellowtext`,`blue_text`,`cyantext`")
                 embed.set_footer(
                     text=f"Add -h to the beginning of a command for its help section! "
                          f"Requested by {ctx.message.author}")
@@ -2201,9 +2192,8 @@ class Help(commands.Cog):
                 embed = discord.Embed(title=":computer: Online searches commands (8)",
                                       description="`ggt_codes`, `ggt_te`,`ggt_ft`,\
                         \n`ggsr`,`ggsi`,`ggsv`,`reddits`,`meme`")
-                embed.set_footer(
-                    text=f"Add -h to the beginning of a command for its help section! "
-                         f"Requested by {ctx.message.author}")
+                embed.set_footer(text=f"Add -h to the beginning of a command for its help section! "
+                                      f"Requested by {ctx.message.author}")
 
             if c_args in ["games", "bet"]:
                 embed = discord.Embed(title=":game_die: Game commands (12)",
@@ -2222,15 +2212,16 @@ class Help(commands.Cog):
                                       description="The random word command picks x random words")
                 embed.add_field(name="Here is how to use it", value="`-randword <number of words>`", inline=False)
 
-            if c_args in ["randnumber"]:  # RANDOM # not reworked
-                embed = discord.Embed(title="RANDNUMBER HELP:",
-                                      description="The random number command picks a number between two numbers")
-                embed.add_field(name="Here is how to use it", value="`randnumber <1st number> <2nd number>`",
-                                inline=False)
+            if c_args in ["randnum", "randnumber"]:  # RANDOM # not reworked
+                embed = discord.Embed(title="RANDNUM HELP:",
+                                      description="The random number command picks a number between two numbers")
+                embed.add_field(name="Here is how to use it", value="`randnum <1st number> <2nd number>`", inline=False)
+                embed.add_field(name="Command aliases", value="`randumber`", inline=False)
 
             if c_args in ["randuni"]:  # RANDOM
                 embed = discord.Embed(title="RANDUNI HELP:",
-                                      description="The random Unicode command picks x number of random Unicode characters")
+                                      description="The random Unicode command picks x"
+                                                  " number of random Unicode characters")
                 embed.add_field(name="Here is how to use it", value="`randuni <number of uni chars>`", inline=False)
 
             if c_args in ["eight_ball"]:  # RANDOM
@@ -2252,7 +2243,8 @@ class Help(commands.Cog):
 
             if c_args in ["char_count", "char count"]:  # RANDOM
                 embed = discord.Embed(title="CHAR_COUNT HELP:",
-                                      description="The char_count command counts the number of characters in your message")
+                                      description="The char_count command counts the number of"
+                                                  " characters in your message")
                 embed.add_field(name="Here is how to use it", value="`-char_count <message>`", inline=False)
 
             if c_args in ["emoji_letters", "emoji letters"]:  # RANDOM
@@ -2265,15 +2257,6 @@ class Help(commands.Cog):
                                       description="The talk to bot command asks an AI your message/question")
                 embed.add_field(name="Here is how to use it", value="`-ttb <message/question>`", inline=False)
 
-            if c_args in ["ping"]:  # BOT INFO
-                embed = discord.Embed(title="PING HELP:",
-                                      description="The ping command shows the bots response delay to messages")
-
-            if c_args in ["info"]:  # BOT INFO
-                embed = discord.Embed(title="INFO HELP:",
-                                      description="The info command shows data about the bot"
-                                                  "\n\nThis commands aliases are: `botinv`,`botweb`,`botrt`,`inservers`")
-
             if c_args in ["chat_links"]:  # SERVER INFO
                 embed = discord.Embed(title="CHAT_LINKS HELP:", description="The chat links \
                 command retrieves every link ever sent in a channel then it sends all of these links in one file")
@@ -2284,7 +2267,7 @@ class Help(commands.Cog):
 
             if c_args in ["serverid"]:  # SERVER INFO
                 embed = discord.Embed(title="SERVER ID HELP:",
-                                      description="The server id command retrieves current servers id")
+                                      description="The server id command retrieves current servers id")
 
             if c_args in ["channelid"]:  # SERVER INFO
                 embed = discord.Embed(title="CHANNEL ID HELP:",
@@ -2309,7 +2292,8 @@ class Help(commands.Cog):
 
             if c_args in ["who_spoke"]:  # SERVER INFO
                 embed = discord.Embed(title="WHO_SPOKE HELP:",
-                                      description="The who spoke command finds how many times people spoke in last x messages")
+                                      description="The who spoke command finds how many times"
+                                                  " people spoke in last x messages")
                 embed.add_field(name="Here is how to use it",
                                 value="`-who_spoke <how many msg's to look at>` limited to 1000 messages",
                                 inline=False)
@@ -2371,9 +2355,9 @@ class Help(commands.Cog):
             if c_args in ["porntags"]:  # NSFW
                 if is_nsfw_on(ctx.channel.id):
                     embed = discord.Embed(title="PORNTAGS HELP:",
-                                          description="The porn tags command provides suggestions for tags to be used in nsfw searches")
+                                          description="The porn tags command provides suggestions"
+                                                      " for tags to be used in nsfw searches")
                 else:
-                    mode = "Message"
                     message = "```This command is not enabled in this chat```"
 
             if c_args in ["phs"]:  # NSFW
@@ -2383,7 +2367,6 @@ class Help(commands.Cog):
                     embed.add_field(name="Here is how to use it", value="`-phs <num of results> <search>`",
                                     inline=False)
                 else:
-                    mode = "Message"
                     message = "```This command is not enabled in this chat```"
 
             if c_args in ["psi"]:  # NSFW
@@ -2393,17 +2376,16 @@ class Help(commands.Cog):
                     embed.add_field(name="Here is how to use it",
                                     value="`-psi x`\nx is the thing your searching for", inline=False)
                 else:
-                    mode = "Message"
                     message = "```This command is not enabled in this chat```"
 
             if c_args in ["psg"]:  # NSFW
                 if is_nsfw_on(ctx.channel.id):
                     embed = discord.Embed(title="PSG HELP:",
-                                          description="The porn search galleries command searches for images in galleries")
+                                          description="The porn search galleries command "
+                                                      "searches for images in galleries")
                     embed.add_field(name="Here is how to use it", value="`-psg n x`\nn is the \
                     gallery number to search\nx is the thing/tag your searching for", inline=False)
                 else:
-                    mode = "Message"
                     message = "```This command is not enabled in this chat```"
 
             if c_args in ["porngif"]:  # NSFW
@@ -2413,7 +2395,6 @@ class Help(commands.Cog):
                     embed.add_field(name="Here is how to use it", value="`-porngif n x`\nn is the\
                      page number to search\nx is the thing/tag your searching for", inline=False)
                 else:
-                    mode = "Message"
                     message = "```This command is not enabled in this chat```"
 
             if c_args in ["hentai"]:  # NSFW
@@ -2424,39 +2405,44 @@ class Help(commands.Cog):
                     number to search\nx is the thing/tag your searching for (you can leave this blank)",
                                     inline=False)
                 else:
-                    mode = "Message"
                     message = "```This command is not enabled in this chat```"
 
             if c_args in ["ggt_codes"]:  # SEARCHES
                 embed = discord.Embed(title="GGT_CODES HELP:",
-                                      description="The Google translate language codes command shows you the abbreviated letters for that language")
+                                      description="The Google translate language codes command shows "
+                                                  "you the abbreviated letters for that language")
 
             if c_args in ["ggt_te"]:  # SEARCHES
                 embed = discord.Embed(title="GGT_TE HELP:",
-                                      description="The Google translate to english command attempts to convert a message to english")
+                                      description="The Google translate to english command attempts "
+                                                  "to convert a message to english")
                 embed.add_field(name="Here is how to use it", value="`-ggt_te <message>`", inline=False)
 
             if c_args in ["ggt_ft"]:  # SEARCHES
                 embed = discord.Embed(title="GGT_FT HELP:",
-                                      description="The Google translate from to command translates a message from one language to another")
+                                      description="The Google translate from to command translates "
+                                                  "a message from one language to another")
                 embed.add_field(name="Here is how to use it", value="`-ggt_ft <lang from> <lang to> <message>`",
                                 inline=False)
 
             if c_args in ["ggt_ft"]:  # SEARCHES
                 embed = discord.Embed(title="GGSR HELP:",
-                                      description="The google search result command searches \n google for x amount of results")
+                                      description="The google search result command searches "
+                                                  "\n google for x amount of results")
                 embed.add_field(name="Here is how to use it", value="`-ggsr <num of results> <search>`",
                                 inline=False)
 
             if c_args in ["ggsi"]:  # SEARCHES
                 embed = discord.Embed(title="GGSI HELP:",
-                                      description="The google search image command searches \n google for x amount of images")
+                                      description="The google search image command searches "
+                                                  "\n google for x amount of images")
                 embed.add_field(name="Here is how to use it", value="`-ggsi <num of images> <search>`",
                                 inline=False)
 
             if c_args in ["ggsv"]:  # SEARCHES
                 embed = discord.Embed(title="GGSV HELP:",
-                                      description="The google search videos command searches \n google for x amount of videos")
+                                      description="The google search videos command searches "
+                                                  "\n google for x amount of videos")
                 embed.add_field(name="Here is how to use it", value="`-ggsv <num of videos> <search>`",
                                 inline=False)
 
@@ -2511,13 +2497,15 @@ class Help(commands.Cog):
 
             if c_args in ["bet_multi"]:  # GAMES
                 embed = discord.Embed(title="BET_MULTI HELP:",
-                                      description="The multiplier command is a betting game where you decide the multiplier! Min multiplier of 3")
+                                      description="The multiplier command is a betting game where you"
+                                                  " decide the multiplier! Min multiplier of 3")
                 embed.add_field(name="Here is how to use it", value="`-bet_multi <multiplier> <amount to bet>`",
                                 inline=False)
 
             if c_args in ["bet_revup"]:  # GAMES
                 embed = discord.Embed(title="BET_REVUP HELP:",
-                                      description="The rev up command is a betting game where you get a random multiplier from 0 to 1000!")
+                                      description="The rev up command is a betting game where "
+                                                  "you get a random multiplier from 0 to 1000!")
                 embed.add_field(name="Here is how to use it", value="`-bet_revup <amount to bet> <num of goes>`",
                                 inline=False)
 
@@ -2550,7 +2538,8 @@ class Help(commands.Cog):
 
             if c_args in ["purge"]:  # ADMIN
                 embed = discord.Embed(title="PURGE HELP:",
-                                      description="The purge command deletes x number of messages up to 14 days old, use clean for anything older")
+                                      description="The purge command deletes x number of messages"
+                                                  " up to 14 days old, use clean for anything older")
                 embed.add_field(name="Here is how to use it", value="`-purge <bot/self/all> <num of msg>`",
                                 inline=False)
 
@@ -2560,9 +2549,9 @@ class Help(commands.Cog):
                 embed.add_field(name="Here is how to use it", value="`-clean <bot/self/all> <num of msg>`",
                                 inline=False)
 
-        if mode == "Embed":
+        if embed is not None:
             await ctx.channel.send(embed=embed)
-        if mode == "Message":
+        if message is not None:
             await ctx.channel.send(message)
 
 
@@ -2572,15 +2561,14 @@ bot.remove_command('help')
 
 @bot.event
 async def on_command_error(ctx, error):
-    if not ctx.message.content.startswith("-h"):
-        print(error)
-        errorcheck = str(error)
-        if not errorcheck.startswith("Command \""):
-            message = ctx.message.content[1:]
-            message = message.split()
-            embed = discord.Embed(title=f"Command error, {errorcheck}", description=f"Need help? `-h {message[0]}`")
-            embed.set_footer(text=f"Requested by {ctx.author}")
-            await ctx.channel.send(embed=embed)
+    print(error)
+    errorcheck = str(error)
+    if not errorcheck.startswith("Command \""):
+        message = ctx.message.content[1:]
+        message = message.split()
+        embed = discord.Embed(title=f"Command error, {errorcheck}", description=f"Need help? `-h {message[0]}`")
+        embed.set_footer(text=f"Requested by {ctx.author}")
+        await ctx.channel.send(embed=embed)
 
 bot.add_cog(Encryption(bot))
 bot.add_cog(Random(bot))
@@ -2659,11 +2647,11 @@ async def on_message(message):
             else:
                 if search_yield > 1000:
                     await message.channel.send(f"Search success, found {search_yield} results for '{search}'\n"
-                                           f"To many results to send, have the txt instead!")
+                                               f"To many results to send, have the txt instead!")
                     await message.channel.send(file=discord.File(fr'search-{search}.txt'))
                 else:
                     await message.channel.send(f"Search success, found {search_yield} results for '{search}'\n"
-                                           f"To see ALL of these results type '-open {search}'")
+                                               f"To see ALL of these results type '-open {search}'")
 
         if message.content.lower().startswith("-open"):
             open1 = message.content[6:]
@@ -2826,6 +2814,12 @@ async def on_message(message):
             message.content = ""
         
         await bot.process_commands(message)
+
+        # thomas k's commands
+
+
+
+        # giveaway stuff here
 
         if message.author.id == 425373518566260766:
             if message.content.startswith("-update strs"):

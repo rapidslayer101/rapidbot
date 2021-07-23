@@ -1,9 +1,10 @@
 # MADE BY RAPIDSLAYER101#260, DO NOT COPY, DO NOT SHARE, DO NOT USE
 
 global time, sys, googletrans, google, random, os, zlib, base64, re, asyncio
-import datetime, time, os, random, zlib, base64, re, socket  # inbuilt
+import datetime, time, os, random, zlib, base64, re, socket, hashlib  # inbuilt
 
-import googletrans, asyncio, discord, requests, cleverbotfreeapi, urllib, praw, psutil  # installed modules
+import googletrans, asyncio, discord, requests, urllib, praw, psutil  # installed modules
+import googletrans, asyncio, discord, requests, urllib, praw, psutil  # installed modules
 from discord.ext import commands
 from forex_python.converter import CurrencyRates, CurrencyCodes
 from googletrans import Translator
@@ -39,238 +40,233 @@ if not os.path.isfile("strs/msgstore.txt"):
     open("strs/msgstore.txt", "w").close()
 
 # encrypt def stuff
-while True:
-    try:
-        # the manual setup version of this is found within enc 5.x versions
-        # for this version of the script enter a config key below
-        #config_key = "c-k{jF#Rxp+l&N5BV!X&Gjj_|16|ugYZR3ZEml#DQ`6GWjMpwKPc15`EX~X>h>i^mcMS@O4E6L6sIE;" \
-        #             "cPDxA8$jZ*KR#$cmc5!p}@bdPta;S@`sz@$N%FET!tBHzm4s-JJwXw6;2ian1V4z@WU|;|MM3pDP"
+# the manual setup version of this is found within enc 5.x versions
+config_key = "c-k{jF#Rxp+l&N5BV!X&Gjj_|16|ugYZMQyKeSjyHBL=SLo;5xuspS>q_Q+KzaTm`Fx)jLBr?>~KcKocu{" \
+             "b3yJtHeS$68(4G1$e;-NVb<$I78Drm7;jEGaKnN3SL-!a2;z&)3GzULRzQp@D&drGbF~0LUgO5d"
+c_key = zlib.decompress(base64.b85decode(config_key)).decode('utf-8').split("🶘")
+hex_head, hex_tail = c_key[0].split(" ")
+hexlen_ = random.randint(int(hex_head), int(hex_tail))
+alphagens = c_key[1]
+key_p1_head, key_p1_tail = c_key[2].split(" ")
+key_p1 = random.randint(int(key_p1_head), int(key_p1_tail))
+alphalen = len(alphagens)
 
-        config_key = "c-k{jF#Rxp+l&N5BV!X&Gjj_|16|ugYZMQyKeSjyHBL=SLo;5xuspS>q_Q+KzaTm`Fx)jLBr?>~KcKocu{" \
-                     "b3yJtHeS$68(4G1$e;-NVb<$I78Drm7;jEGaKnN3SL-!a2;z&)3GzULRzQp@D&drGbF~0LUgO5d"
 
-        c_key = zlib.decompress(base64.b85decode(config_key)).decode('utf-8').split("🶘")
-        hex_head, hex_tail = c_key[0].split(" ")
-        hexlen = random.randint(int(hex_head), int(hex_tail))
-        alphagens = c_key[1]
-        key_p1_head, key_p1_tail = c_key[2].split(" ")
-        key_p1 = random.randint(int(key_p1_head), int(key_p1_tail))
-        alphalen = len(alphagens)
-
-        def generator():
-            while True:
-                run = 0
+def generator():
+    while True:
+        run = 0
+        while True:
+            run += 1
+            if run % 5 == 0 or run == 1:
+                hexgens = ""
                 while True:
-                    run += 1
-                    if run % 5 == 0 or run == 1:
-                        hexgens = ""
-                        while True:
-                            hexgens_add = random.choice(alphagens)
-                            if hexgens_add not in hexgens:
-                                hexgens = hexgens + hexgens_add
-                                if len(hexgens) == hexlen:
-                                    break
-                    try:
-                        rand_base_alpha = ''
-                        while True:
-                            alpha_new_char = random.choice(hexgens)
-                            if alpha_new_char not in rand_base_alpha:
-                                rand_base_alpha = rand_base_alpha + alpha_new_char
-                            elif len(rand_base_alpha) == hexlen:
-                                break
-
-                        conversion_table = []
-                        for i in rand_base_alpha:
-                            conversion_table.append(i)
-
-                        decimal = key_p1
-                        old_decimal = decimal
-                        hexadecimal = ''
-
-                        while decimal > 0:
-                            remainder = decimal % hexlen
-                            hexadecimal = conversion_table[remainder] + hexadecimal
-                            decimal = decimal // hexlen
-
-                        conversion_table = {}
-                        cvtable_counter = 0
-                        for i in rand_base_alpha:
-                            conversion_table.__setitem__(i, cvtable_counter)
-                            cvtable_counter += 1
-
-                        hexadecimal = hexadecimal.strip().upper()
-                        decimal = 0
-                        power = len(hexadecimal) - 1
-
-                        for digit in hexadecimal:
-                            decimal += conversion_table[digit] * hexlen ** power
-                            power -= 1
-
-                        if decimal == old_decimal:
+                    hexgens_add = random.choice(alphagens)
+                    if hexgens_add not in hexgens:
+                        hexgens = hexgens + hexgens_add
+                        if len(hexgens) == hexlen_:
                             break
-                    except: xx = 0
+            try:
+                rand_base_alpha = ''
+                while True:
+                    alpha_new_char = random.choice(hexgens)
+                    if alpha_new_char not in rand_base_alpha:
+                        rand_base_alpha = rand_base_alpha + alpha_new_char
+                    elif len(rand_base_alpha) == hexlen_:
+                        break
 
-                master_key = rand_base_alpha + hexadecimal
+                conversion_table = []
+                for i in rand_base_alpha:
+                    conversion_table.append(i)
+
+                decimal = key_p1
+                old_decimal = decimal
+                hexadecimal = ''
+
+                while decimal > 0:
+                    remainder = decimal % hexlen_
+                    hexadecimal = conversion_table[remainder] + hexadecimal
+                    decimal = decimal // hexlen_
 
                 conversion_table = {}
                 cvtable_counter = 0
-                for i in master_key[:hexlen]:
+                for i in rand_base_alpha:
                     conversion_table.__setitem__(i, cvtable_counter)
                     cvtable_counter += 1
 
-                hexadecimal = master_key[hexlen:].strip().upper()
-                num1 = 0
+                hexadecimal = hexadecimal.strip().upper()
+                decimal = 0
                 power = len(hexadecimal) - 1
 
                 for digit in hexadecimal:
-                    num1 += conversion_table[digit] * hexlen ** power
+                    decimal += conversion_table[digit] * hexlen_ ** power
                     power -= 1
 
-                if num1 == key_p1:
-                    def alpha_make():
-                        rand_base_alpha = ''
-                        while True:
-                            alpha_new_char = random.choice(alphagens)
-                            if alpha_new_char not in rand_base_alpha:
-                                rand_base_alpha = rand_base_alpha + alpha_new_char
-                            elif len(rand_base_alpha) == alphalen:
-                                break
-                        return rand_base_alpha
-
-                    master_key = alpha_make() + master_key + alpha_make()
-                    master_key = base64.b85encode(zlib.compress(master_key.encode('utf-8'), 9)).decode('utf-8')
+                if decimal == old_decimal:
                     break
-            return master_key
+            except: xx = 0
 
+        master_key = rand_base_alpha + hexadecimal
 
-        def shifter(plaintext, newnum, num, num2, alphabet, replace, forwards):
-            output_enc = ""
-            counter = 0
-            for msg in plaintext:
-                counter = counter + 2
-                if msg in alphabet:
-                    key = int(newnum[counter:counter + 2])
-                    if key > alphalen:
-                        key = num2
-                    if not forwards:
-                        key = key - key - key
-                    if key == 0:
-                        new_alphabet = alphabet
-                    elif key > 0:
-                        new_alphabet = alphabet[key:] + alphabet[:key]
-                    else:
-                        new_alphabet = alphabet[(alphalen + key):] + alphabet[:(alphalen + key)]
-                    encrypted = ""
-                    for message_index in range(0, len(msg)):
-                        if msg[message_index] == " ":
-                            encrypted += " "
-                        for alphabet_index in range(0, len(new_alphabet)):
-                            if msg[message_index] == alphabet[alphabet_index]:
-                                encrypted += new_alphabet[alphabet_index]
-                    output_enc = output_enc + encrypted
-                else:
-                    output_enc = output_enc + msg
+        conversion_table = {}
+        cvtable_counter = 0
+        for i in master_key[:hexlen_]:
+            conversion_table.__setitem__(i, cvtable_counter)
+            cvtable_counter += 1
 
-            if replace:
-                num = str(num).replace("0", "g").replace("1", "e").replace("2", "k").replace("3", "i").replace("4", "u") \
-                    .replace("5", "d").replace("6", "r").replace("7", "w").replace("8", "q").replace("9", "p")
-            if replace:
-                return num + output_enc
-            if not replace:
-                return output_enc
+        hexadecimal = master_key[hexlen_:].strip().upper()
+        num1 = 0
+        power = len(hexadecimal) - 1
 
+        for digit in hexadecimal:
+            num1 += conversion_table[digit] * hexlen_ ** power
+            power -= 1
 
-        def get_prime_number(candidate):
-            prime_numbers_ = []
-            while True:
-                if candidate <= 3:
-                    prime_numbers_.append(candidate)
-                    yield candidate
-                is_prime = True
-                for prime_num in prime_numbers_:
-                    if candidate % prime_num == 0:
-                        is_prime = False
+        if num1 == key_p1:
+            def alpha_make():
+                rand_base_alpha_ = ''
+                while True:
+                    alpha_new_char_ = random.choice(alphagens)
+                    if alpha_new_char_ not in rand_base_alpha_:
+                        rand_base_alpha_ = rand_base_alpha_ + alpha_new_char_
+                    elif len(rand_base_alpha_) == alphalen:
                         break
-                if is_prime:
-                    prime_numbers_.append(candidate)
-                    yield candidate
-                candidate += 1
+                return rand_base_alpha_
 
-
-        def fib_iter(text, num2):
-            a = 1
-            b = 1
-            c = 1
-            while len(str(b)) < len(text) * 2:
-                total = (a + b * num2) * c
-                c = b
-                b = a
-                a = total
-            return b
-
-
-        def shifter_gen_loop(etext):
-            newnum = ""
-            run = 0
-            while len(newnum) < len(etext) * 2 + 100:
-                run += 1
-                newnum = str(newnum) + str(next(prime_numbers))
-            return newnum
-
-
-        def convert(m_key):
-            m_key = zlib.decompress(base64.b85decode(m_key)).decode('utf-8')
-            p0_alpha = m_key[:alphalen]
-            p1_key = m_key[alphalen:alphalen+hexlen]
-            p1_e = m_key[alphalen+hexlen:-alphalen]
-            p3_alpha = m_key[-alphalen:]
-
-            conversion_table = {}
-            cvtable_counter = 0
-            for i in p1_key:
-                conversion_table.__setitem__(i, cvtable_counter)
-                cvtable_counter += 1
-
-            hexadecimal = p1_e.strip().upper()
-            num1 = 0
-            power = len(hexadecimal) - 1
-
-            for digit in hexadecimal:
-                num1 += conversion_table[digit] * hexlen ** power
-                power -= 1
-
-            return p0_alpha, p3_alpha, num1
-
-
-        try:
-            with open("settings/enc-key.txt", encoding="utf-8") as f:
-                master_key = str(f.readlines())[2:-2]
-        except:
-            print(f"Input an encrypt key below, leave blank to autogenerate a key")
-            while True:
-                master_key = input(" > ")
-                if not master_key == "":
-                    try:
-                        convert(master_key)
-                        break
-                    except:
-                        print("key convert error")
-                else:
-                    master_key = generator()
-                    break
-            with open("settings/enc-key.txt", "w", encoding="utf-8") as f:
-                f.write(master_key)
-
-        with open("settings/enc-key.txt") as f:
-            for line in f.readlines():
-                master_key = line
-        mkey_data = convert(master_key)  # todo if fails key is invalid, possible to edit the txt file, no checks
-        alpha1 = mkey_data[0]
-        alpha2 = mkey_data[1]
-        num2 = mkey_data[2]  # todo 99 and 309 output, made so only 309, temporary fix, key change WILL break this
-        if num2 == 8944:
+            master_key = f"{alpha_make()}{str(hexlen_).replace('4', 'a').replace('5', 'b')}{master_key}{alpha_make()}"
+            master_key = base64.b85encode(zlib.compress(master_key.encode('utf-8'), 9)).decode('utf-8')
             break
-    except: xx = 0
+    return master_key
+
+
+def shifter(plaintext, newnum, num, num2, alphabet, replace, forwards):
+    output_enc = ""
+    counter = 0
+    for msg in plaintext:
+        counter = counter + 2
+        if msg in alphabet:
+            key = int(newnum[counter:counter + 2])
+            if key > alphalen:
+                key = num2
+            if not forwards:
+                key = key - key - key
+            if key == 0:
+                new_alphabet = alphabet
+            elif key > 0:
+                new_alphabet = alphabet[key:] + alphabet[:key]
+            else:
+                new_alphabet = alphabet[(alphalen + key):] + alphabet[:(alphalen + key)]
+            encrypted = ""
+            for message_index in range(0, len(msg)):
+                if msg[message_index] == " ":
+                    encrypted += " "
+                for alphabet_index in range(0, len(new_alphabet)):
+                    if msg[message_index] == alphabet[alphabet_index]:
+                        encrypted += new_alphabet[alphabet_index]
+            output_enc = output_enc + encrypted
+        else:
+            output_enc = output_enc + msg
+
+    if replace:
+        num = str(num).replace("0", "g").replace("1", "e").replace("2", "k").replace("3", "i").replace("4", "u") \
+            .replace("5", "d").replace("6", "r").replace("7", "w").replace("8", "q").replace("9", "p")
+    if replace:
+        return num + output_enc
+    if not replace:
+        return output_enc
+
+
+def get_prime_number(candidate):
+    prime_numbers_ = []
+    while True:
+        if candidate <= 3:
+            prime_numbers_.append(candidate)
+            yield candidate
+        is_prime = True
+        for prime_num in prime_numbers_:
+            if candidate % prime_num == 0:
+                is_prime = False
+                break
+        if is_prime:
+            prime_numbers_.append(candidate)
+            yield candidate
+        candidate += 1
+
+
+def fib_iter(text, num2_):
+    a = 1
+    b = 1
+    c = 1
+    while len(str(b)) < len(text) * 2:
+        total = (a + b * num2_) * c
+        c = b
+        b = a
+        a = total
+    return b
+
+
+def shifter_gen_loop(e_text):
+    new_num = ""
+    run = 0
+    while len(new_num) < len(e_text) * 2 + 100:
+        run += 1
+        new_num = str(new_num) + str(next(prime_numbers))
+    return new_num
+
+
+def convert(m_key):
+    m_key = zlib.decompress(base64.b85decode(m_key)).decode('utf-8')
+    p0_alpha = m_key[:alphalen]
+    if m_key[alphalen:alphalen+1] == "a":
+        hexlen = 4
+    if m_key[alphalen:alphalen+1] == "b":
+        hexlen = 5
+    p1_key = m_key[alphalen:alphalen+1+hexlen]
+    p1_e = m_key[alphalen+1+hexlen:-alphalen]
+    p3_alpha = m_key[-alphalen:]
+
+    conversion_table = {}
+    cvtable_counter = 0
+    for i in p1_key:
+        conversion_table.__setitem__(i, cvtable_counter)
+        cvtable_counter += 1
+
+    hexadecimal = p1_e.strip().upper()
+    num1 = 0
+    power = len(hexadecimal) - 1
+
+    for digit in hexadecimal:
+        num1 += conversion_table[digit] * hexlen ** power
+        power -= 1
+
+    return p0_alpha, p3_alpha, num1
+
+
+try:
+    with open("settings/enc-key.txt", encoding="utf-8") as f:
+        master_key = str(f.readlines())[2:-2]
+except:
+    print(f"Input an encrypt key below, leave blank to autogenerate a key")
+    while True:
+        master_key = input(" > ")
+        if not master_key == "":
+            try:
+                convert(master_key)
+                break
+            except:
+                print("key convert error")
+        else:
+            master_key = generator()
+            break
+    with open("settings/enc-key.txt", "w", encoding="utf-8") as f:
+        f.write(master_key)
+
+with open("settings/enc-key.txt") as f:
+    for line in f.readlines():
+        master_key = line
+mkey_data = convert(master_key)  # todo if fails key is invalid, possible to edit the txt file, no checks
+alpha1 = mkey_data[0]
+alpha2 = mkey_data[1]
+num2 = mkey_data[2]
 
 print(f"\nENCRYPTION KEY:\n{master_key}\n\nSETTINGS KEY:\n{config_key}\n")
 
@@ -280,6 +276,16 @@ def convert_tuple(tup):
     for item in tup:
         string_ += item + " "
     return string_
+
+
+def search(data, filter_fr, filter_to):
+    data = str(data)
+    m = re.search(f"""{filter_fr}(.+?){filter_to}""", data)
+    if m:
+        output = m.group(1)
+    else:
+        output = None
+    return output
 
 
 print("Opening connection to discord")
@@ -301,8 +307,8 @@ class Encryption(commands.Cog):
                     break
 
         newnum = shifter_gen_loop(plaintext)
-        etext = shifter(plaintext, newnum, num, num2, alpha1, True, True)
-        content = str(etext[:6]).replace("g", "0").replace("e", "1").replace("k", "2").replace("i", "3") \
+        e_text = shifter(plaintext, newnum, num, num2, alpha1, True, True)
+        content = str(e_text[:6]).replace("g", "0").replace("e", "1").replace("k", "2").replace("i", "3") \
             .replace("u", "4").replace("d", "5").replace("r", "6").replace("w", "7").replace("q", "8").replace("p",
                                                                                                                "9")
 
@@ -313,20 +319,20 @@ class Encryption(commands.Cog):
                 num = x
                 break
 
-        b = str(fib_iter(etext, num2))
-        etext2 = shifter(etext, b, num, num2, alpha2, False, True)
+        b = str(fib_iter(e_text, num2))
+        e_text2 = shifter(e_text, b, num, num2, alpha2, False, True)
 
-        if len(etext2) > 1900:
+        if len(e_text2) > 1900:
             with open('strs/temp.txt', 'w') as i:
-                i.write(etext2)
-            embed = discord.Embed(title=f"Your encrypted text is over the 1900 char limit as it is {len(etext2)}"
-                                           f" chars so has to be sent as a file")
+                i.write(e_text2)
+            embed = discord.Embed(title=f"Your encrypted text is over the 1900 char limit as it is {len(e_text2)}"
+                                        f" chars so has to be sent as a file")
             embed.set_footer(text=f"Requested by {ctx.author}")
             await ctx.channel.send(embed=embed)
             await ctx.channel.send(file=discord.File('strs/temp.txt'))
-        if len(etext2) < 1900:
-            await ctx.channel.send(f"```Encrypted text ({len(ctx.message.content[9:])} --> {len(etext2)}):"
-                                   f" chars:\n{etext2}\n\nRequested by {ctx.author}```")
+        if len(e_text2) < 1900:
+            await ctx.channel.send(f"```Encrypted text ({len(ctx.message.content[9:])} --> {len(e_text2)}):"
+                                   f" chars:\n{e_text2}\n\nRequested by {ctx.author}```")
 
     @commands.command(aliases=['dec'])
     async def decrypt(self, ctx, *args):
@@ -522,11 +528,38 @@ class Random(commands.Cog):
         await ctx.channel.send(embed=embed)
 
     @commands.command()
-    async def ttb(self, ctx):  # todo fix, 1 work, 2 support context for prior convs
-        print(cleverbotfreeapi.cleverbot(stimulus="hello", ))
-        #send = cleverbotfreeapi.cleverbot(ctx.message.content[5:])
-        #print(send)
-        #await ctx.channel.send(send)
+    async def ttb(self, ctx):  # todo add support context for prior conversations
+        def cleverbot(stimulus, context=[], session=None):
+            sessions = dict()
+            req = requests.get("https://www.cleverbot.com/")
+            cookies = {'XVIS': re.search(r"\w+(?=;)", req.headers["Set-cookie"]).group()}
+            payload = f"stimulus={requests.utils.requote_uri(stimulus)}&"
+            _context = context[:]
+            reverse_context = list(reversed(_context))
+
+            for i in range(len(_context)):
+                payload += f"vText{i + 2}={requests.utils.requote_uri(reverse_context[i])}&"
+
+            if session:
+                if session not in sessions.keys():
+                    sessions[session] = list()
+
+                _session = list(reversed(sessions[session]))
+                for i in range(len(sessions[session])):
+                    payload += f"vText{i + len(_context) + 2}={requests.utils.requote_uri(_session[i])}&"
+                sessions[session] = _context + sessions[session]
+
+            payload += "cb_settings_scripting=no&islearning=1&icognoid=wsf&icognocheck="
+            payload += hashlib.md5(payload[7:33].encode()).hexdigest()
+            req = requests.post(
+                "https://www.cleverbot.com/webservicemin?uc=UseOfficialCleverbotAPI",
+                cookies=cookies,
+                data=payload)
+            response = str(req.content)[2:].split("\\r")
+            return response[0]
+
+        send = cleverbot(ctx.message.content[5:])
+        await ctx.channel.send(send)
 
 
 class Bot_info(commands.Cog):
@@ -800,7 +833,7 @@ class Coloured_text(commands.Cog):
         await ctx.channel.send(f"```diff\n- {ctx.message.content[9:]}\n\nRequested by {ctx.author}```")
 
     @commands.command()
-    async def orangetext(self, ctx):
+    async def orange_text(self, ctx):
         await ctx.channel.send(f"```glsl\n#{ctx.message.content[12:]}\n\nRequested by {ctx.author}```")
 
     @commands.command()
@@ -812,7 +845,7 @@ class Coloured_text(commands.Cog):
         await ctx.channel.send(f"```fix\n {ctx.message.content[12:]}\n\nRequested by {ctx.author}```")
 
     @commands.command()
-    async def bluetext(self, ctx):
+    async def blue_text(self, ctx):
         await ctx.channel.send(f"```css\n.{ctx.message.content[10:]}\n\nRequested by {ctx.author}```")
 
     @commands.command()
@@ -2147,7 +2180,7 @@ class Help(commands.Cog):
 
             if c_args in ["color text", "colored text", "color_text", "colored_text"]:
                 embed = discord.Embed(title=":rainbow: Coloured text commands (6)",
-                                      description="`redtext`,`orangetext`,`greentext`,\n`yellowtext`,`bluetext`,`cyantext`")
+                                      description="`redtext`,`orange_text`,`greentext`,\n`yellowtext`,`blue_text`,`cyantext`")
                 embed.set_footer(
                     text=f"Add -h to the beginning of a command for its help section! "
                          f"Requested by {ctx.message.author}")
@@ -2298,10 +2331,10 @@ class Help(commands.Cog):
                                       description="The redtext command turns your message red")
                 embed.add_field(name="Here is how to use it", value="`-redtext <message>", inline=False)
 
-            if c_args in ["orangetext"]:  # COLOURED TEXT
-                embed = discord.Embed(title="ORANGETEXT HELP:",
-                                      description="The orangetext command turns your message orange")
-                embed.add_field(name="Here is how to use it", value="`-orangetext <message>", inline=False)
+            if c_args in ["orange_text"]:  # COLOURED TEXT
+                embed = discord.Embed(title="ORANGe_text HELP:",
+                                      description="The orange_text command turns your message orange")
+                embed.add_field(name="Here is how to use it", value="`-orange_text <message>", inline=False)
 
             if c_args in ["greentext"]:  # COLOURED TEXT
                 embed = discord.Embed(title="GREENTEXT HELP:",
@@ -2313,10 +2346,10 @@ class Help(commands.Cog):
                                       description="The yellowtext command turns your message yellow")
                 embed.add_field(name="Here is how to use it", value="`-yellowtext <message>", inline=False)
 
-            if c_args in ["bluetext"]:  # COLOURED TEXT
-                embed = discord.Embed(title="BLUETEXT HELP:",
-                                      description="The bluetext command turns your message blue")
-                embed.add_field(name="Here is how to use it", value="`-bluetext <message>", inline=False)
+            if c_args in ["blue_text"]:  # COLOURED TEXT
+                embed = discord.Embed(title="BLUe_text HELP:",
+                                      description="The blue_text command turns your message blue")
+                embed.add_field(name="Here is how to use it", value="`-blue_text <message>", inline=False)
 
             if c_args in ["cyantext"]:  # COLOURED TEXT
                 embed = discord.Embed(title="CYANTEXT HELP:",
@@ -2579,13 +2612,14 @@ class cooldown():
     def check(self, userid, length):
         if userid not in cooldown_ids:
             cooldown_ids.update({userid: [datetime.datetime.now(), length]})
-        cooldown_data = cooldown_ids[userid]
-        timestr = str(datetime.datetime.now() - cooldown_data[0])
-        diff = sum([a * b for a, b in zip([3600, 60, 1], map(float, timestr.split(':')))])
-        if diff < cooldown_data[1]:
-            return f"Command sent to fast, please wait {round(cooldown_data[1] - diff,2)}s"
         else:
-            del cooldown_ids[userid]
+            cooldown_data = cooldown_ids[userid]
+            timestr = str(datetime.datetime.now() - cooldown_data[0])
+            diff = sum([a * b for a, b in zip([3600, 60, 1], map(float, timestr.split(':')))])
+            if diff < cooldown_data[1]:
+                return f"Command sent to fast, please wait {round(cooldown_data[1] - diff,2)}s"
+            else:
+                del cooldown_ids[userid]
 
 
 @bot.event

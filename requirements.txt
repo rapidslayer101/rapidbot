@@ -1,3 +1,7 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:e93e04af77ea352bbb53e3a137f974ba093523620e5997ae82ef31e4eaabe65d
-size 148
+discord.py==1.7.3
+google==3.0.0
+googletrans==3.0.0
+psutil==5.8.0
+requests==2.26.0
+forex-python==1.6
+praw==7.3.0

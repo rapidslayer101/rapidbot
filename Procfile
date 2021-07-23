@@ -1,1 +1,1 @@
-worker: rapidbot.py
+worker: python rapidbot.py

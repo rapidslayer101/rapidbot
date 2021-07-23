@@ -635,10 +635,27 @@ class Server(commands.Cog):
         await ctx.channel.send(f'The ID for {ctx.guild} (this server) is: {ctx.guild.id}\n\nTo get to this server online copy this link: \
         \ndiscord.com/channels/{ctx.guild.id}')
 
-    @commands.command()
-    async def channelid(self, ctx):
-        await ctx.channel.send(f'The ID for {ctx.channel} (this channel) is: {ctx.channel.id}\n\nTo get to this channel online copy this link: \
-        \ndiscord.com/channels/{ctx.guild.id}/{ctx.channel.id}')
+    @commands.command(aliases=["channelids"])
+    async def channel_ids(self, ctx, *args):
+        c_args = convert_tuple(args)[:-1]
+        print(c_args)
+        text_channel_list = ""
+        for guild in bot.guilds:
+            if guild.id == ctx.guild.id:
+                channels_amount = len(guild.text_channels)
+                for channel in guild.text_channels:
+                    if c_args == "":
+                        text_channel_list += f"{channel.id} {channel}\n"
+                    if c_args == "raw":
+                        text_channel_list += f"{channel.id}, "
+        if c_args == "raw":
+            text_channel_list = text_channel_list[:-2]
+        if c_args == "":
+            text_channel_list += f"\nThe ID for this channel ({ctx.channel}) is: {ctx.channel.id}"
+
+        embed = discord.Embed(title=f"Channels in this server ({channels_amount}):", description=text_channel_list)
+        embed.set_footer(text=f"Requested by {ctx.author}")
+        await ctx.channel.send(embed=embed)
 
     @commands.command()
     async def messageid(self, ctx):
@@ -2111,6 +2128,18 @@ class Admin(commands.Cog):
             await message.channel.send(f"Deleted {msgnum} messages(s)", delete_after=2.5)
 
 
+class Thomas(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @commands.command(aliases=["start event", "startevent"])
+    async def start_event(self, ctx, *args):
+        if ctx.author.id in [530791679704301580, 425373518566260766]:
+            c_args = convert_tuple(args)[:-1]
+            if c_args == "":
+                await ctx.channel.send("No expire time provided")
+
+
 class Help(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -2155,7 +2184,7 @@ class Help(commands.Cog):
 
             if c_args in ["server"]:
                 embed = discord.Embed(title=":page_facing_up: Server commands (9)", description="\
-                        `chat_links`,`userid`,`serverid`,`channelid`,`messageid`,"
+                        `chat_links`,`userid`,`serverid`,`channel_ids`,`messageid`,"
                         "\n`members`,`roles`,`inrole`,`who_spoke`")
                 embed.set_footer(
                     text=f"Add -h to the beginning of a command for its help section! "
@@ -2163,7 +2192,7 @@ class Help(commands.Cog):
 
             if c_args in ["currency", "cur"]:
                 embed = discord.Embed(title=":dollar: Currency commands (2)",
-                                         description="`currency_list`,`currency_convert`")
+                                      description="`currency_list`,`currency_convert`")
                 embed.set_footer(
                     text=f"Add -h to the beginning of a command for its help section! "
                          f"Requested by {ctx.message.author}")
@@ -2269,9 +2298,12 @@ class Help(commands.Cog):
                 embed = discord.Embed(title="SERVER ID HELP:",
                                       description="The server id command retrieves current servers id")
 
-            if c_args in ["channelid"]:  # SERVER INFO
-                embed = discord.Embed(title="CHANNEL ID HELP:",
-                                      description="The channel id retrieves the current channels id")
+            if c_args in ["channelids", "channel_ids"]:  # SERVER INFO
+                embed = discord.Embed(title="CHANNEL_IDS HELP:",
+                                      description="The channel ids command gets all channel ids from current server")
+                embed.add_field(name="Here is how to use it", value="`-channel id` shows channel ids and names"
+                                "\n`-channel id raw` shows just channel ids", inline=False)
+                embed.add_field(name="Command aliases", value="`channelids`", inline=False)
 
             if c_args in ["messageid"]:  # SERVER INFO
                 embed = discord.Embed(title="MESSAGE ID HELP:",
@@ -2580,6 +2612,7 @@ bot.add_cog(NSFW(bot))
 bot.add_cog(Online_searching(bot))
 bot.add_cog(Games(bot))
 bot.add_cog(Admin(bot))
+bot.add_cog(Thomas(bot))  # thomas special cog
 bot.add_cog(Help(bot))
 
 global theshit  # todo what to do with this stuff?
@@ -2814,12 +2847,6 @@ async def on_message(message):
             message.content = ""
         
         await bot.process_commands(message)
-
-        # thomas k's commands
-
-
-
-        # giveaway stuff here
 
         if message.author.id == 425373518566260766:
             if message.content.startswith("-update strs"):

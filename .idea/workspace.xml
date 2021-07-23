@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="a4216da4-c4ef-4c08-be3a-2444a9d19dc3" name="Default Changelist" comment="restore files from lfs">
+    <list default="true" id="a4216da4-c4ef-4c08-be3a-2444a9d19dc3" name="Default Changelist" comment="Fixed up help, merged ping into info, some other fixes">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/rapidbot.py" beforeDir="false" afterPath="$PROJECT_DIR$/rapidbot.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/strs/msgstore.txt" beforeDir="false" afterPath="$PROJECT_DIR$/strs/msgstore.txt" afterDir="false" />
@@ -100,7 +100,14 @@
       <option name="project" value="LOCAL" />
       <updated>1627001888299</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Fixed up help, merged ping into info, some other fixes">
+      <created>1627047473004</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1627047473004</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -121,6 +128,7 @@
     <MESSAGE value="Help commands rewrite complete, cooldown system rewrite mostly complete" />
     <MESSAGE value="Encryption key loading completely fixed, ttb fixed and its module requirement gone" />
     <MESSAGE value="restore files from lfs" />
-    <option name="LAST_COMMIT_MESSAGE" value="restore files from lfs" />
+    <MESSAGE value="Fixed up help, merged ping into info, some other fixes" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed up help, merged ping into info, some other fixes" />
   </component>
 </project>

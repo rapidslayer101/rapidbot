@@ -641,7 +641,7 @@ class Server(commands.Cog):
         e4 = ""
         a5 = 0
         for item in ctx.guild.members:
-            e4 += f"\n<@!{item.id}>"
+            e4 += f"<@!{item.id}>"
             a5 += 1
         embed = discord.Embed(title=f"Member count: {a5}", description=str(e4))
         embed.set_footer(text=f"Requested by {ctx.author}")
@@ -2171,6 +2171,8 @@ class Thomas(commands.Cog):
                         total_entries += 3
                     if discord.utils.get(ctx.author.roles, name="staff"):
                         total_entries += 1
+                    if discord.utils.get(ctx.author.roles, name="Gold Role"):
+                        total_entries += 2
                     await ctx.channel.send(f"Application allowed with {total_entries} entries")
                     with open("settings/event_players.txt", "a+") as f:
                         for i in range(total_entries):

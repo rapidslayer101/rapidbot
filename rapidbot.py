@@ -37,6 +37,11 @@ if not os.path.isfile("settings/nsfw.txt"):
 if not os.path.isfile("strs/msgstore.txt"):
     open("strs/msgstore.txt", "w").close()
 
+if not os.path.isfile("settings/event_expire.txt"):  # thomas
+    open("settings/event_expire.txt", "w").close()
+if not os.path.isfile("settings/event_players.txt"):  # thomas
+    open("settings/event_players.txt", "w").close()
+
 # encrypt def stuff
 # the manual setup version of this is found within enc 5.x versions
 config_key = "c-k{jF#Rxp+l&N5BV!X&Gjj_|16|ugYZMQyKeSjyHBL=SLo;5xuspS>q_Q+KzaTm`Fx)jLBr?>~KcKocu{" \
@@ -2084,12 +2089,96 @@ class Thomas(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @commands.command()
+    async def draw(self, ctx, *args):
+        if ctx.author.id in [530791679704301580, 425373518566260766]:
+            c_args = convert_tuple(args)[:-1]
+            if c_args == "":
+                await ctx.channel.send("Missing number of people to draw, -draw <num>")
+            else:
+                with open("settings/event_players.txt") as f:
+                    players = f.readlines()
+                if int(c_args) > len(set(players)):
+                    await ctx.channel.send(f"The max number that can be drawn from this data is {len(set(players))}")
+                else:
+                    total_players = len(players)
+                    draw = ""
+                    for i in range(int(c_args)):
+                        while True:
+                            new_draw = players[random.randint(1, total_players)-1]
+                            if str(new_draw).replace("\n", "") not in draw:
+                                draw += f"<@!{players[random.randint(1, total_players)-1]}>, ".replace("\n", "")
+                                print(draw)
+                                break
+                    await ctx.channel.send(f"Drew {draw[:-2]} from {total_players-int(c_args)} entries")
+                    open("settings/event_expire.txt", "w").close()
+                    open("settings/event_players.txt", "w").close()
+
+    @commands.command(aliases=["current time", "currenttime"])
+    async def current_time(self, ctx):
+        await ctx.channel.send(str(datetime.datetime.now())[:-7])
+
     @commands.command(aliases=["start event", "startevent"])
     async def start_event(self, ctx, *args):
         if ctx.author.id in [530791679704301580, 425373518566260766]:
             c_args = convert_tuple(args)[:-1]
-            if c_args == "":
-                await ctx.channel.send("No expire time provided")
+            with open("settings/event_expire.txt") as f:
+                data = f.read()
+            try:
+                dt_object = datetime.datetime.strptime(data, "%Y-%m-%d %H:%M:%S")
+                await ctx.channel.send("There is already a running event\n"
+                                       f"Time remaining in running event: {dt_object - datetime.datetime.now()}")
+            except:
+                if c_args == "":
+                    await ctx.channel.send("No expire time provided")
+                else:
+                    dt_object = datetime.datetime.strptime(c_args, "%Y-%m-%d %H:%M:%S")
+                    await ctx.channel.send(f"Time remaining in event: {dt_object-datetime.datetime.now()}")
+                    with open("settings/event_expire.txt", "w") as f:
+                        f.write(c_args)
+
+    @commands.command(aliases=["expire time", "expiretime"])
+    async def expire_time(self, ctx):
+        with open("settings/event_expire.txt") as f:
+            data = f.read()
+        try:
+            dt_object = datetime.datetime.strptime(data, "%Y-%m-%d %H:%M:%S")
+            await ctx.channel.send(f"Time remaining in running event: {dt_object - datetime.datetime.now()}")
+        except:
+            await ctx.channel.send("There is no running event")
+
+    @commands.command(aliases=["join event", "joinevent"])
+    async def join_event(self, ctx):
+        with open("settings/event_expire.txt") as f:
+            data = f.read()
+        try:
+            dt_object = datetime.datetime.strptime(data, "%Y-%m-%d %H:%M:%S")
+            if datetime.datetime.now() > dt_object:
+                await ctx.channel.send(f"This event has expired, you can no longer enter")
+            else:
+                allow_apply = True
+                with open("settings/event_players.txt") as f:
+                    total_entries = 0
+                    for line in f.readlines():
+                        if str(ctx.author.id) in line:
+                            total_entries += 1
+                            allow_apply = False
+                if allow_apply:
+                    total_entries = 0
+                    if discord.utils.get(ctx.author.roles, name="Member"):
+                        total_entries += 1
+                    if discord.utils.get(ctx.author.roles, name="Server Booster"):
+                        total_entries += 3
+                    if discord.utils.get(ctx.author.roles, name="staff"):
+                        total_entries += 1
+                    await ctx.channel.send(f"Application allowed with {total_entries} entries")
+                    with open("settings/event_players.txt", "a+") as f:
+                        for i in range(total_entries):
+                            f.write(f"{ctx.author.id}\n")
+                else:
+                    await ctx.channel.send(f"You have already applied before, you have {total_entries} entries")
+        except:
+            await ctx.channel.send("There is no running event")
 
 
 class Help(commands.Cog):

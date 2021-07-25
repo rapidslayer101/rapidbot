@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="a4216da4-c4ef-4c08-be3a-2444a9d19dc3" name="Default Changelist" comment="Channel id command redo">
+    <list default="true" id="a4216da4-c4ef-4c08-be3a-2444a9d19dc3" name="Default Changelist" comment="Standard update">
+      <change afterPath="$PROJECT_DIR$/settings/event_expire.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/settings/event_players.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/rapidbot.py" beforeDir="false" afterPath="$PROJECT_DIR$/rapidbot.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/strs/msgstore.txt" beforeDir="false" afterPath="$PROJECT_DIR$/strs/msgstore.txt" afterDir="false" />
@@ -114,7 +116,14 @@
       <option name="project" value="LOCAL" />
       <updated>1627057076606</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Standard update">
+      <created>1627074597067</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1627074597067</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -137,6 +146,7 @@
     <MESSAGE value="restore files from lfs" />
     <MESSAGE value="Fixed up help, merged ping into info, some other fixes" />
     <MESSAGE value="Channel id command redo" />
-    <option name="LAST_COMMIT_MESSAGE" value="Channel id command redo" />
+    <MESSAGE value="Standard update" />
+    <option name="LAST_COMMIT_MESSAGE" value="Standard update" />
   </component>
 </project>

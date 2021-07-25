@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="a4216da4-c4ef-4c08-be3a-2444a9d19dc3" name="Default Changelist" comment="Thomas event commands added">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rapidbot.py" beforeDir="false" afterPath="$PROJECT_DIR$/rapidbot.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/strs/msgstore.txt" beforeDir="false" afterPath="$PROJECT_DIR$/strs/msgstore.txt" afterDir="false" />
-    </list>
+    <list default="true" id="a4216da4-c4ef-4c08-be3a-2444a9d19dc3" name="Default Changelist" comment="Thomas event commands update" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -128,7 +124,14 @@
       <option name="project" value="LOCAL" />
       <updated>1627223287180</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="Thomas event commands update">
+      <created>1627227669194</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1627227669194</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -153,6 +156,7 @@
     <MESSAGE value="Channel id command redo" />
     <MESSAGE value="Standard update" />
     <MESSAGE value="Thomas event commands added" />
-    <option name="LAST_COMMIT_MESSAGE" value="Thomas event commands added" />
+    <MESSAGE value="Thomas event commands update" />
+    <option name="LAST_COMMIT_MESSAGE" value="Thomas event commands update" />
   </component>
 </project>

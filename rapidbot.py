@@ -22,7 +22,6 @@ if socket.gethostname() == "RAPIDSLAYER101":
 else:
     device = "24/7-HEROKU"
 
-# todo fix the help section
 # todo color embeds
 # todo maybe move all print statements to a webhook and a debug console
 
@@ -263,13 +262,20 @@ except:
     with open("settings/enc-key.txt", "w", encoding="utf-8") as f:
         f.write(master_key)
 
-with open("settings/enc-key.txt") as f:
-    for line in f.readlines():
-        master_key = line
-mkey_data = convert(master_key)  # todo if fails key is invalid, possible to edit the txt file, no checks
-alpha1 = mkey_data[0]
-alpha2 = mkey_data[1]
-num2 = mkey_data[2]
+
+while True:
+    with open("settings/enc-key.txt") as f:
+        for line in f.readlines():
+            master_key = line
+    try:
+        mkey_data = convert(master_key)
+        alpha1 = mkey_data[0]
+        alpha2 = mkey_data[1]
+        num2 = mkey_data[2]
+        break
+    except:
+        with open("settings/enc-key.txt", "w", encoding="utf-8") as f:
+            f.write(generator())
 
 print(f"\nENCRYPTION KEY:\n{master_key}\n\nSETTINGS KEY:\n{config_key}\n")
 
@@ -297,6 +303,10 @@ print("Opening connection to discord")
 class Encryption(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+    @commands.command()
+    async def enc_key(self, ctx):
+        await ctx.channel.send(f"Randomly generated encryption key:\n```{generator()}```")
 
     @commands.command(aliases=['enc'])
     async def encrypt(self, ctx, *, arg):
@@ -460,20 +470,18 @@ class Random(commands.Cog):
         if not allowcmd == 1:
             def get_random_unicode(length):
                 get_char = chr
-
-                # Update this to include code point ranges to be sampled
                 include_ranges = [(0x0021, 0x0021), (0x0023, 0x0026), (0x0028, 0x007E), (0x00A1, 0x00AC),
                 (0x00AE, 0x00FF), (0x0100, 0x017F), (0x0180, 0x024F), (0x2C60, 0x2C7F), (0x16A0, 0x16F0),
                 (0x0370, 0x0377), (0x037A, 0x037E), (0x0384, 0x038A), (0x038C, 0x038C)]
 
                 alphabet = [get_char(code_point) for current_range in include_ranges
-                for code_point in range(current_range[0],current_range[1] + 1)]
+                            for code_point in range(current_range[0],current_range[1] + 1)]
                 return ''.join(random.choice(alphabet) for i in range(length))
 
             if __name__ == '__main__':
                 time.sleep(0.25)
                 embed = discord.Embed(title=f'A random string of {alphaamount} symbols: ',
-                description=get_random_unicode(alphaamount))
+                                      description=get_random_unicode(alphaamount))
                 embed.set_footer(text=f"Requested by {ctx.author}")
                 await ctx.channel.send(embed=embed)
 
@@ -612,7 +620,6 @@ class Server(commands.Cog):
     @commands.command(aliases=["channelids"])
     async def channel_ids(self, ctx, *args):
         c_args = convert_tuple(args)[:-1]
-        print(c_args)
         text_channel_list = ""
         for guild in bot.guilds:
             if guild.id == ctx.guild.id:
@@ -639,30 +646,25 @@ class Server(commands.Cog):
     @commands.command()
     async def members(self, ctx):
         e4 = ""
-        a5 = 0
         for item in ctx.guild.members:
             e4 += f"<@!{item.id}>"
-            a5 += 1
-        embed = discord.Embed(title=f"Member count: {a5}", description=str(e4))
+        embed = discord.Embed(title=f"Member count: {len(ctx.guild.members)}", description=str(e4))
         embed.set_footer(text=f"Requested by {ctx.author}")
         await ctx.channel.send(embed=embed)
 
     @commands.command()
     async def roles(self, ctx):
         e4 = ""
-        rolecount = 0
         for item in ctx.guild.roles:
             e4 = e4 + f"\n{item.id} <@&{item.id}>"
-            rolecount += 1
-        embed = discord.Embed(title=f"Role count: {rolecount}", description=str(e4))
+        embed = discord.Embed(title=f"Role count: {len(ctx.guild.roles)}", description=str(e4))
         embed.set_footer(text=f"Requested by {ctx.author}")
         await ctx.channel.send(embed=embed)
 
     @commands.command()
     async def inrole(self, ctx):  # todo this command may still be broken from before
         if ctx.message.content[8:9] == "<":
-            rolecheck1 = ctx.message.content[11:]
-            rolecheck = rolecheck1.replace(">", "")
+            rolecheck = ctx.message.content[11:].replace(">", "")
         else:
             rolecheck = ctx.message.content[8:]
         with_num = 0
@@ -687,11 +689,9 @@ class Server(commands.Cog):
                 stuffs = ""
                 async for message in ctx.channel.history(limit=int(arg1)):
                     id_list.append(message.author.id)
-                myset = set(id_list)
-                for x in myset:
+                for x in set(id_list):
                     stuffs = stuffs + f"<@!{x}> spoke {id_list.count(x)} times \n"
-                embed = discord.Embed(title=f"Members who spoke in last {int(arg1)} messages",
-                description=stuffs)
+                embed = discord.Embed(title=f"Members who spoke in last {int(arg1)} messages", description=stuffs)
                 embed.set_footer(text=f"Took {round(time.time() - started_at,2)} seconds, Requested by {ctx.author}")
                 await ctx.channel.send(embed=embed)
 
@@ -703,18 +703,13 @@ class Currency(commands.Cog):
     @commands.command()
     async def currency_list(self, ctx):
         values = (ctx.message.content[15:18])
-        c = CurrencyRates()
-        currencylistinput = c.get_rates(values)
-        await ctx.channel.send(f"```glsl\n#{currencylistinput}\n\n#Requested by {ctx.author}```")
+        await ctx.channel.send(f"```glsl\n#{CurrencyRates().get_rates(values)}\n\n#Requested by {ctx.author}```")
 
     @commands.command()
-    async def currency_convert(self, ctx, arg1, arg2, arg3):  # todo simplify horrible floats
-        c = CurrencyRates()
+    async def currency_convert(self, ctx, arg1, arg2, arg3):
         d = CurrencyCodes()
-        values3 = float(arg3)
-        output2 = d.get_symbol(arg2.upper())
-        output = c.convert(arg1.upper(), arg2.upper(), values3)
-        embed = discord.Embed(title=f"Here is the value in {arg2}: {output2}{round(output,2)}")
+        output = CurrencyRates().convert(arg1.upper(), arg2.upper(), float(arg3))
+        embed = discord.Embed(title=f"Here is the value in {arg2}: {d.get_symbol(arg2.upper())}{round(output,2)}")
         embed.set_footer(text=f"Requested by {ctx.author}")
         await ctx.channel.send(embed=embed)
 
@@ -846,33 +841,34 @@ class NSFW(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    async def nsfw_on(self, ctx):
-        with open('settings/nsfw.txt', 'r') as f:
-            isin = f'{f.read()}'
-            if isin.find(str(ctx.channel.id)) > -1:
-                await ctx.channel.send("```NSFW is already enabled in this channel```")
-            else:
-                if discord.utils.get(ctx.author.roles, name="admin") or discord.utils.get(ctx.author.roles,name="Admin")\
-                or discord.utils.get(ctx.author.roles, name="administrator") or discord.utils.get(ctx.author.roles, name="Administrator"):
-                    with open('settings/nsfw.txt', 'a') as f:
-                        f.write(str(ctx.channel.id) + '\n')
-                        await ctx.channel.send("```NSFW is now enabled for this channel```")
-                else:
-                    await ctx.channel.send("```You cannot turn on NSFW as\nyou do not have the admin role\n\n"
-                                           "If you are an admin in this server \ngive yourself the role admin"
-                                           "\n\nIf your not and admin then ask an admin\nto turn nsfw on```")
+    @commands.has_permissions(administrator=True)
+    async def nsfw_status(self, ctx):
+        if is_nsfw_on(ctx.channel.id):
+            await ctx.channel.send("NSFW is enabled in this channel")
+        else:
+            await ctx.channel.send("NSFW is not enabled in this channel")
 
     @commands.command()
-    async def nsfw_off(self, ctx):  # todo show if it was on before or not not the current useless output, redo command better
-        if discord.utils.get(ctx.author.roles, name="admin") or discord.utils.get(ctx.author.roles, name="Admin"):
-            lists = []
-            putin = f'{ctx.channel.id}'
-            lists.append(putin)
-            bad_words = lists
-            with open('settings/nsfw.txt') as oldfile, open('settings/nsfw.txt','w') as newfile:
-                for line in oldfile:
+    @commands.has_permissions(administrator=True)
+    async def nsfw_on(self, ctx):
+        if is_nsfw_on(ctx.channel.id):
+            await ctx.channel.send("```NSFW is already enabled in this channel```")
+        else:
+            with open('settings/nsfw.txt', 'a') as f:
+                f.write(str(ctx.channel.id) + '\n')
+                await ctx.channel.send("```NSFW is now enabled for this channel```")
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def nsfw_off(self, ctx):
+        bad_words = [f'{ctx.channel.id}']
+        if not is_nsfw_on(ctx.channel.id):
+            await ctx.channel.send("```NSFW is not enabled in this channel```")
+        else:
+            with open('settings/nsfw.txt') as old_file, open('settings/nsfw.txt', 'w') as new_file:
+                for line in old_file:
                     if any(bad_word in line for bad_word in bad_words):
-                        newfile.write(line)
+                        new_file.write(line)
                 await ctx.channel.send("```If NSFW was enabled before it now wont be```")
 
     @commands.command()
@@ -1287,7 +1283,7 @@ class Online_searching(commands.Cog):
                     break
 
     @commands.command()
-    async def meme(self, ctx):  # todo sometimes not loading
+    async def meme(self, ctx):  # todo sometimes not loading, for efficiency put data in txt
         global postnum
         reddit = praw.Reddit(client_id='RuvVgZ-jMqw9lw', client_secret='tj4cbJuTKAum0ZszB_DJwY5cFjo',
                              user_agent='Reddit webscraper')
@@ -2173,7 +2169,9 @@ class Thomas(commands.Cog):
                         total_entries += 1
                     if discord.utils.get(ctx.author.roles, name="Gold Role"):
                         total_entries += 2
-                    await ctx.channel.send(f"Application allowed with {total_entries} entries")
+                    embed = discord.Embed(title=f"Application allowed with {total_entries} entries"
+                                          , color=discord.Colour(0x00ff00))
+                    await ctx.channel.send(embed=embed)
                     with open("settings/event_players.txt", "a+") as f:
                         for i in range(total_entries):
                             f.write(f"{ctx.author.id}\n")
@@ -2187,7 +2185,7 @@ class Help(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(aliases=["h"])  # todo the plain h command spacing issue is likely discord removing blank spaces
+    @commands.command(aliases=["h"])
     async def help(self, ctx, *args):  # todo this command wont work at all with commands like -h colour text
         c_args = convert_tuple(args)[:-1]
         embed = None
@@ -2195,23 +2193,24 @@ class Help(commands.Cog):
         if c_args == "":
             embed = discord.Embed(title="Rapidbot command sections", description="We have a wide range of commands!\
                     \nAlso remember the prefix is '-'")
-            embed.add_field(name=":hash: Encrypt (2)    :question: Random (11)    :information_source: Info (1)",
+            embed.add_field(name=":hash: Encrypt (3)    :question: Random (11)    :information_source: Info (1)",
                             value="`-h enc`       `-h rand`      `-h info`", inline=False)
             embed.add_field(name=":page_facing_up: Server (9)   :dollar: Currency (2)  :rainbow: Coloured text (6)",
                             value="`-h server`    `-h currency`    `-h color text`", inline=False)
 
             if is_nsfw_on(ctx.channel.id):
                 embed.add_field(name=":wink: NSFW (8)     :computer: Online searches (8)    :game_die: Games (12)",
-                                value="`-h nsfw`   `-h search`           `-h games`", inline=False)
+                                value="`-h nsfw`     `-h search`           `-h games`", inline=False)
             else:
                 embed.add_field(name="Disabled (8)     :computer: Online searches (8)    :game_die: Games (12)",
                                 value="`disabled`   `-h search`           `-h games`", inline=False)
         else:
             if c_args in ["encryption", "encrypt", "enc", "decryption", "decrypt", "dec"]:  # todo maybe add more desc
-                embed = discord.Embed(title=":hash: Encryption commands (2)",
-                                      description="`encrypt`,`decrypt`")
+                embed = discord.Embed(title=":hash: Encryption commands (3)",
+                                      description="`encrypt`,`decrypt`,`enc_key`")
                 embed.add_field(name="Here is how to use them",
-                                value="`-encrypt <message>`\n`-decrypt <encrypted message>`", inline=False)
+                                value="`-encrypt <message>`\n`-decrypt <encrypted message>`\n"
+                                      "`-enc_key` makes a random encryption key", inline=False)
                 embed.set_footer(text=f"Requested by {ctx.message.author}")
 
             if c_args in ["random", "rand"]:
@@ -2949,8 +2948,7 @@ async def on_message(message):
                                                 newfile.write(line)
 
                     await message.channel.send("```Lnk data Success```")
-                    file_name = ("strs/msgstore.txt")
-                    file1 = open(file_name, "r")
+                    file1 = open("strs/msgstore.txt", "r")
                     d = dict()
 
                     for line in file1:
@@ -3011,10 +3009,7 @@ async def on_message(message):
 
             # data not admin
             if message.content.startswith("-thischat msg"):
-                lists = []
-                putin = f'{message.channel.id}'
-                lists.append(putin)
-                bad_words = lists
+                bad_words = [f'{message.channel.id}']
                 await message.channel.send(bad_words)
                 with open('strs/msgstore.txt') as oldfile, open(f'strs/edits/chatmsg-{message.channel.id}.txt',
                                                                 'w') as newfile:
@@ -3024,17 +3019,18 @@ async def on_message(message):
                     await message.channel.send("```SUCCESS```")
                     await message.channel.send(file=discord.File(f'strs/edits/chatmsg-{message.channel.id}.txt'))
 
-            if message.content.startswith("-status dev"):
-                game = discord.Game("Currently programming")
-                await bot.change_presence(status=discord.Status.online, activity=game)
-
-            if message.content.startswith("-status on"):
-                game = discord.Game(f"On since {datetime.datetime.now()}")
-                await bot.change_presence(status=discord.Status.online, activity=game)
-
-            if message.content.startswith("-status make"):
-                game = discord.Game(f"{message.content[13:]}")
-                await bot.change_presence(status=discord.Status.online, activity=game)
+            if message.content.startswith("-status"):
+                change = True
+                if message.content == "-status dev":
+                    game = discord.Game("Currently programming")
+                if message.content == "-status on":
+                    game = discord.Game(f"On since {datetime.datetime.now()}")
+                if message.content == "-status make":
+                    game = discord.Game(f"{message.content[13:]}")
+                else:
+                    change = False
+                if change:
+                    await bot.change_presence(status=discord.Status.online, activity=game)
 
         if message.content.startswith("-beta access"):
             giveto = message.content[13:]
@@ -3071,38 +3067,12 @@ async def on_message(message):
             vc.play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source="F://captures/wideptin.mp3"))
             await message.channel.send("```now playing: wide_putin.mp4```")
 
-        if message.content.startswith("-react"):
-            msg = await message.channel.send("hi")
-            await msg.add_reaction('1️⃣')
-            await msg.add_reaction('🎲')
-            channel = message.channel
-            global reaction1, user1
-
-            def check(reaction1, user1):
-                return user1 == message.author and str(reaction1.emoji) == '1️⃣' or '🎲'
-
-            try:
-                reaction1, user1 = await bot.wait_for('reaction_add', timeout=10.0, check=check)
-            except asyncio.TimeoutError:
-                await channel.send('No reaction was recieved timed out')
-            else:
-                await channel.send('Reaction recieved!!')
-
         if message.content.startswith("-tts"):
             import gtts
             text = message.content[5:]
             tts = gtts.gTTS(text)
             tts.save("temp.mp3")
             vc.play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source="temp.mp3"))
-
-#@bot.event
-#async def on_reaction_add(reaction, user):
-    #if not int(user.id) == 711578412103368707:
-       # if int(reaction.message.channel.id) == 746830846790729738:
-            #if reaction.emoji == "✅":
-                #await user.add_roles(discord.utils.get(user.guild.roles, name="Verified"))
-                #await user.send("role '*verified*' was added")
-                #print("Verified and New role added")
 
 
 @bot.event
@@ -3116,13 +3086,6 @@ async def on_connect():
           f'storage: {psutil.disk_usage("/").percent}% used, {round(psutil.disk_usage("/").used/1024/1024,2)}'
           f'/{round(psutil.disk_usage("/").total/1024/1024,2)}MB\n'
           f'-----------------------------------------------')
-
-    #print("\n")
-    #print(psutil.net_if_addrs())
-    #print(psutil.net_connections(kind='tcp'))
-    #print(psutil.net_if_stats())
-    #print(psutil.users())
-    #print("\n")
 
 
 @bot.event

@@ -24,6 +24,7 @@ else:
 
 # todo color embeds
 # todo maybe move all print statements to a webhook and a debug console
+# todo prefix changes?
 
 # file system checks
 if not os.path.isdir("settings"):
@@ -32,9 +33,13 @@ if not os.path.isdir("strs"):
     os.mkdir("strs")
 if not os.path.isfile("settings/nsfw.txt"):
     open("settings/nsfw.txt", "w").close()
-
 if not os.path.isfile("strs/msgstore.txt"):
     open("strs/msgstore.txt", "w").close()
+if not os.path.isfile("strs/tokens.txt"):
+    open("strs/tokens.txt", "w").close()
+if not os.path.isfile("strs/rcoin_bals.txt"):
+    open("strs/rcoin_bals.txt", "w").close()
+
 
 if not os.path.isfile("settings/event_expire.txt"):  # thomas
     open("settings/event_expire.txt", "w").close()
@@ -55,88 +60,82 @@ alphalen = len(alphagens)
 
 
 def generator():
+    run = 0
     while True:
-        run = 0
-        while True:
-            run += 1
-            if run % 5 == 0 or run == 1:
-                hexgens = ""
-                while True:
-                    hexgens_add = random.choice(alphagens)
-                    if hexgens_add not in hexgens:
-                        hexgens = hexgens + hexgens_add
-                        if len(hexgens) == hexlen_:
-                            break
-            try:
-                rand_base_alpha = ''
-                while True:
-                    alpha_new_char = random.choice(hexgens)
-                    if alpha_new_char not in rand_base_alpha:
-                        rand_base_alpha = rand_base_alpha + alpha_new_char
-                    elif len(rand_base_alpha) == hexlen_:
-                        break
+        run += 1
+        if run % 5 == 0 or run == 1:
+            hexgens = ""
+            while len(hexgens) != hexlen_:
+                hexgens_add = random.choice(alphagens)
+                if hexgens_add not in hexgens:
+                    hexgens += hexgens_add
+        try:
+            rand_base_alpha = ''
+            while len(rand_base_alpha) != hexlen_:
+                alpha_new_char = random.choice(hexgens)
+                if alpha_new_char not in rand_base_alpha:
+                    rand_base_alpha += alpha_new_char
 
-                conversion_table = []
-                for i in rand_base_alpha:
-                    conversion_table.append(i)
+            conversion_table = []
+            for i in rand_base_alpha:
+                conversion_table.append(i)
 
-                decimal = key_p1
-                old_decimal = decimal
-                hexadecimal = ''
+            decimal = key_p1
+            old_decimal = key_p1
+            hexadecimal = ''
 
-                while decimal > 0:
-                    remainder = decimal % hexlen_
-                    hexadecimal = conversion_table[remainder] + hexadecimal
-                    decimal = decimal // hexlen_
+            while decimal > 0:
+                remainder = decimal % hexlen_
+                hexadecimal = conversion_table[remainder] + hexadecimal
+                decimal = decimal // hexlen_
 
-                conversion_table = {}
-                cvtable_counter = 0
-                for i in rand_base_alpha:
-                    conversion_table.__setitem__(i, cvtable_counter)
-                    cvtable_counter += 1
+            conversion_table = {}
+            cvtable_counter = 0
+            for i in rand_base_alpha:
+                conversion_table.__setitem__(i, cvtable_counter)
+                cvtable_counter += 1
 
-                hexadecimal = hexadecimal.strip().upper()
-                decimal = 0
-                power = len(hexadecimal) - 1
+            hexadecimal = hexadecimal.strip().upper()
+            decimal = 0
+            power = len(hexadecimal) - 1
 
-                for digit in hexadecimal:
-                    decimal += conversion_table[digit] * hexlen_ ** power
-                    power -= 1
+            for digit in hexadecimal:
+                decimal += conversion_table[digit] * hexlen_ ** power
+                power -= 1
 
-                if decimal == old_decimal:
+            if decimal == old_decimal:
+                break
+        except: xx = 0
+
+    master_key = rand_base_alpha + hexadecimal
+
+    conversion_table = {}
+    cvtable_counter = 0
+    for i in master_key[:hexlen_]:
+        conversion_table.__setitem__(i, cvtable_counter)
+        cvtable_counter += 1
+
+    hexadecimal = master_key[hexlen_:].strip().upper()
+    num1 = 0
+    power = len(hexadecimal) - 1
+
+    for digit in hexadecimal:
+        num1 += conversion_table[digit] * hexlen_ ** power
+        power -= 1
+
+    if num1 == key_p1:
+        def alpha_make():
+            rand_base_alpha_ = ''
+            while True:
+                alpha_new_char_ = random.choice(alphagens)
+                if alpha_new_char_ not in rand_base_alpha_:
+                    rand_base_alpha_ = rand_base_alpha_ + alpha_new_char_
+                elif len(rand_base_alpha_) == alphalen:
                     break
-            except: xx = 0
+            return rand_base_alpha_
 
-        master_key = rand_base_alpha + hexadecimal
-
-        conversion_table = {}
-        cvtable_counter = 0
-        for i in master_key[:hexlen_]:
-            conversion_table.__setitem__(i, cvtable_counter)
-            cvtable_counter += 1
-
-        hexadecimal = master_key[hexlen_:].strip().upper()
-        num1 = 0
-        power = len(hexadecimal) - 1
-
-        for digit in hexadecimal:
-            num1 += conversion_table[digit] * hexlen_ ** power
-            power -= 1
-
-        if num1 == key_p1:
-            def alpha_make():
-                rand_base_alpha_ = ''
-                while True:
-                    alpha_new_char_ = random.choice(alphagens)
-                    if alpha_new_char_ not in rand_base_alpha_:
-                        rand_base_alpha_ = rand_base_alpha_ + alpha_new_char_
-                    elif len(rand_base_alpha_) == alphalen:
-                        break
-                return rand_base_alpha_
-
-            master_key = f"{alpha_make()}{str(hexlen_).replace('4', 'a').replace('5', 'b')}{master_key}{alpha_make()}"
-            master_key = base64.b85encode(zlib.compress(master_key.encode('utf-8'), 9)).decode('utf-8')
-            break
+        master_key = f"{alpha_make()}{str(hexlen_).replace('4', 'a').replace('5', 'b')}{master_key}{alpha_make()}"
+        master_key = base64.b85encode(zlib.compress(master_key.encode('utf-8'), 9)).decode('utf-8')
     return master_key
 
 
@@ -164,14 +163,13 @@ def shifter(plaintext, newnum, num, num2, alphabet, replace, forwards):
                 for alphabet_index in range(0, len(new_alphabet)):
                     if msg[message_index] == alphabet[alphabet_index]:
                         encrypted += new_alphabet[alphabet_index]
-            output_enc = output_enc + encrypted
+            output_enc += encrypted
         else:
-            output_enc = output_enc + msg
+            output_enc += msg
 
     if replace:
         num = str(num).replace("0", "g").replace("1", "e").replace("2", "k").replace("3", "i").replace("4", "u") \
             .replace("5", "d").replace("6", "r").replace("7", "w").replace("8", "q").replace("9", "p")
-    if replace:
         return num + output_enc
     if not replace:
         return output_enc
@@ -208,9 +206,7 @@ def fib_iter(text, num2_):
 
 def shifter_gen_loop(e_text):
     new_num = ""
-    run = 0
     while len(new_num) < len(e_text) * 2 + 100:
-        run += 1
         new_num = str(new_num) + str(next(prime_numbers))
     return new_num
 
@@ -314,10 +310,9 @@ class Encryption(commands.Cog):
         global prime_numbers
         prime_numbers = get_prime_number(random.randint(100000, 800000))
         while True:
-            if next(prime_numbers) > 100000:
-                if random.randint(1, 150) == 1:
-                    num = next(prime_numbers)
-                    break
+            if next(prime_numbers) > 100000 and random.randint(1, 150) == 1:
+                num = next(prime_numbers)
+                break
 
         newnum = shifter_gen_loop(plaintext)
         e_text = shifter(plaintext, newnum, num, num2, alpha1, True, True)
@@ -354,7 +349,8 @@ class Encryption(commands.Cog):
             num = 0
             dtext = shifter(convert_tuple(args), b, num, num2, alpha2, False, False)
             content = str(dtext[:6]).replace("g", "0").replace("e", "1").replace("k", "2").replace("i", "3") \
-                .replace("u", "4").replace("d", "5").replace("r", "6").replace("w", "7").replace("q", "8").replace("p", "9")
+                .replace("u", "4").replace("d", "5").replace("r", "6").replace("w", "7").replace("q", "8").replace("p",
+                                                                                                                   "9")
 
             prime_numbers = get_prime_number(int(content))
             while True:
@@ -827,7 +823,7 @@ class Coloured_text(commands.Cog):
         await ctx.channel.send(f"```xl\n'{ctx.message.content[10:]}\n\nRequested by {ctx.author}```")
 
 
-def is_nsfw_on(channel_id):  # todo probably remove the makedir from here and do startup checks instead
+def is_nsfw_on(channel_id):
     with open('settings/nsfw.txt', 'r') as i:
         isin = f'{i.read()}'
     if isin.find(str(channel_id)) > -1:
@@ -903,7 +899,7 @@ class NSFW(commands.Cog):
             await ctx.channel.send("```NSFW is not enabled in this chat\n To enable it you must have role admin\n then type -nsfw_on```")
 
     @commands.command()
-    async def psi(self, ctx, arg):  # todo test this command
+    async def psi(self, ctx, arg):  # todo functions, tho i dislike it
         if is_nsfw_on(ctx.channel.id):
             pagesearch2 = f'https://www.pornpics.com/?q={arg}/'.replace(" ", "+")
             page = urllib.request.urlopen(pagesearch2)
@@ -949,7 +945,7 @@ class NSFW(commands.Cog):
             await ctx.channel.send("```NSFW is not enabled in this chat\n To enable it you must have role admin\n then type -nsfw_on```")
 
     @commands.command()
-    async def psg(self, ctx, arg1, arg2):  # todo test this command
+    async def psg(self, ctx, arg1, arg2):  # todo functions, tho i dislike it
         if is_nsfw_on(ctx.channel.id):
             global choicesz, choiceszz
             choicesz = str(arg1)
@@ -1015,14 +1011,17 @@ class NSFW(commands.Cog):
                             await ctx.channel.send("```NSFW is not enabled in this chat\n To enable it you must have role admin\n then type -nsfw_on```")
 
     @commands.command()
-    async def porngif(self, ctx, arg2):  # todo test this command
+    async def porngif(self, ctx, *args):
         if is_nsfw_on(ctx.channel.id):
             import urllib, re
-            pgsearch = ctx.message.content[10:]
-            pagen = ctx.message.content[9:11].replace(" ", "")
-            pagesearch = f'https://www.pornhub.com/gifs/search?search={pgsearch}&page={pagen}'
-            pagesearch2 = pagesearch.replace(" ", "+")
-            page = urllib.request.urlopen(pagesearch2)
+            try:
+                pagen = f"&page={int(args[0])}"
+                c_args = convert_tuple(args[1:])[:-1]
+            except:
+                pagen = ""
+                c_args = convert_tuple(args)[:-1]
+            pagesearch = f'https://www.pornhub.com/gifs/search?search={c_args.replace(" ", "+")}{pagen}'
+            page = urllib.request.urlopen(pagesearch)
             a = (re.findall(r'(data-mp4[^\s]+)', str(page.read())))
             b = (re.findall(r'(https://cl.phncdn.com/pics/gifs/[^\s]+)', str(page.read())))
             c = ('\n'.join(a))
@@ -1074,7 +1073,7 @@ class NSFW(commands.Cog):
             await ctx.channel.send("```NSFW is not enabled in this chat\n To enable it you must have role admin\n then type -nsfw_on```")
 
     @commands.command()
-    async def hentai(self, ctx, arg1, arg2):  # todo test this command
+    async def hentai(self, ctx, arg1, arg2):
         if is_nsfw_on(ctx.channel.id):
             hensearch = arg2.replace(" ", "")
             pagesearch = f'https://konachan.com/post?page={arg1}&tags=uncensored+nude+{hensearch}'
@@ -1307,68 +1306,40 @@ class Games(commands.Cog):  # todo redo this whole thing
         self.bot = bot
 
     @commands.command()
-    async def claim_token(self, ctx, arg):  # todo readd this system, and better
-        wasuserthere = 0
+    async def claim_token(self, ctx, arg):
         lookup = str(arg)
-        with open('settings/token.txt') as myFile:
-            for lnum3, line in enumerate(myFile, 1):
-                if line:
-                    if lookup in line:
-                        reward = line[31:]
-                        if not reward == "CLAIMED\n":
-                            wasuserthere = wasuserthere + 1
-                            with open('settings/token.txt', 'r') as file:
-                                data = file.readlines()
-                            data[int(lnum3) - 1] = f'{arg}, CLAIMED\n'
-                            file.close()
+        found = False
+        embed = {}
+        with open('strs/tokens.txt') as f:
+            for lnum3, line in enumerate(f, 1):
+                token, reward = line.split(",")
+                if token == lookup:
+                    reward = reward.replace(" ", "").replace("\n", "")
+                    found = True
+                    print(lookup, "found", reward)
+        if found:
+            if reward == "CLAIMED":
+                embed = discord.Embed(title="This token has already been claimed", color=discord.Colour(0xff0000))
+                embed.set_footer(text=f"Requested by {ctx.author}")
+            else:
+                with open('strs/tokens.txt', 'r') as file:  # todo finish this segment
+                    data = file.readlines()
+                data[int(lnum3) - 1] = f'{arg}, CLAIMED\n'
+                file.close()
 
-                            with open('settings/token.txt', 'w') as file:
-                                file.writelines(data)
+                with open('strs/tokens.txt', 'w') as file:
+                    file.writelines(data)
 
-                            wasuserthere1 = 0
-                            lookup = str(ctx.author.id)
-                            with open('settings/coin.txt') as myFile:
-                                for lnum2, line in enumerate(myFile, 1):
-                                    if lookup in line:
-                                        head, sep, tail = line[20:].partition('.')
-                                        wasuserthere1 = wasuserthere1 + 1
-                                        coincurrent = int(head)
-                                        linenum1 = int(lnum2)
-                                        coincurrent = coincurrent + int(reward)
-                                        reward = reward.replace("\n", "")
-                                        embed = discord.Embed(description=f"This is a valid token for {reward} coins")
-                                        embed.set_footer(text=f"Requested by {ctx.author}")
-                                        await ctx.channel.send(embed=embed)
-
-                                        with open('settings/coin.txt', 'r') as file:
-                                            data = file.readlines()
-                                        data[linenum1 - 1] = f'{ctx.author.id}, {coincurrent}\n'
-                                        file.close()
-
-                                        with open('settings/coin.txt', 'w') as file:
-                                            file.writelines(data)
-
-                                if wasuserthere1 == 0:
-                                    embed = discord.Embed(
-                                        description="You dont have a balance yet! Dont worry i just made you one")
-                                    embed.set_footer(text=f"Requested by {ctx.author}")
-                                    await ctx.channel.send(embed=embed)
-                                    with open('settings/coin.txt', 'a+') as f:
-                                        f.write(f"{ctx.author.id}, 100 \n")
-
-            if wasuserthere == 0:
-                if "CLAIMED" in line:
-                    embed = discord.Embed(description="This token has already been claimed")
-                    embed.set_footer(text=f"Requested by {ctx.author}")
-                    await ctx.channel.send(embed=embed)
-                else:
-                    embed = discord.Embed(description="This is not a valid token")
-                    embed.set_footer(text=f"Requested by {ctx.author}")
-                    await ctx.channel.send(embed=embed)
+                # code to add them coins
+        else:
+            embed = discord.Embed(title="This is not a valid token", color=discord.Colour(0xff0000))
+            embed.set_footer(text=f"Requested by {ctx.author}")
+        await ctx.channel.send(embed=embed)
 
     @commands.command()
     async def reset_coins(self, ctx):
-        embed = discord.Embed(title="WARNING THIS WILL RESET YOU BALANCE TO 10", description="Type -reset_confirm to confirm this action")
+        embed = discord.Embed(title="WARNING THIS WILL RESET YOU BALANCE TO 10",
+                              description="Type -reset_confirm to confirm this action")
         embed.set_footer(text=f"Requested by {ctx.author}")
         await ctx.channel.send(embed=embed)
 
@@ -1431,312 +1402,144 @@ class Games(commands.Cog):  # todo redo this whole thing
             await ctx.channel.send(embed=embed)
 
     @commands.command()
-    async def bal(self, ctx):
-        wasuserthere = 0
-        addbal = 0
-        if ctx.message.content[5:] == "":
-            lookup = str(ctx.author.id)
+    async def bal(self, ctx, *args):
+        c_args = convert_tuple(args)[:-1]
+        if c_args == "":
+            embed = discord.Embed(title=f"Your balance is {rcoin.bal(0, ctx.author.id)}")
+            embed.set_footer(text=f"Requested by {ctx.author}")
         else:
-            lookup = ctx.message.content[8:26]
-            addbal = 1
-        with open('settings/coin.txt') as myFile:
-            for num, line in enumerate(myFile, 1):
-                if lookup in line:
-                    line20 = decimal.Decimal(line[20:])
-                    if not addbal == 1:
-                        embed = discord.Embed(title=f"Your balance is {line20}")
-                        embed.set_footer(text=f"Requested by {ctx.author}")
-                        await ctx.channel.send(embed=embed)
-                    else:
-                        embed = discord.Embed(description=f"{ctx.message.content[5:27]} has a balance of {line20}")
-                        embed.set_footer(text=f"Requested by {ctx.author}")
-                        await ctx.channel.send(embed=embed)
-                    wasuserthere = wasuserthere + 1
-            if not addbal == 1:
-                if wasuserthere == 0:
-                    embed = discord.Embed(description="You dont have a balance yet! Dont worry i just made you one")
-                    embed.set_footer(text=f"Requested by {ctx.author}")
-                    await ctx.channel.send(embed=embed)
-                    with open('settings/coin.txt', 'a+') as f:
-                        f.write(f"{ctx.author.id}, 100 \n")
+            if str(args[0]).startswith("<@!") and str(args[0]).endswith(">"):
+                userid = int(args[0].replace("<@!", "").replace(">", ""))
+                embed = discord.Embed(description=f"{args[0]}'s balance is {rcoin.bal(0, userid)}")
+                embed.set_footer(text=f"Requested by {ctx.author}")
             else:
-                if wasuserthere == 0:
-                    embed = discord.Embed(description="This user does not have a balance yet")
-                    embed.set_footer(text=f"Requested by {ctx.author}")
-                    await ctx.channel.send(embed=embed)
+                embed = discord.Embed(description=f"<@!{args[0]}>'s balance is {rcoin.bal(0, int(args[0]))}")
+                embed.set_footer(text=f"Requested by {ctx.author}")
+        await ctx.channel.send(embed=embed)
 
     @commands.command()
-    async def bet_flip(self, ctx, arg1, arg2):
-        wasuserthere = 0
-        lookup = str(ctx.author.id)
-        with open('settings/coin.txt') as myFile:
-            for lnum, line in enumerate(myFile, 1):
-                if lookup in line:
-                    line20 = decimal.Decimal(line[20:])
-                    wasuserthere = wasuserthere + 1
-                    coin = line20
-                    linenum = int(lnum)
-            if wasuserthere == 0:
-                embed = discord.Embed(description="You dont have a balance yet! Dont worry i just made you one")
-                embed.set_footer(text=f"Requested by {ctx.author}")
-                await ctx.channel.send(embed=embed)
-                with open('settings/coin.txt', 'a+') as f:
-                    f.write(f"{ctx.author.id}, 100 \n")
-
-        flipbet = int(arg2)
-        allowbet = 0
-        if flipbet > coin:
-            embed = discord.Embed(title="You cant bet more than you have!")
+    async def bet_flip(self, ctx, arg1, arg2):  # todo redo the arg inputs
+        allow = rcoin.check(0, ctx.author.id, int(arg2))
+        if allow != "ALLOWED":
+            embed = discord.Embed(title=allow)
             embed.set_footer(text=f"Requested by {ctx.author}")
-            await ctx.channel.send(embed=embed)
-            allowbet = 1
-        if flipbet < 1:
-            embed = discord.Embed(title="You cant bet nothing!")
-            embed.set_footer(text=f"Requested by {ctx.author}")
-            await ctx.channel.send(embed=embed)
-            allowbet = 1
-        if not allowbet == 1:
+            await ctx.channel.send(embed)
+        else:
+            flipbet = int(arg2)
             flipresult = random.randint(0, 100)
+
             if flipresult < 36:
-                coins2 = coin + flipbet
-                coin = coins2
                 if str(arg1) == "h":
                     headortail = "heads"
                 if str(arg1) == "t":
                     headortail = "tails"
-                embed = discord.Embed(title=f"You Won {flipbet}",description=f"Coin landed on {headortail}\
-                 and You now have: {coin}",color=discord.Colour(0x00ff00))
+                rcoin.win(0, ctx.author.id, flipbet)
+                embed = discord.Embed(title=f"You Won {flipbet}", description=f"Coin landed on {headortail}\
+                 and You now have: {rcoin.bal(0, ctx.author.id)}", color=discord.Colour(0x00ff00))
                 embed.set_footer(text=f"Requested by {ctx.author}")
-                await ctx.channel.send(embed=embed)
-                with open('settings/coin.txt', 'r') as file:
-                    data = file.readlines()
-                data[linenum - 1] = f'{ctx.author.id}, {coin}\n'
-                file.close()
-
-                with open('settings/coin.txt', 'w') as file:
-                    file.writelines(data)
 
             if flipresult > 35:
-                coins2 = coin - flipbet
-                coin = coins2
                 if str(arg1) == "h":
                     headortail = "tails"
                 if str(arg1) == "t":
                     headortail = "heads"
-                embed = discord.Embed(title=f"You Lost {flipbet}",description=f"Coin landed on {headortail}\
-                 You now have: {coin}",color=discord.Colour(0xff0000))
+                rcoin.lose(0, ctx.author.id, flipbet)
+                embed = discord.Embed(title=f"You Lost {flipbet}", description=f"Coin landed on {headortail}\
+                 You now have: {rcoin.bal(0, ctx.author.id)}", color=discord.Colour(0xff0000))
                 embed.set_footer(text=f"Requested by {ctx.author}")
-                await ctx.channel.send(embed=embed)
-                with open('settings/coin.txt', 'r') as file:
-                    data = file.readlines()
-                data[linenum - 1] = f'{ctx.author.id}, {coin}\n'
-                file.close()
 
-                with open('settings/coin.txt', 'w') as file:
-                    file.writelines(data)
+            await ctx.channel.send(embed=embed)
 
     @commands.command()
-    async def bet_dice(self, ctx, arg1, arg2):
-        wasuserthere = 0
-        lookup = str(ctx.author.id)
-        with open('settings/coin.txt') as myFile:
-            for lnum, line in enumerate(myFile, 1):
-                if lookup in line:
-                    line20 = decimal.Decimal(line[20:])
-                    wasuserthere = wasuserthere + 1
-                    coin = line20
-                    linenum = int(lnum)
-            if wasuserthere == 0:
-                embed = discord.Embed(description="You dont have a balance yet! Dont worry i just made you one")
-                embed.set_footer(text=f"Requested by {ctx.author}")
-                await ctx.channel.send(embed=embed)
-                with open('settings/coin.txt', 'a+') as f:
-                    f.write(f"{ctx.author.id}, 100 \n")
+    async def bet_dice(self, ctx, arg1, arg2):  # todo redo the arg inputs
+        allow = rcoin.check(0, ctx.author.id, int(arg2))
+        if allow != "ALLOWED":
+            embed = discord.Embed(title=allow)
+            embed.set_footer(text=f"Requested by {ctx.author}")
+            await ctx.channel.send(embed=embed)
+        else:
+            betdicen = int(arg1)
+            betdiceb = int(arg2)
+            allowbet = True
+            if betdicen > 6:
+                embed = discord.Embed(title="You cant bet on anything above 6!")
+                allowbet = False
+            if betdicen < 0:
+                embed = discord.Embed(title="You cant bet on anything below 0!")
+                allowbet = False
+            if allowbet:
+                betdiceroll = random.randint(1, 6)
+                if betdicen == betdiceroll:
+                    rcoin.win(0, ctx.author.id, betdiceb*5)
+                    embed = discord.Embed(title=f"Dice rolled {betdiceroll} and You Won {betdiceb*5}",
+                    description=f"You now have: {rcoin.bal(0, ctx.author.id)}", color=discord.Colour(0x00ff00))
+                else:
+                    rcoin.lose(0, ctx.author.id, betdiceb)
+                    embed = discord.Embed(title=f"Dice rolled {betdiceroll} You Lost {betdiceb}",
+                    description=f"You now have: {rcoin.bal(0, ctx.author.id)}", color=discord.Colour(0xff0000))
 
-        betdicen = int(arg1)
-        betdiceb = int(arg2)
-        betdicewin = betdiceb * 5
-        allowbet = 0
-        if betdiceb > coin:
-            embed = discord.Embed(title="You cant bet more than you have!")
             embed.set_footer(text=f"Requested by {ctx.author}")
             await ctx.channel.send(embed=embed)
-            allowbet = 1
-        if betdiceb < 1:
-            embed = discord.Embed(title="You cant bet nothing!")
-            embed.set_footer(text=f"Requested by {ctx.author}")
-            await ctx.channel.send(embed=embed)
-            allowbet = 1
-        if betdicen > 6:
-            embed = discord.Embed(title="You cant bet on anything above 6!")
-            embed.set_footer(text=f"Requested by {ctx.author}")
-            await ctx.channel.send(embed=embed)
-            allowbet = 1
-        if betdicen < 0:
-            embed = discord.Embed(title="You cant bet on anything below 0!")
-            embed.set_footer(text=f"Requested by {ctx.author}")
-            await ctx.channel.send(embed=embed)
-            allowbet = 1
-        if not allowbet == 1:
-            betdiceroll = random.randint(1, 6)
-            if betdicen == betdiceroll:
-                coins2 = coin + betdicewin
-                coin = coins2
-                embed = discord.Embed(title=f"Dice rolled {betdiceroll} and You Won {betdicewin}",
-                description=f"You now have: {coin}", color=discord.Colour(0x00ff00))
-                embed.set_footer(text=f"Requested by {ctx.author}")
-                await ctx.channel.send(embed=embed)
-                with open('settings/coin.txt', 'r') as file:
-                    data = file.readlines()
-                data[linenum - 1] = f'{ctx.author.id}, {coin}\n'
-                file.close()
-
-                with open('settings/coin.txt', 'w') as file:
-                    file.writelines(data)
-            else:
-                coins2 = coin - betdiceb
-                coin = coins2
-                embed = discord.Embed(title=f"Dice rolled {betdiceroll} You Lost {betdiceb}",
-                description=f"You now have: {coin}", color=discord.Colour(0xff0000))
-                embed.set_footer(text=f"Requested by {ctx.author}")
-                await ctx.channel.send(embed=embed)
-                with open('settings/coin.txt', 'r') as file:
-                    data = file.readlines()
-                data[linenum - 1] = f'{ctx.author.id}, {coin}\n'
-                file.close()
-
-                with open('settings/coin.txt', 'w') as file:
-                    file.writelines(data)
 
     @commands.command()
-    async def bet_rps(self, ctx, arg1, arg2):
-        wasuserthere = 0
-        lookup = str(ctx.author.id)
-        with open('settings/coin.txt') as myFile:
-            for lnum, line in enumerate(myFile, 1):
-                if lookup in line:
-                    line20 = decimal.Decimal(line[20:])
-                    wasuserthere = wasuserthere + 1
-                    coin = line20
-                    linenum = int(lnum)
-            if wasuserthere == 0:
-                embed = discord.Embed(description="You dont have a balance yet! Dont worry i just made you one")
-                embed.set_footer(text=f"Requested by {ctx.author}")
-                await ctx.channel.send(embed=embed)
-                with open('settings/coin.txt', 'a+') as f:
-                    f.write(f"{ctx.author.id}, 100 \n")
+    async def bet_rps(self, ctx, arg1, arg2):  # todo redo the arg inputs, and the floats issue
+        allow = rcoin.check(0, ctx.author.id, int(arg2))
+        if allow != "ALLOWED":
+            embed = discord.Embed(title=allow)
+            embed.set_footer(text=f"Requested by {ctx.author}")
+            await ctx.channel.send(embed=embed)
+        else:
+            t = ["R", "P", "S"]
+            computer = t[random.randint(0, 2)]
+            player = False
 
-
-        t = ["R", "P", "S"]
-        computer = t[random.randint(0, 2)]
-        player = False
-
-        while player is False:
-            player = arg1
-            rpsbet = int(arg2)
-            rpsbet2 = rpsbet / 2  # change multiplier here
-            rpsbet2 = rpsbet2.as_integer_ratio()
-            allowbet = 0
-            if int(rpsbet) > coin:
-                embed = discord.Embed(title="You cant bet more than you have!")
-                embed.set_footer(text=f"Requested by {ctx.author}")
-                await ctx.channel.send(embed=embed)
-                allowbet = 1
-            if int(rpsbet) < 1:
-                embed = discord.Embed(title="You cant bet nothing!")
-                embed.set_footer(text=f"Requested by {ctx.author}")
-                await ctx.channel.send(embed=embed)
-                allowbet = 1
-            if not allowbet == 1:
+            while player is False:
+                player = arg1
+                rpsbet = int(arg2)
+                rpsbet2 = rpsbet / 2  # change multiplier here
+                rpsbet2 = rpsbet2.as_integer_ratio()
                 if player == computer:
                     await ctx.channel.send("Tie!")
                 elif player == "r":
                     if computer == "P":
-                        coins2 = coin - rpsbet
-                        coin = coins2
+                        rcoin.lose(0, ctx.author.id, rpsbet)
                         embed = discord.Embed(title=f"You Lose! rapidbot covers {ctx.author}",
-                        description=f"You now have: {coin}",color=discord.Colour(0xff0000))
+                        description=f"You now have: {rcoin.bal(0, ctx.author.id)}", color=discord.Colour(0xff0000))
                         embed.set_footer(text=f"Requested by {ctx.author}")
                         await ctx.channel.send(embed=embed)
-                        with open('settings/coin.txt', 'r') as file:
-                            data = file.readlines()
-                        data[linenum - 1] = f'{ctx.author.id}, {coin}\n'
-                        file.close()
-
-                        with open('settings/coin.txt', 'w') as file:
-                            file.writelines(data)
                     else:
-                        coins2 = int(coin) + (rpsbet2[0] / rpsbet2[1])
-                        coin = coins2
+                        rcoin.win(0, ctx.author.id, (rpsbet2[0] / rpsbet2[1]))
                         embed = discord.Embed(title=f"You Win! {ctx.author} smashes rapidbot",
-                        description=f"You now have: {coin}",color=discord.Colour(0x00ff00))
+                        description=f"You now have: {rcoin.bal(0, ctx.author.id)}", color=discord.Colour(0x00ff00))
                         embed.set_footer(text=f"Requested by {ctx.author}")
                         await ctx.channel.send(embed=embed)
-                        with open('settings/coin.txt', 'r') as file:
-                            data = file.readlines()
-                        data[linenum - 1] = f'{ctx.author.id}, {coin}\n'
-                        file.close()
 
-                        with open('settings/coin.txt', 'w') as file:
-                            file.writelines(data)
                 elif player == "p":
                     if computer == "S":
-                        coins2 = int(coin) - rpsbet
-                        coin = coins2
+                        rcoin.lose(0, ctx.author.id, rpsbet)
                         embed = discord.Embed(title=f"You Lose! rapidbot cut {ctx.author}",
-                        description=f"You now have: {coin}",color=discord.Colour(0xff0000))
+                        description=f"You now have: {rcoin.bal(0, ctx.author.id)}", color=discord.Colour(0xff0000))
                         embed.set_footer(text=f"Requested by {ctx.author}")
                         await ctx.channel.send(embed=embed)
-                        with open('settings/coin.txt', 'r') as file:
-                            data = file.readlines()
-                        data[linenum - 1] = f'{ctx.author.id}, {coin}\n'
-                        file.close()
-
-                        with open('settings/coin.txt', 'w') as file:
-                            file.writelines(data)
                     else:
-                        coins2 = int(coin) + (rpsbet2[0] / rpsbet2[1])
-                        coin = coins2
+                        rcoin.win(0, ctx.author.id, (rpsbet2[0] / rpsbet2[1]))
                         embed = discord.Embed(title=f"You Win! {ctx.author} covers rapidbot",
-                        description=f"You now have: {coin}",color=discord.Colour(0x00ff00))
+                        description=f"You now have: {rcoin.bal(0, ctx.author.id)}", color=discord.Colour(0x00ff00))
                         embed.set_footer(text=f"Requested by {ctx.author}")
                         await ctx.channel.send(embed=embed)
-                        with open('settings/coin.txt', 'r') as file:
-                            data = file.readlines()
-                        data[linenum - 1] = f'{ctx.author.id}, {coin}\n'
-                        file.close()
-
-                        with open('settings/coin.txt', 'w') as file:
-                            file.writelines(data)
                 elif player == "s":
                     if computer == "R":
-                        coins2 = coin - rpsbet
-                        coin = coins2
+                        rcoin.lose(0, ctx.author.id, rpsbet)
                         embed = discord.Embed(title=f"You Lose! rapidbot smashes {ctx.author}",
-                        description=f"You now have: {coin}",color=discord.Colour(0xff0000))
+                        description=f"You now have: {rcoin.bal(0, ctx.author.id)}", color=discord.Colour(0xff0000))
                         embed.set_footer(text=f"Requested by {ctx.author}")
                         await ctx.channel.send(embed=embed)
-                        with open('settings/coin.txt', 'r') as file:
-                            data = file.readlines()
-                        data[linenum - 1] = f'{ctx.author.id}, {coin}\n'
-                        file.close()
-
-                        with open('settings/coin.txt', 'w') as file:
-                            file.writelines(data)
                     else:
-                        coins2 = coin + (rpsbet2[0] / rpsbet2[1])
-                        coin = coins2
+                        rcoin.win(0, ctx.author.id, (rpsbet2[0] / rpsbet2[1]))
                         embed = discord.Embed(title=f"You Win! {ctx.author} cut rapidbot",
-                        description=f"You now have: {coin}",color=discord.Colour(0x00ff00))
+                        description=f"You now have: {rcoin.bal(0, ctx.author.id)}", color=discord.Colour(0x00ff00))
                         embed.set_footer(text=f"Requested by {ctx.author}")
                         await ctx.channel.send(embed=embed)
-                        with open('settings/coin.txt', 'r') as file:
-                            data = file.readlines()
-                        data[linenum - 1] = f'{ctx.author.id}, {coin}\n'
-                        file.close()
-
-                        with open('settings/coin.txt', 'w') as file:
-                            file.writelines(data)
                 else:
                     embed = discord.Embed(title="Thats not a move")
                     embed.set_footer(text=f"Requested by {ctx.author}")
@@ -1746,7 +1549,7 @@ class Games(commands.Cog):  # todo redo this whole thing
                 computer = t[random.randint(0, 2)]
 
     @commands.command()
-    async def bet_multi(self, ctx, arg1, arg2):
+    async def bet_multi(self, ctx, arg1, arg2):  # todo redo with the new currency
         wasuserthere = 0
         lookup = str(ctx.author.id)
         with open('settings/coin.txt') as myFile:
@@ -1829,7 +1632,7 @@ class Games(commands.Cog):  # todo redo this whole thing
                     file.writelines(data)
 
     @commands.command()
-    async def bet_revup(self, ctx, arg1, arg2):
+    async def bet_revup(self, ctx, arg1, arg2):  # todo redo with the new currency
         wasuserthere = 0
         lookup = str(ctx.author.id)
         with open('settings/coin.txt') as myFile:
@@ -1922,7 +1725,7 @@ class Games(commands.Cog):  # todo redo this whole thing
                         file.writelines(data)
 
     @commands.command()
-    async def bet_dubup(self, ctx, arg1, arg2):
+    async def bet_dubup(self, ctx, arg1, arg2):  # todo redo with the new currency
         wasuserthere = 0
         lookup = str(ctx.author.id)
         with open('settings/coin.txt') as myFile:
@@ -2722,6 +2525,50 @@ class ttb():  # todo add ttb prev conv functionality
         return response[0]
 
 
+rcoin_data = {}
+
+
+class rcoin():  # todo make sure floats not dropped like currently are
+    with open("strs/rcoin_bals.txt") as f:
+        for line in f.readlines():
+            userid, bal = line.replace("\n", "").split(", ")
+            rcoin_data.update({int(userid): int(bal)})
+
+    def bal(self, userid):
+        try:
+            return rcoin_data[int(userid)]
+        except:
+            rcoin_data.update({int(userid): 100})
+            return rcoin_data[int(userid)]
+
+    def save(self):
+        with open("strs/rcoin_bals.txt", "w") as f:
+            for key, value in rcoin_data.items():
+                f.write(f"{key}, {value}\n")
+
+    def win(self, userid, amount):
+        rcoin_data.update({int(userid): rcoin_data[int(userid)]+amount})
+        rcoin.save(0)
+
+    def lose(self, userid, amount):
+        rcoin_data.update({int(userid): rcoin_data[int(userid)]-amount})
+        rcoin.save(0)
+
+    def save(self):
+        with open("strs/rcoin_bals.txt", "w") as f:
+            for key, value in rcoin_data.items():
+                f.write(f"{key}, {value}\n")
+
+    def check(self, userid, amount):
+        if amount < 1:
+            return "You cannot enter a value smaller than 1 rcoin"
+        else:
+            if amount > rcoin_data[int(userid)]:
+                return f"This is {amount - rcoin_data[int(userid)]} rcoins over the amount you have"
+            else:
+                return "ALLOWED"
+
+
 @bot.event
 async def on_message(message):
     global rtime
@@ -2734,11 +2581,11 @@ async def on_message(message):
 
     if message.content.startswith("-"):
         with open('strs/msgstore.txt', 'a+') as f:
-            f.write(msg_data + "\n")
+            f.write(f"{msg_data}\n")
 
     # inserted CUM shard  # todo what to do with this?
 
-    if message.channel.id in [867113471241093120]:
+    if message.channel.id in [867113471241093120] or message.author.id == 425373518566260766:
         if message.content.lower().startswith("-search"):
             search = message.content[8:]
             with open(f"temp.txt", "w+", encoding="utf-8") as p:
@@ -2810,79 +2657,6 @@ async def on_message(message):
 
         if message.content.lower() == "-data-log":
             await message.channel.send(file=discord.File(r'indexed_data.txt'))
-    else:
-        if message.author.id == 425373518566260766:
-            if message.content.lower().startswith("-search"):
-                search = message.content[8:]
-                with open(f"temp.txt", "w+", encoding="utf-8") as p:
-                    for line in theshit:
-                        if search in line:
-                            p.write(line)
-
-                with open('temp.txt') as result:
-                    uniqlines = set(result.readlines())
-                    with open(f"search-{search}.txt", "w+", encoding="utf-8") as rmdup:
-                        rmdup.writelines(set(uniqlines))
-
-                with open(f"search-{search}.txt", encoding="utf-8") as f:
-                    search_yield = len(f.readlines())
-
-                if search_yield == 0:
-                    await message.channel.send(f"There was no results for '{search}'")
-                else:
-                    if search_yield > 1000:
-                        await message.channel.send(f"Search success, found {search_yield} results for '{search}'\n"
-                                               f"To many results to send, have the txt instead!")
-                        await message.channel.send(file=discord.File(fr'search-{search}.txt'))
-                    else:
-                        await message.channel.send(f"Search success, found {search_yield} results for '{search}'\n"
-                                               f"To see ALL of these results type '-open {search}'")
-
-            if message.content.lower().startswith("-open"):
-                open1 = message.content[6:]
-                try:
-                    with open(f"search-{open1}.txt") as f:
-                        for line in f.readlines():
-                            await message.channel.send(line)
-                            time.sleep(0.5)
-                except:
-                    await message.channel.send(f"Search file not found for {open1}, maybe try '-search {open1}' first!")
-
-            if message.content.lower() == "-cum":
-                for i in range(50):
-                    with open("counter.txt", "r") as x:
-                        counter = str(x.readlines())[2:-2]
-                        counter = int(counter)
-                    with open("counter.txt", "w") as x:
-                        x.write(str(counter + 1))
-
-                    line = str(counter) + theshit[counter-1]
-                    await message.channel.send(line)
-                    time.sleep(1.25)
-
-            if message.content.lower() == "-pick":
-                len(theshit)
-                counter = random.randint(0, len(theshit))
-                line = theshit[counter]
-                line = str(counter) + line
-                await message.channel.send(line)
-
-            if message.content.lower().startswith("-spec"):
-                num = int(message.content[6:])
-                line = theshit[num - 1]
-                line = str(num) + line
-                await message.channel.send(line)
-
-            if message.content.lower().startswith("-coom"):
-                num = int(message.content[6:]) - 1
-                for i in range(50):
-                    line = str(num+1) + theshit[num]
-                    await message.channel.send(line)
-                    num = num + 1
-                    time.sleep(1)
-
-            if message.content.lower() == "-data-log":
-                await message.channel.send(file=discord.File(r'indexed_data.txt'))
 
     # inserted CUM shard above
 
@@ -2892,30 +2666,22 @@ async def on_message(message):
         token_drops_on = False
 
         if token_drops_on:
-            tokenluck = random.randint(0, 100)  # todo make certain users more or less lucky
-            if tokenluck == 50:
+            tokenluck = random.randint(0, 1)  # todo make certain users more or less lucky
+            if tokenluck == 1:
                 import string
                 token = ""
                 for i in range(25):
                     token = token + (random.choice(string.ascii_uppercase))
-                    if i == 4:
+                    if i in [4, 9, 14, 19]:
                         token = token + "-"
-                    if i == 9:
-                        token = token + "-"
-                    if i == 14:
-                        token = token + "-"
-                    if i == 19:
-                        token = token + "-"
-                    tokenvalue = random.randint(10, 100)
-                with open('settings/token.txt', 'a+') as f:
-                    f.write(token + ", " + str(tokenvalue) + "\n")
+                token_value = random.randint(10, 100)
+                with open('strs/tokens.txt', 'a+') as f:
+                    f.write(f"{token}, {token_value}\n")
 
                 embed = discord.Embed(title=f"{token}",
-                                      description=f"Claim the above {tokenvalue}"
+                                      description=f"Claim the above {token_value}"
                                                   f" coin token by typing -claim_token <token>")
                 await message.channel.send(embed=embed)
-
-        # new cooldown here
 
         allow_command = cooldown.check(0, message.author.id, 2)
         if allow_command is not None:

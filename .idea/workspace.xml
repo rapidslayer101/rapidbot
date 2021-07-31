@@ -4,21 +4,25 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a4216da4-c4ef-4c08-be3a-2444a9d19dc3" name="Default Changelist" comment="Standard update">
-      <change afterPath="$PROJECT_DIR$/settings/coin.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/strs/rcoin_bals.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/strs/tokens.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/temp.txt" afterDir="false" />
+    <list default="true" id="a4216da4-c4ef-4c08-be3a-2444a9d19dc3" name="Default Changelist" comment="Major rework to the currency system. Only partially complete">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/rapidbot.py" beforeDir="false" afterPath="$PROJECT_DIR$/rapidbot.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/settings/enc-key.txt" beforeDir="false" afterPath="$PROJECT_DIR$/settings/enc-key.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/settings/nsfw.txt" beforeDir="false" afterPath="$PROJECT_DIR$/settings/nsfw.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/settings/coin.txt" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/strs/msgstore.txt" beforeDir="false" afterPath="$PROJECT_DIR$/strs/msgstore.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/strs/rcoin_bals.txt" beforeDir="false" afterPath="$PROJECT_DIR$/strs/rcoin_bals.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/strs/tokens.txt" beforeDir="false" afterPath="$PROJECT_DIR$/strs/tokens.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -43,6 +47,7 @@
     <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="SONARLINT_PRECOMMIT_ANALYSIS" value="true" />
     <property name="TODO_SCOPE" value="All Places" />
     <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
@@ -167,7 +172,14 @@
       <option name="project" value="LOCAL" />
       <updated>1627390877052</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="Major rework to the currency system. Only partially complete">
+      <created>1627688215491</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1627688215491</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -193,6 +205,7 @@
     <MESSAGE value="Thomas event commands added" />
     <MESSAGE value="Thomas event commands update" />
     <MESSAGE value="Standard update" />
-    <option name="LAST_COMMIT_MESSAGE" value="Standard update" />
+    <MESSAGE value="Major rework to the currency system. Only partially complete" />
+    <option name="LAST_COMMIT_MESSAGE" value="Major rework to the currency system. Only partially complete" />
   </component>
 </project>

@@ -1,9 +1,9 @@
 # MADE BY RAPIDSLAYER101#260, DO NOT COPY, DO NOT SHARE, DO NOT USE
 
-global time, sys, googletrans, google, random, os, zlib, base64, re, asyncio
+global time, sys, googletrans, google, random, os, zlib, base64, re
 import datetime, decimal, time, os, random, zlib, base64, re, socket, hashlib  # inbuilt
 
-import googletrans, asyncio, discord, requests, urllib, praw, psutil  # installed modules
+import googletrans, discord, requests, urllib, praw, psutil  # installed modules
 from discord.ext import commands
 from forex_python.converter import CurrencyRates, CurrencyCodes
 from googletrans import Translator
@@ -293,6 +293,61 @@ def search(data, filter_fr, filter_to):
     return output
 
 
+def encrypt(text):
+    plaintext = base64.b85encode(zlib.compress(text.encode('utf-8'), 9)).decode('utf-8')
+    global prime_numbers
+    prime_numbers = get_prime_number(random.randint(100000, 800000))
+    while True:
+        if next(prime_numbers) > 100000 and random.randint(1, 150) == 1:
+            num = next(prime_numbers)
+            break
+
+    new_num = shifter_gen_loop(plaintext)
+    e_text = shifter(plaintext, new_num, num, num2, alpha1, True, True)
+    content = str(e_text[:6]).replace("g", "0").replace("e", "1").replace("k", "2").replace("i", "3") \
+        .replace("u", "4").replace("d", "5").replace("r", "6").replace("w", "7").replace("q", "8").replace("p", "9")
+
+    prime_numbers = get_prime_number(int(content))
+    while True:
+        x = next(prime_numbers)
+        if x == int(content):
+            num = x
+            break
+
+    b = str(fib_iter(e_text, num2))
+    return shifter(e_text, b, num, num2, alpha2, False, True)
+
+
+def decrypt(etext):
+    try:
+        b = str(fib_iter(etext, num2))
+        num = 0
+        d_txt = shifter(etext, b, num, num2, alpha2, False, False)
+        content = str(d_txt[:6]).replace("g", "0").replace("e", "1").replace("k", "2").replace("i", "3") \
+            .replace("u", "4").replace("d", "5").replace("r", "6").replace("w", "7").replace("q", "8").replace("p", "9")
+
+        prime_numbers = get_prime_number(int(content))
+        while True:
+            x = next(prime_numbers)
+            if x == int(content):
+                num = x
+                break
+
+        newnum = ""
+        run = 0
+        while len(newnum) < len(d_txt) * 2 + 100:
+            run += 1
+            newnum = str(newnum) + str(next(prime_numbers))
+            if run % 1000 == 0:
+                print(run, len(d_txt), len(str(newnum)))
+
+        output_end = shifter(d_txt[6:], newnum, num, num2, alpha1, False, False).replace(" ", "")
+        return zlib.decompress(base64.b85decode(output_end)).decode('utf-8')
+    except:
+        print("[CND] " + etext)
+        return "[CND]"
+
+
 print("Opening connection to discord")
 
 
@@ -306,30 +361,7 @@ class Encryption(commands.Cog):
 
     @commands.command(aliases=['enc'])
     async def encrypt(self, ctx, *, arg):
-        plaintext = base64.b85encode(zlib.compress(arg.encode('utf-8'), 9)).decode('utf-8')
-        global prime_numbers
-        prime_numbers = get_prime_number(random.randint(100000, 800000))
-        while True:
-            if next(prime_numbers) > 100000 and random.randint(1, 150) == 1:
-                num = next(prime_numbers)
-                break
-
-        newnum = shifter_gen_loop(plaintext)
-        e_text = shifter(plaintext, newnum, num, num2, alpha1, True, True)
-        content = str(e_text[:6]).replace("g", "0").replace("e", "1").replace("k", "2").replace("i", "3") \
-            .replace("u", "4").replace("d", "5").replace("r", "6").replace("w", "7").replace("q", "8").replace("p",
-                                                                                                               "9")
-
-        prime_numbers = get_prime_number(int(content))
-        while True:
-            x = next(prime_numbers)
-            if x == int(content):
-                num = x
-                break
-
-        b = str(fib_iter(e_text, num2))
-        e_text2 = shifter(e_text, b, num, num2, alpha2, False, True)
-
+        e_text2 = encrypt(arg)
         if len(e_text2) > 1900:
             with open('strs/temp.txt', 'w') as i:
                 i.write(e_text2)
@@ -344,35 +376,7 @@ class Encryption(commands.Cog):
 
     @commands.command(aliases=['dec'])
     async def decrypt(self, ctx, *args):
-        try:
-            b = str(fib_iter(convert_tuple(args), num2))
-            num = 0
-            dtext = shifter(convert_tuple(args), b, num, num2, alpha2, False, False)
-            content = str(dtext[:6]).replace("g", "0").replace("e", "1").replace("k", "2").replace("i", "3") \
-                .replace("u", "4").replace("d", "5").replace("r", "6").replace("w", "7").replace("q", "8").replace("p",
-                                                                                                                   "9")
-
-            prime_numbers = get_prime_number(int(content))
-            while True:
-                x = next(prime_numbers)
-                if x == int(content):
-                    num = x
-                    break
-
-            newnum = ""
-            run = 0
-            while len(newnum) < len(dtext) * 2 + 100:
-                run += 1
-                newnum = str(newnum) + str(next(prime_numbers))
-                if run % 1000 == 0:
-                    print(run, len(dtext), len(str(newnum)))
-
-            output_end = shifter(dtext[6:], newnum, num, num2, alpha1, False, False).replace(" ", "")
-        except:
-            print("[CND] " + convert_tuple(args))
-
-        final_output = zlib.decompress(base64.b85decode(output_end)).decode('utf-8')
-
+        final_output = decrypt(convert_tuple(args))
         if len(final_output) > 1900:
             with open('strs/temp.txt', 'w') as i:
                 i.write(final_output)
@@ -383,7 +387,7 @@ class Encryption(commands.Cog):
             await ctx.channel.send(file=discord.File('strs/temp.txt'))
         if len(final_output) < 1900:
             await ctx.channel.send(f"```Decrypted text:\n"
-                                   f"{zlib.decompress(base64.b85decode(output_end)).decode('utf-8')}"
+                                   f"{final_output}"
                                    f"\n\nRequested by {ctx.author}```")
 
 
@@ -504,7 +508,7 @@ class Random(commands.Cog):
     @commands.command()
     async def repeat(self, ctx):  # todo do something usefull with this command
         embed = discord.Embed(description=ctx.message.content[8:])
-        embed.set_footer(text=f"Requested by {ctx.author}")
+        embed.set_footer(text=f"Requested by ???")
         await ctx.channel.send(embed=embed)
 
     @commands.command()
@@ -522,17 +526,20 @@ class Random(commands.Cog):
         await ctx.channel.send(embed=embed)
 
     @commands.command()
-    async def emoji_letters(self, ctx):  # todo 2 versions output, do 1 or the other not both
+    async def emoji_letters(self, ctx):  # todo arg system
         string = ""
+        allow = True
         for i in ctx.message.content[15:]:
+            if i not in "abcdefghijklmnopqrstuvwxyz ":
+                allow = False
             if i == " ":
                 string += ":black_large_square:"
             else:
                 string += f":regional_indicator_{i}:"
-        await ctx.channel.send(string)
-        embed = discord.Embed(description=string)
-        embed.set_footer(text=f"Requested by {ctx.author}")
-        await ctx.channel.send(embed=embed)
+        if allow:
+            await ctx.channel.send(string)
+        else:
+            await ctx.channel.send("This command only supports alphabet chars.")
 
     @commands.command()
     async def ttb(self, ctx):  # todo add support context for prior conversations
@@ -585,15 +592,15 @@ class Server(commands.Cog):
                     a = (re.findall(r'(https?://[^\s]+)', str(message.content)))
                     b = (re.findall(r'(http?://[^\s]+)', str(message.content)))
                     if not str(a) == "[]":
-                        linksfound = linksfound + 1
+                        linksfound += 1
                         rmdup.write(str(a) + "\n")
                     if not str(b) == "[]":
-                        linksfound = linksfound + 1
+                        linksfound += 1
                         rmdup.write(str(b) + "\n")
                     if counter % 500 == 0:
                         await msg3.edit(content=f"Processed {counter} messages")
                     if counter == 10000:
-                        await msg3.edit(content=f"Processed {counter} messages, You hit the 100k messages processing limit!\
+                        await msg3.edit(content=f"Processed {counter} messages, You hit the 10k messages processing limit!\
                         any messages further back than 100k have not be included in the text file below")
                     counter += 1
                     message.content = ""
@@ -1067,7 +1074,7 @@ class NSFW(commands.Cog):
                 if imgn == 199:
                     pgnum2 = pagen.replace(" ", "")
                     pgnum3 = int(pgnum2) + 1
-                    await ctx.channel.send(f"```diff\nWant more? Type this command:\n-porngif {pgnum3} {pgsearch}```")
+                    await ctx.channel.send(f"```diff\nWant more? Type this command:\n-porngif {pgnum3} {c_args}```")
                     time.sleep(3)
         else:
             await ctx.channel.send("```NSFW is not enabled in this chat\n To enable it you must have role admin\n then type -nsfw_on```")
@@ -1305,99 +1312,43 @@ class Games(commands.Cog):  # todo redo this whole thing
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
-    async def claim_token(self, ctx, arg):
-        lookup = str(arg)
+    @commands.command(aliase=["claim_token"])
+    async def claim(self, ctx, arg):
         found = False
-        embed = {}
         with open('strs/tokens.txt') as f:
             for lnum3, line in enumerate(f, 1):
-                token, reward = line.split(",")
-                if token == lookup:
-                    reward = reward.replace(" ", "").replace("\n", "")
+                token, p2 = line.split(",")
+                if token == arg:
+                    reward = p2.replace(" ", "").replace("\n", "")
                     found = True
-                    print(lookup, "found", reward)
+                    line_num = lnum3
         if found:
             if reward == "CLAIMED":
                 embed = discord.Embed(title="This token has already been claimed", color=discord.Colour(0xff0000))
-                embed.set_footer(text=f"Requested by {ctx.author}")
             else:
                 with open('strs/tokens.txt', 'r') as file:  # todo finish this segment
                     data = file.readlines()
-                data[int(lnum3) - 1] = f'{arg}, CLAIMED\n'
+                data[int(line_num) - 1] = f'{arg}, CLAIMED\n'
                 file.close()
 
                 with open('strs/tokens.txt', 'w') as file:
                     file.writelines(data)
 
-                # code to add them coins
+                print("where")
+                rcoin.win(0, ctx.author.id, float(reward))
+                print("where")
+                embed = discord.Embed(title=f"{reward} rcoins have been added to your balance",
+                                      description=f"You now have: {rcoin.bal(0, ctx.author.id)}",
+                                      color=discord.Colour(0x00ff00))
         else:
             embed = discord.Embed(title="This is not a valid token", color=discord.Colour(0xff0000))
-            embed.set_footer(text=f"Requested by {ctx.author}")
-        await ctx.channel.send(embed=embed)
-
-    @commands.command()
-    async def reset_coins(self, ctx):
-        embed = discord.Embed(title="WARNING THIS WILL RESET YOU BALANCE TO 10",
-                              description="Type -reset_confirm to confirm this action")
         embed.set_footer(text=f"Requested by {ctx.author}")
         await ctx.channel.send(embed=embed)
 
     @commands.command()
-    async def reset_confirm(self, ctx):
-        wasuserthere = 0
-        lookup = str(ctx.author.id)
-        with open('settings/resetclaims.txt') as myFile:
-            for lnum, line in enumerate(myFile, 1):
-                if lookup in line:
-                    line20 = decimal.Decimal(line[20:])
-                    wasuserthere = wasuserthere + 1
-                    claimnum = line20
-                    allowreset = 0
-                    if int(claimnum) > 10:
-                        allowreset = 1
-                        embed = discord.Embed(
-                            description="You cant reset again you have already hit your limit of 10 resets per day")
-                        embed.set_footer(text=f"Requested by {ctx.author}")
-                        await ctx.channel.send(embed=embed)
-                    linenum2 = int(lnum)
-            if wasuserthere == 0:
-                with open('settings/resetclaims.txt', 'a+') as f:
-                    f.write(f"{ctx.author.id}, 1 \n")
-            else:
-                with open('settings/resetclaims.txt', 'r') as file:
-                    data = file.readlines()
-                data[linenum2 - 1] = f'{ctx.author.id}, {claimnum + 1}\n'
-                file.close()
-
-                with open('settings/resetclaims.txt', 'w') as file:
-                    file.writelines(data)
-
-            if not allowreset == 1:
-                wasuserthere = 0
-                lookup = str(ctx.author.id)
-                with open('settings/coin.txt') as myfile:
-                    for lnum1, line in enumerate(myfile, 1):
-                        if lookup in line:
-                            head, sep, tail = line[20:].partition('.')
-                            wasuserthere = wasuserthere + 1
-                            linenum2 = int(lnum1)
-                    if wasuserthere == 0:
-                        embed = discord.Embed(
-                            description="You dont have a balance yet! Dont worry i just made you one with 100 coins")
-                        embed.set_footer(text=f"Requested by {ctx.author}")
-                        await ctx.channel.send(embed=embed)
-                        with open('settings/coin.txt', 'a+') as f:
-                            f.write(f"{ctx.author.id}, 100 \n")
-        if not allowreset == 1:
-            with open('settings/coin.txt', 'r') as file:
-                data = file.readlines()
-            data[linenum2 - 1] = f'{ctx.author.id}, 10\n'
-            file.close()
-
-            with open('settings/coin.txt', 'w') as file:
-                file.writelines(data)
-            embed = discord.Embed(title="Your balance was just reset to 10 coins!")
+    async def daily(self, ctx):
+            # 10? daily coins, new class probably needed
+            embed = discord.Embed(title="Coins added ????")
             embed.set_footer(text=f"Requested by {ctx.author}")
             await ctx.channel.send(embed=embed)
 
@@ -1417,75 +1368,69 @@ class Games(commands.Cog):  # todo redo this whole thing
                 embed.set_footer(text=f"Requested by {ctx.author}")
         await ctx.channel.send(embed=embed)
 
-    @commands.command()
-    async def bet_flip(self, ctx, arg1, arg2):  # todo redo the arg inputs
-        allow = rcoin.check(0, ctx.author.id, int(arg2))
-        if allow != "ALLOWED":
-            embed = discord.Embed(title=allow)
+    @commands.command(aliases=["bet_flip"])
+    async def flip(self, ctx, arg1, arg2):  # todo redo the arg inputs
+        bet = rcoin.check(0, ctx.author.id, float(arg2))
+        if str(bet).startswith("This is") or str(bet).startswith("You cannot"):
+            embed = discord.Embed(title=bet)
             embed.set_footer(text=f"Requested by {ctx.author}")
-            await ctx.channel.send(embed)
+            await ctx.channel.send(embed=embed)
         else:
-            flipbet = int(arg2)
-            flipresult = random.randint(0, 100)
-
-            if flipresult < 36:
+            flip = random.randint(0, 100)
+            if flip < 36:
                 if str(arg1) == "h":
                     headortail = "heads"
                 if str(arg1) == "t":
                     headortail = "tails"
-                rcoin.win(0, ctx.author.id, flipbet)
-                embed = discord.Embed(title=f"You Won {flipbet}", description=f"Coin landed on {headortail}\
+                rcoin.win(0, ctx.author.id, bet)
+                embed = discord.Embed(title=f"You Won {bet}", description=f"Coin landed on {headortail}\
                  and You now have: {rcoin.bal(0, ctx.author.id)}", color=discord.Colour(0x00ff00))
                 embed.set_footer(text=f"Requested by {ctx.author}")
-
-            if flipresult > 35:
+            if flip > 35:
                 if str(arg1) == "h":
                     headortail = "tails"
                 if str(arg1) == "t":
                     headortail = "heads"
-                rcoin.lose(0, ctx.author.id, flipbet)
-                embed = discord.Embed(title=f"You Lost {flipbet}", description=f"Coin landed on {headortail}\
+                rcoin.lose(0, ctx.author.id, bet)
+                embed = discord.Embed(title=f"You Lost {bet}", description=f"Coin landed on {headortail}\
                  You now have: {rcoin.bal(0, ctx.author.id)}", color=discord.Colour(0xff0000))
                 embed.set_footer(text=f"Requested by {ctx.author}")
-
             await ctx.channel.send(embed=embed)
 
     @commands.command()
     async def bet_dice(self, ctx, arg1, arg2):  # todo redo the arg inputs
-        allow = rcoin.check(0, ctx.author.id, int(arg2))
-        if allow != "ALLOWED":
-            embed = discord.Embed(title=allow)
+        bet = rcoin.check(0, ctx.author.id, float(arg2))
+        if str(bet).startswith("This is") or str(bet).startswith("You cannot"):
+            embed = discord.Embed(title=bet)
             embed.set_footer(text=f"Requested by {ctx.author}")
             await ctx.channel.send(embed=embed)
         else:
-            betdicen = int(arg1)
-            betdiceb = int(arg2)
+            dice_num = int(arg1)
             allowbet = True
-            if betdicen > 6:
-                embed = discord.Embed(title="You cant bet on anything above 6!")
-                allowbet = False
-            if betdicen < 0:
-                embed = discord.Embed(title="You cant bet on anything below 0!")
+            if dice_num > 6 or dice_num < 0:
+                embed = discord.Embed(title="You must bet on a number 1-6")
                 allowbet = False
             if allowbet:
-                betdiceroll = random.randint(1, 6)
-                if betdicen == betdiceroll:
-                    rcoin.win(0, ctx.author.id, betdiceb*5)
-                    embed = discord.Embed(title=f"Dice rolled {betdiceroll} and You Won {betdiceb*5}",
-                    description=f"You now have: {rcoin.bal(0, ctx.author.id)}", color=discord.Colour(0x00ff00))
+                dice_roll = random.randint(1, 6)
+                if dice_num == dice_roll:
+                    rcoin.win(0, ctx.author.id, bet*5)
+                    embed = discord.Embed(title=f"Dice rolled {dice_roll} and You Won {bet*5}",
+                                          description=f"You now have: {rcoin.bal(0, ctx.author.id)}",
+                                          color=discord.Colour(0x00ff00))
                 else:
-                    rcoin.lose(0, ctx.author.id, betdiceb)
-                    embed = discord.Embed(title=f"Dice rolled {betdiceroll} You Lost {betdiceb}",
-                    description=f"You now have: {rcoin.bal(0, ctx.author.id)}", color=discord.Colour(0xff0000))
+                    rcoin.lose(0, ctx.author.id, bet)
+                    embed = discord.Embed(title=f"Dice rolled {dice_roll} You Lost {bet}",
+                                          description=f"You now have: {rcoin.bal(0, ctx.author.id)}",
+                                          color=discord.Colour(0xff0000))
 
             embed.set_footer(text=f"Requested by {ctx.author}")
             await ctx.channel.send(embed=embed)
 
     @commands.command()
     async def bet_rps(self, ctx, arg1, arg2):  # todo redo the arg inputs, and the floats issue
-        allow = rcoin.check(0, ctx.author.id, int(arg2))
-        if allow != "ALLOWED":
-            embed = discord.Embed(title=allow)
+        bet = rcoin.check(0, ctx.author.id, float(arg2))
+        if str(bet).startswith("This is") or str(bet).startswith("You cannot"):
+            embed = discord.Embed(title=bet)
             embed.set_footer(text=f"Requested by {ctx.author}")
             await ctx.channel.send(embed=embed)
         else:
@@ -1550,281 +1495,210 @@ class Games(commands.Cog):  # todo redo this whole thing
 
     @commands.command()
     async def bet_multi(self, ctx, arg1, arg2):  # todo redo with the new currency
-        wasuserthere = 0
-        lookup = str(ctx.author.id)
-        with open('settings/coin.txt') as myFile:
-            for lnum, line in enumerate(myFile, 1):
-                if lookup in line:
-                    line20 = decimal.Decimal(line[20:])
-                    wasuserthere = wasuserthere + 1
-                    coin = line20
-                    linenum = int(lnum)
-            if wasuserthere == 0:
-                embed = discord.Embed(description="You dont have a balance yet! Dont worry i just made you one")
+        bet = rcoin.check(0, ctx.author.id, float(arg2))
+        if str(bet).startswith("This is") or str(bet).startswith("You cannot"):
+            embed = discord.Embed(title=bet)
+            embed.set_footer(text=f"Requested by {ctx.author}")
+            await ctx.channel.send(embed=embed)
+        else:
+            betmultiplyer = int(arg1)
+            betmultiamount = int(arg2)
+            allowbet = 0
+            if int(betmultiplyer) < 3:
+                embed = discord.Embed(title="You cant have a multiplier lower than 3!")
                 embed.set_footer(text=f"Requested by {ctx.author}")
                 await ctx.channel.send(embed=embed)
-                with open('settings/coin.txt', 'a+') as f:
-                    f.write(f"{ctx.author.id}, 100 \n")
-
-        betmultiplyer = arg1
-        betmultiamount = arg2
-
-        allowbet = 0
-        if int(betmultiamount) > coin:
-            embed = discord.Embed(title="You cant bet more than you have!")
-            embed.set_footer(text=f"Requested by {ctx.author}")
-            await ctx.channel.send(embed=embed)
-            allowbet = 1
-        if int(betmultiamount) < 1:
-            embed = discord.Embed(title="You cant bet nothing!")
-            embed.set_footer(text=f"Requested by {ctx.author}")
-            await ctx.channel.send(embed=embed)
-            allowbet = 1
-        if int(betmultiplyer) < 3:
-            embed = discord.Embed(title="You cant have a multiplier lower than 3!")
-            embed.set_footer(text=f"Requested by {ctx.author}")
-            await ctx.channel.send(embed=embed)
-            allowbet = 1
-        if int(betmultiplyer) > 100000:
-            embed = discord.Embed(title="You cant have a multiplier higher than 100000!")
-            embed.set_footer(text=f"Requested by {ctx.author}")
-            await ctx.channel.send(embed=embed)
-            allowbet = 1
-        if not allowbet == 1:
-            multiplyerunedit = int(betmultiplyer) * 1.20 * 10  # change multiplier here
-            lookup = "."
-            if lookup in str(multiplyerunedit):
-                head, sep, tail = str(multiplyerunedit).partition('.')
-
-            botmultichoice = random.randint(1, int(head))
-            print(str(botmultichoice) + "/" + str(multiplyerunedit))
-            if botmultichoice < 11:
-                coins2 = coin + (int(betmultiamount) * int(betmultiplyer))
-                coin = coins2
-                embed = discord.Embed(title=f"You Won: {int(betmultiamount) * int(betmultiplyer)}",
-                description=f"You bet {betmultiamount} on a {betmultiplyer}X multiplier and you now have: {coin}",
-                color=discord.Colour(0x00ff00))
+                allowbet = 1
+            if int(betmultiplyer) > 100000:
+                embed = discord.Embed(title="You cant have a multiplier higher than 100000!")
                 embed.set_footer(text=f"Requested by {ctx.author}")
                 await ctx.channel.send(embed=embed)
-                with open('settings/coin.txt', 'r') as file:
-                    data = file.readlines()
-                data[linenum - 1] = f'{ctx.author.id}, {coin}\n'
-                file.close()
+                allowbet = 1
+            if not allowbet == 1:
+                multiplyerunedit = int(betmultiplyer) * 1.20 * 10  # change multiplier here
+                lookup = "."
+                if lookup in str(multiplyerunedit):
+                    head, sep, tail = str(multiplyerunedit).partition('.')
 
-                with open('settings/coin.txt', 'w') as file:
-                    file.writelines(data)
-            else:
-                coins2 = coin - int(betmultiamount)
-                if coins2 < 0:
-                    coins2 = 0
-                coin = coins2
-                embed = discord.Embed(title=f"You Lost: {betmultiamount}",
-                description=f"You bet {betmultiamount} on a {betmultiplyer}X multiplier and you now have: {coin}",
-                color=discord.Colour(0xff0000))
-                embed.set_footer(text=f"Requested by {ctx.author}")
-                await ctx.channel.send(embed=embed)
-                with open('settings/coin.txt', 'r') as file:
-                    data = file.readlines()
-                data[linenum - 1] = f'{ctx.author.id}, {coin}\n'
-                file.close()
-
-                with open('settings/coin.txt', 'w') as file:
-                    file.writelines(data)
+                botmultichoice = random.randint(1, int(head))
+                print(str(botmultichoice) + "/" + str(multiplyerunedit))
+                if botmultichoice < 11:
+                    rcoin.win(0, ctx.author.id, betmultiamount*betmultiplyer)
+                    embed = discord.Embed(title=f"You Won: {betmultiamount*betmultiplyer}",
+                    description=f"You bet {betmultiamount} on a {betmultiplyer}"
+                                f"X multiplier and you now have: {rcoin.bal(0, ctx.author.id)}",
+                    color=discord.Colour(0x00ff00))
+                    embed.set_footer(text=f"Requested by {ctx.author}")
+                    await ctx.channel.send(embed=embed)
+                else:
+                    rcoin.lose(0, ctx.author.id, betmultiamount)
+                    embed = discord.Embed(title=f"You Lost: {betmultiamount}",
+                    description=f"You bet {betmultiamount} on a {betmultiplyer}"
+                                f"X multiplier and you now have: {rcoin.bal(0, ctx.author.id)}",
+                    color=discord.Colour(0xff0000))
+                    embed.set_footer(text=f"Requested by {ctx.author}")
+                    await ctx.channel.send(embed=embed)
 
     @commands.command()
-    async def bet_revup(self, ctx, arg1, arg2):  # todo redo with the new currency
-        wasuserthere = 0
-        lookup = str(ctx.author.id)
-        with open('settings/coin.txt') as myFile:
-            for lnum, line in enumerate(myFile, 1):
-                if lookup in line:
-                    line20 = decimal.Decimal(line[20:])
-                    wasuserthere = wasuserthere + 1
-                    coin = line20
-                    linenum = int(lnum)
-            if wasuserthere == 0:
-                embed = discord.Embed(description="You dont have a balance yet! Dont worry i just made you one")
-                embed.set_footer(text=f"Requested by {ctx.author}")
-                await ctx.channel.send(embed=embed)
-                with open('settings/coin.txt', 'a+') as f:
-                    f.write(f"{ctx.author.id}, 100 \n")
+    async def bet_revup(self, ctx, arg1, arg2):  # todo this has been left broken, fix it
+        bet = rcoin.check(0, ctx.author.id, float(arg2))
+        if str(bet).startswith("This is") or str(bet).startswith("You cannot"):
+            embed = discord.Embed(title=bet)
+            embed.set_footer(text=f"Requested by {ctx.author}")
+            await ctx.channel.send(embed=embed)
+        else:
+            revupbet = arg1
+            betrevtimes = arg2
+            allowcmd = 0
 
-        revupbet = arg1
-        betrevtimes = arg2
-        allowcmd = 0
-
-        if int(betrevtimes) > 1:
-            if int(betrevtimes) > 15:
-                embed = discord.Embed(title="Number over max goes limit!", description="There is a 15 goes limit")
-                embed.set_footer(text=f"Requested by {ctx.author}")
-                await ctx.channel.send(embed=embed)
-                allowcmd = 1
-            elif int(betrevtimes) > 1:
-                lookup = str(ctx.author.id)
-                with open('settings/coin.txt') as myFile:
-                    for line in myFile:
-                        if lookup in line:
-                            balance = decimal.Decimal(line[20:])
-                            balance = balance / 100
-                            head, sep, tail = str(balance).partition('.')
-                if int(betrevtimes) > int(head):
-                    if head == "0":
-                        head = "1"
-                    embed = discord.Embed(title="Number over goes limit!", description=f"There is a {head} goes limit,\
-                    increase this by getting more coins by playing games! do `-help games` to see the games list")
-                    embed.set_footer(text=f"Requested by {ctx.author}")
-                    await ctx.channel.send(embed=embed)
-                    allowcmd = 1
-        if int(betrevtimes) < 1:
-            await ctx.channel.send("```The minimum goes is 1!```")
-            allowcmd = 1
-        if not allowcmd == 1:
-            for i in range(int(betrevtimes)):
-                allowbet = 0
-                if int(revupbet) > coin:
-                    embed = discord.Embed(title="You cant bet more than you have!")
-                    embed.set_footer(text=f"Requested by {ctx.author}")
-                    await ctx.channel.send(embed=embed)
-                    allowbet = 1
-                if int(revupbet) < 1:
-                    embed = discord.Embed(title="You cant bet nothing!")
-                    embed.set_footer(text=f"Requested by {ctx.author}")
-                    await ctx.channel.send(embed=embed)
-                    allowbet = 1
-                if not allowbet == 1:
-                    revupdivider = decimal.Decimal(random.randrange(0, 2750))  # change multiplier here
-                    revupmulti = decimal.Decimal(random.randrange(0, 1000)) / revupdivider
-                    revupmulti = revupmulti.as_integer_ratio()
-
-                    coinadd = int(revupbet) * revupmulti[0] / revupmulti[1]
-                    coinadd = decimal.Decimal(coinadd)
-                    coin2 = coin - int(revupbet)
-                    coin = coin2 + round(coinadd, 2)
-                    revumtotal = revupmulti[0] / revupmulti[1]
-                    revumtotal = decimal.Decimal(revumtotal)
-                    revupbet = decimal.Decimal(revupbet)
-
-                    if coinadd > revupbet:
-                        embed = discord.Embed(title=f"You Won: {round(coinadd, 2)}",
-                        description=f"You bet {revupbet} and got a {round(revumtotal, 2)}\
-                        X multiplier and you now have: {coin}", color=discord.Colour(0x00ff00))
-                        embed.set_footer(text=f"Requested by {ctx.author}")
-                        await ctx.channel.send(embed=embed)
-                    if coinadd < revupbet:
-                        embed = discord.Embed(title=f"You Got Back: {revupbet - (revupbet - round(coinadd, 2))}", description=
-                        f"You bet {revupbet} and got a {round(revumtotal, 2)}\
-                        X multiplier and you now have: {coin}", color=discord.Colour(0xff0000))
-                        embed.set_footer(text=f"Requested by {ctx.author}")
-                        await ctx.channel.send(embed=embed)
-                    with open('settings/coin.txt', 'r') as file:
-                        data = file.readlines()
-                    data[linenum - 1] = f'{ctx.author.id}, {coin}\n'
-                    file.close()
-
-                    with open('settings/coin.txt', 'w') as file:
-                        file.writelines(data)
-
-    @commands.command()
-    async def bet_dubup(self, ctx, arg1, arg2):  # todo redo with the new currency
-        wasuserthere = 0
-        lookup = str(ctx.author.id)
-        with open('settings/coin.txt') as myFile:
-            for lnum, line in enumerate(myFile, 1):
-                if lookup in line:
-                    line20 = decimal.Decimal(line[20:])
-                    wasuserthere = wasuserthere + 1
-                    coin = line20
-                    linenum = int(lnum)
-            if wasuserthere == 0:
-                embed = discord.Embed(description="You dont have a balance yet! Dont worry i just made you one")
-                embed.set_footer(text=f"Requested by {ctx.author}")
-                await ctx.channel.send(embed=embed)
-                with open('settings/coin.txt', 'a+') as f:
-                    f.write(f"{ctx.author.id}, 100 \n")
-
-        revupbet = arg1
-        betrevtimes = arg2
-        allowcmd = 0
-
-        if int(betrevtimes) > 1:
-            if int(betrevtimes) > 15:
-                embed = discord.Embed(title="Number over max goes limit!", description="There is a 15 goes limit")
-                embed.set_footer(text=f"Requested by {ctx.author}")
-                await ctx.channel.send(embed=embed)
-                allowcmd = 1
             if int(betrevtimes) > 1:
-                lookup = str(ctx.author.id)
-                with open('settings/coin.txt') as myFile:
-                    for line in myFile:
-                        if lookup in line:
-                            balance = decimal.Decimal(line[20:])
-                            balance = balance / 100
-                            head, sep, tail = str(balance).partition('.')
-                if int(betrevtimes) > int(head):
-                    if head == "0":
-                        head = "1"
-                    embed = discord.Embed(title="Number over goes limit!", description=f"There is a {head} goes limit,\
-                    increase this by getting more coins by playing games! do `-help games` to see the games list")
+                if int(betrevtimes) > 15:
+                    embed = discord.Embed(title="Number over max goes limit!", description="There is a 15 goes limit")
                     embed.set_footer(text=f"Requested by {ctx.author}")
                     await ctx.channel.send(embed=embed)
                     allowcmd = 1
-        if int(betrevtimes) < 1:
-            await ctx.channel.send("```The minimum goes is 1!```")
-            allowcmd = 1
-        if not allowcmd == 1:
-            for i in range(int(betrevtimes)):
-                allowbet = 0
-                if int(revupbet) > coin:
-                    embed = discord.Embed(title="You cant bet more than you have!")
-                    embed.set_footer(text=f"Requested by {ctx.author}")
-                    await ctx.channel.send(embed=embed)
-                    allowbet = 1
-                if int(revupbet) < 1:
-                    embed = discord.Embed(title="You cant bet nothing!")
-                    embed.set_footer(text=f"Requested by {ctx.author}")
-                    await ctx.channel.send(embed=embed)
-                    allowbet = 1
-                if not allowbet == 1:
-                    revupdivider = decimal.Decimal(random.randrange(0, 1000))  # change multiplier here
-                    revupmulti = (decimal.Decimal(random.randrange(0, 200)) / revupdivider)
-                    revupmulti2 = (decimal.Decimal(random.randrange(0, 200)) / revupdivider)
-                    revupmulifinal = revupmulti * revupmulti2
-                    revupmulifinal = revupmulifinal.as_integer_ratio()
-                    revupmulti = revupmulti.as_integer_ratio()
-                    revupmulti2 = revupmulti2.as_integer_ratio()
-
-                    coinadd = int(revupbet) * revupmulifinal[0] / revupmulifinal[1]
-                    coinadd = decimal.Decimal(coinadd)
-                    coin2 = coin - int(revupbet)
-                    coin = coin2 + round(coinadd, 2)
-                    revupmulti = revupmulti[0] / revupmulti[1]
-                    revupmulti = decimal.Decimal(revupmulti)
-                    revupmulti2 = revupmulti2[0] / revupmulti2[1]
-                    revupmulti2 = decimal.Decimal(revupmulti2)
-                    revuptotal = revupmulifinal[0] / revupmulifinal[1]
-                    revuptotal = decimal.Decimal(revuptotal)
-                    revupbet = decimal.Decimal(revupbet)
-
-                    if coinadd > revupbet:
-                        embed = discord.Embed(title=f"You Won: {round(coinadd, 2)}", description=
-                        f"You bet {revupbet} and got a ({round(revupmulti, 2)}x{round(revupmulti2, 2)}) \
-                        {round(revuptotal, 2)}X multiplier\nyou now have: {coin}", color=discord.Colour(0x00ff00))
+                elif int(betrevtimes) > 1:
+                    lookup = str(ctx.author.id)
+                    with open('settings/coin.txt') as myFile:
+                        for line in myFile:
+                            if lookup in line:
+                                balance = decimal.Decimal(line[20:])
+                                balance = balance / 100
+                                head, sep, tail = str(balance).partition('.')
+                    if int(betrevtimes) > int(head):
+                        if head == "0":
+                            head = "1"
+                        embed = discord.Embed(title="Number over goes limit!", description=f"There is a {head} goes limit,\
+                        increase this by getting more coins by playing games! do `-help games` to see the games list")
                         embed.set_footer(text=f"Requested by {ctx.author}")
                         await ctx.channel.send(embed=embed)
-                    if coinadd < revupbet:
-                        embed = discord.Embed(title=f"You Got Back: {revupbet - (revupbet - round(coinadd, 2))}",
-                        description=f"You bet {revupbet, round(revupmulti, 2)} and got a ({round(revupmulti2, 2)}x\
-                        {round(revuptotal, 2)}) {round(revupmulti, 2)}X multiplier\nyou now have: {coin}",
-                        color=discord.Colour(0xff0000))
+                        allowcmd = 1
+            if int(betrevtimes) < 1:
+                await ctx.channel.send("```The minimum goes is 1!```")
+                allowcmd = 1
+            if not allowcmd == 1:
+                for i in range(int(betrevtimes)):
+                    allowbet = 0
+                    if int(revupbet) > coin:
+                        embed = discord.Embed(title="You cant bet more than you have!")
                         embed.set_footer(text=f"Requested by {ctx.author}")
                         await ctx.channel.send(embed=embed)
-                    with open('settings/coin.txt', 'r') as file:
-                        data = file.readlines()
-                    data[linenum - 1] = f'{ctx.author.id}, {coin}\n'
-                    file.close()
+                        allowbet = 1
+                    if int(revupbet) < 1:
+                        embed = discord.Embed(title="You cant bet nothing!")
+                        embed.set_footer(text=f"Requested by {ctx.author}")
+                        await ctx.channel.send(embed=embed)
+                        allowbet = 1
+                    if not allowbet == 1:
+                        revupdivider = decimal.Decimal(random.randrange(0, 2750))  # change multiplier here
+                        revupmulti = decimal.Decimal(random.randrange(0, 1000)) / revupdivider
+                        revupmulti = revupmulti.as_integer_ratio()
 
-                    with open('settings/coin.txt', 'w') as file:
-                        file.writelines(data)
+                        coinadd = int(revupbet) * revupmulti[0] / revupmulti[1]
+                        coinadd = decimal.Decimal(coinadd)
+                        coin2 = coin - int(revupbet)
+                        coin = coin2 + round(coinadd, 2)
+                        revumtotal = revupmulti[0] / revupmulti[1]
+                        revumtotal = decimal.Decimal(revumtotal)
+                        revupbet = decimal.Decimal(revupbet)
+
+                        if coinadd > revupbet:
+                            embed = discord.Embed(title=f"You Won: {round(coinadd, 2)}",
+                            description=f"You bet {revupbet} and got a {round(revumtotal, 2)}\
+                            X multiplier and you now have: {coin}", color=discord.Colour(0x00ff00))
+                            embed.set_footer(text=f"Requested by {ctx.author}")
+                            await ctx.channel.send(embed=embed)
+                        if coinadd < revupbet:
+                            embed = discord.Embed(title=f"You Got Back: {revupbet - (revupbet - round(coinadd, 2))}", description=
+                            f"You bet {revupbet} and got a {round(revumtotal, 2)}\
+                            X multiplier and you now have: {coin}", color=discord.Colour(0xff0000))
+                            embed.set_footer(text=f"Requested by {ctx.author}")
+                            await ctx.channel.send(embed=embed)
+
+    @commands.command()
+    async def bet_dubup(self, ctx, arg1, arg2):  # todo this has been left broken, fix it
+        bet = rcoin.check(0, ctx.author.id, float(arg2))
+        if str(bet).startswith("This is") or str(bet).startswith("You cannot"):
+            embed = discord.Embed(title=bet)
+            embed.set_footer(text=f"Requested by {ctx.author}")
+            await ctx.channel.send(embed=embed)
+        else:
+            revupbet = arg1
+            betrevtimes = arg2
+            allowcmd = 0
+
+            if int(betrevtimes) > 1:
+                if int(betrevtimes) > 15:
+                    embed = discord.Embed(title="Number over max goes limit!", description="There is a 15 goes limit")
+                    embed.set_footer(text=f"Requested by {ctx.author}")
+                    await ctx.channel.send(embed=embed)
+                    allowcmd = 1
+                if int(betrevtimes) > 1:
+                    lookup = str(ctx.author.id)
+                    with open('settings/coin.txt') as myFile:
+                        for line in myFile:
+                            if lookup in line:
+                                balance = decimal.Decimal(line[20:])
+                                balance = balance / 100
+                                head, sep, tail = str(balance).partition('.')
+                    if int(betrevtimes) > int(head):
+                        if head == "0":
+                            head = "1"
+                        embed = discord.Embed(title="Number over goes limit!", description=f"There is a {head} goes limit,\
+                        increase this by getting more coins by playing games! do `-help games` to see the games list")
+                        embed.set_footer(text=f"Requested by {ctx.author}")
+                        await ctx.channel.send(embed=embed)
+                        allowcmd = 1
+            if int(betrevtimes) < 1:
+                await ctx.channel.send("```The minimum goes is 1!```")
+                allowcmd = 1
+            if not allowcmd == 1:
+                for i in range(int(betrevtimes)):
+                    allowbet = 0
+                    if int(revupbet) > coin:
+                        embed = discord.Embed(title="You cant bet more than you have!")
+                        embed.set_footer(text=f"Requested by {ctx.author}")
+                        await ctx.channel.send(embed=embed)
+                        allowbet = 1
+                    if int(revupbet) < 1:
+                        embed = discord.Embed(title="You cant bet nothing!")
+                        embed.set_footer(text=f"Requested by {ctx.author}")
+                        await ctx.channel.send(embed=embed)
+                        allowbet = 1
+                    if not allowbet == 1:
+                        revupdivider = decimal.Decimal(random.randrange(0, 1000))  # change multiplier here
+                        revupmulti = (decimal.Decimal(random.randrange(0, 200)) / revupdivider)
+                        revupmulti2 = (decimal.Decimal(random.randrange(0, 200)) / revupdivider)
+                        revupmulifinal = revupmulti * revupmulti2
+                        revupmulifinal = revupmulifinal.as_integer_ratio()
+                        revupmulti = revupmulti.as_integer_ratio()
+                        revupmulti2 = revupmulti2.as_integer_ratio()
+
+                        coinadd = int(revupbet) * revupmulifinal[0] / revupmulifinal[1]
+                        coinadd = decimal.Decimal(coinadd)
+                        coin2 = coin - int(revupbet)
+                        coin = coin2 + round(coinadd, 2)
+                        revupmulti = revupmulti[0] / revupmulti[1]
+                        revupmulti = decimal.Decimal(revupmulti)
+                        revupmulti2 = revupmulti2[0] / revupmulti2[1]
+                        revupmulti2 = decimal.Decimal(revupmulti2)
+                        revuptotal = revupmulifinal[0] / revupmulifinal[1]
+                        revuptotal = decimal.Decimal(revuptotal)
+                        revupbet = decimal.Decimal(revupbet)
+
+                        if coinadd > revupbet:
+                            embed = discord.Embed(title=f"You Won: {round(coinadd, 2)}", description=
+                            f"You bet {revupbet} and got a ({round(revupmulti, 2)}x{round(revupmulti2, 2)}) \
+                            {round(revuptotal, 2)}X multiplier\nyou now have: {coin}", color=discord.Colour(0x00ff00))
+                            embed.set_footer(text=f"Requested by {ctx.author}")
+                            await ctx.channel.send(embed=embed)
+                        if coinadd < revupbet:
+                            embed = discord.Embed(title=f"You Got Back: {revupbet - (revupbet - round(coinadd, 2))}",
+                            description=f"You bet {revupbet, round(revupmulti, 2)} and got a ({round(revupmulti2, 2)}x\
+                            {round(revuptotal, 2)}) {round(revupmulti, 2)}X multiplier\nyou now have: {coin}",
+                            color=discord.Colour(0xff0000))
+                            embed.set_footer(text=f"Requested by {ctx.author}")
+                            await ctx.channel.send(embed=embed)
 
 
 class Admin(commands.Cog):
@@ -2071,7 +1945,7 @@ class Help(commands.Cog):
 
             if c_args in ["games", "bet"]:
                 embed = discord.Embed(title=":game_die: Game commands (12)",
-                                      description="`claim_token`,`reset_coins`,`bal`,`bet_flip`,\
+                                      description="`claim`,`daily`,`bal`,`flip`,\
                         `bet bj`,`bet_dice`,\n`bet_rps`,`bet_multi`,`bet_revup`,`bet_dubup`,`bet crash`,`quiz`")
                 embed.set_footer(text=f"Add -h to the beginning of a command for its help section! "
                                       f"Requested by {ctx.message.author}")
@@ -2332,14 +2206,15 @@ class Help(commands.Cog):
             if c_args in ["meme"]:  # SEARCHES
                 embed = discord.Embed(title="MEME HELP:", description="The meme command retrieves a meme!")
 
-            if c_args in ["claim_token"]:  # GAMES
-                embed = discord.Embed(title="CLAIM_TOKEN HELP:",
-                                      description="The claim_token command means you can claim rewards!")
-                embed.add_field(name="Here is how to use it", value="`-claim_token <token>`", inline=False)
+            if c_args in ["claim", "claim_token"]:  # GAMES
+                embed = discord.Embed(title="CLAIM HELP:",
+                                      description="The claim command means you can claim rewards!")
+                embed.add_field(name="Here is how to use it", value="`-claim <token>`", inline=False)
+                embed.add_field(name="Command aliases", value="`claim_token`", inline=False)
 
-            if c_args in ["reset_coins"]:  # GAMES
-                embed = discord.Embed(title="RESET_COINS HELP:",
-                                      description="The reset_coins command resets your balance to 10 coins")
+            if c_args in ["daily"]:  # GAMES
+                embed = discord.Embed(title="DAILY COINS HELP:",
+                                      description="The daily coins command gives you some coins!")
 
             if c_args in ["bal"]:  # GAMES
                 embed = discord.Embed(title="BAL HELP:",
@@ -2348,11 +2223,12 @@ class Help(commands.Cog):
                                 value="`-bal` for your balance\n `-bal <@user>` for someone elses balance",
                                 inline=False)
 
-            if c_args in ["bet_flip"]:  # GAMES
+            if c_args in ["flip", "bet_flip"]:  # GAMES
                 embed = discord.Embed(title="COINFLIP HELP:",
                                       description="The coinflip command is a betting game for 2x money")
-                embed.add_field(name="Here is how to use it", value="`-bet_flip <h or t> <amount to bet>`",
+                embed.add_field(name="Here is how to use it", value="`-flip <h or t> <amount to bet>`",
                                 inline=False)
+                embed.add_field(name="Command aliases", value="`bet_flip`", inline=False)
 
             if c_args in ["bet_dice"]:  # GAMES
                 embed = discord.Embed(title="BET_DICE HELP:",
@@ -2525,6 +2401,13 @@ class ttb():  # todo add ttb prev conv functionality
         return response[0]
 
 
+def dec_crunch(number):
+    if str(number)[::-1].find('.') > 3:
+        return float(number)//0.001/1000
+    else:
+        return round(float(number), 3)
+
+
 rcoin_data = {}
 
 
@@ -2532,10 +2415,11 @@ class rcoin():  # todo make sure floats not dropped like currently are
     with open("strs/rcoin_bals.txt") as f:
         for line in f.readlines():
             userid, bal = line.replace("\n", "").split(", ")
-            rcoin_data.update({int(userid): int(bal)})
+            rcoin_data.update({int(userid): dec_crunch(bal)})
 
     def bal(self, userid):
         try:
+            rcoin_data.update({int(userid): dec_crunch(rcoin_data[int(userid)])})
             return rcoin_data[int(userid)]
         except:
             rcoin_data.update({int(userid): 100})
@@ -2554,11 +2438,6 @@ class rcoin():  # todo make sure floats not dropped like currently are
         rcoin_data.update({int(userid): rcoin_data[int(userid)]-amount})
         rcoin.save(0)
 
-    def save(self):
-        with open("strs/rcoin_bals.txt", "w") as f:
-            for key, value in rcoin_data.items():
-                f.write(f"{key}, {value}\n")
-
     def check(self, userid, amount):
         if amount < 1:
             return "You cannot enter a value smaller than 1 rcoin"
@@ -2566,7 +2445,7 @@ class rcoin():  # todo make sure floats not dropped like currently are
             if amount > rcoin_data[int(userid)]:
                 return f"This is {amount - rcoin_data[int(userid)]} rcoins over the amount you have"
             else:
-                return "ALLOWED"
+                return dec_crunch(amount)
 
 
 @bot.event
@@ -2663,10 +2542,10 @@ async def on_message(message):
     if message.content.startswith("-") and message.author.bot is False:
 
         # TOKEN DROPS
-        token_drops_on = False
+        token_drops_on = True
 
         if token_drops_on:
-            tokenluck = random.randint(0, 1)  # todo make certain users more or less lucky
+            tokenluck = random.randint(0, 100)  # todo make certain users more or less lucky
             if tokenluck == 1:
                 import string
                 token = ""
@@ -2815,8 +2694,6 @@ async def on_message(message):
             else:
                 await message.channel.send("```You will need to ask rapidslayer101 for access to the beta rank")
 
-        #if message.content.startswith("-token make"):  # todo redo this command
-
         # beta commands
 
         if message.content.startswith("-join vc"):
@@ -2854,9 +2731,9 @@ async def on_connect():
           f'-----------------------------------------------')
 
 
-@bot.event
-async def on_ready():
-    print("Bot is now ready\n-----------------------------------------------")
+#@bot.event
+#async def on_ready():
+#    print("Bot is now ready\n-----------------------------------------------")
 
 
 @bot.event

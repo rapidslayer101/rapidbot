@@ -529,7 +529,7 @@ class Random(commands.Cog):
     async def emoji_letter(self, ctx, *args):
         string = ""
         allow = True
-        for i in convert_tuple(args)[:-1]:
+        for i in convert_tuple(args)[:-1].replace(",","").replace(".", ""):
             if i.lower() not in "abcdefghijklmnopqrstuvwxyz ":
                 allow = False
             if i == " ":
@@ -553,10 +553,14 @@ class Bot_info(commands.Cog):
 
     @commands.command(aliases=["botinv", "botweb", "botrt", "inservers"])
     async def info(self, ctx):
-        timestr = str(ctx.message.created_at - datetime.datetime.utcnow())
-        diff = sum([a * b for a, b in zip([3600, 60, 1], map(float, timestr.split(':')))])
-        startx = datetime.datetime.utcnow() - start_time
-        embed = discord.Embed(title=f"Bot info:", description=f"\n\nRuntime: {str(startx)[:-7]}\n"
+        try:
+            timestr = str(ctx.message.created_at - datetime.datetime.utcnow())
+            diff = sum([a * b for a, b in zip([3600, 60, 1], map(float, timestr.split(':')))])
+            startx = datetime.datetime.utcnow() - start_time
+            runtime = str(startx)[:-7]
+        except:
+            runtime = "ERROR"
+        embed = discord.Embed(title=f"Bot info:", description=f"\n\nRuntime: {runtime}\n"
             f"Started at: {str(start_time)[:-7]}\n"
             f'Cpu: {psutil.cpu_percent()}% of {psutil.cpu_count(logical=False)} cores\n'
             f'Ram: {psutil.virtual_memory().percent}% in use, '
@@ -1312,7 +1316,7 @@ class Games(commands.Cog):  # todo redo this whole thing
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(aliase=["claim_token"])
+    @commands.command(aliases=["claim_token"])
     async def claim(self, ctx, arg):
         found = False
         with open('strs/tokens.txt') as f:
@@ -2560,7 +2564,7 @@ async def on_message(message):
 
                 embed = discord.Embed(title=f"{token}",
                                       description=f"Claim the above {token_value}"
-                                                  f" coin token by typing -claim_token <token>")
+                                                  f" coin token by typing -claim <token>")
                 await message.channel.send(embed=embed)
 
         allow_command = cooldown.check(0, message.author.id, 2)

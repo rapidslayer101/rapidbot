@@ -525,17 +525,17 @@ class Random(commands.Cog):
         embed.set_footer(text=f"Requested by {ctx.author}")
         await ctx.channel.send(embed=embed)
 
-    @commands.command()
-    async def emoji_letters(self, ctx):  # todo arg system
+    @commands.command(aliases=["emoji_letters", "big_text"])
+    async def emoji_letter(self, ctx, *args):
         string = ""
         allow = True
-        for i in ctx.message.content[15:]:
-            if i not in "abcdefghijklmnopqrstuvwxyz ":
+        for i in convert_tuple(args)[:-1]:
+            if i.lower() not in "abcdefghijklmnopqrstuvwxyz ":
                 allow = False
             if i == " ":
                 string += ":black_large_square:"
             else:
-                string += f":regional_indicator_{i}:"
+                string += f":regional_indicator_{i.lower()}:"
         if allow:
             await ctx.channel.send(string)
         else:
@@ -1892,7 +1892,7 @@ class Help(commands.Cog):
 
             if c_args in ["random", "rand"]:
                 embed = discord.Embed(title=":question: Random commands (10)", description="`randword`,`randnum`,\
-                        `randuni`,`eight_ball`,`leetify`,`repeat`,\n`joke`,`char_count`,`emoji_letters`,`ttb`")
+                        `randuni`,`eight_ball`,`leetify`,`repeat`,\n`joke`,`char_count`,`emoji_letter`,`ttb`")
                 embed.set_footer(text=f"Add -h to the beginning of a command for its help section!"
                                       f" Requested by {ctx.message.author}")
 
@@ -1995,10 +1995,11 @@ class Help(commands.Cog):
                                                   " characters in your message")
                 embed.add_field(name="Here is how to use it", value="`-char_count <message>`", inline=False)
 
-            if c_args in ["emoji_letters", "emoji letters"]:  # RANDOM
+            if c_args in ["emoji_letter", "emoji_letters", "big_text"]:  # RANDOM
                 embed = discord.Embed(title="EMOJI_LETTERS HELP:",
-                                      description="The emoji letters command turns your message into letter emojis")
-                embed.add_field(name="Here is how to use it", value="`-emoji_letters <message>`", inline=False)
+                                      description="The emoji letter command turns your message into letter emojis")
+                embed.add_field(name="Here is how to use it", value="`-emoji_letter <message>`", inline=False)
+                embed.add_field(name="Command aliases", value="`emoji_letters`,`big_text`", inline=False)
 
             if c_args in ["ttb"]:  # RANDOM
                 embed = discord.Embed(title="TTB HELP:",

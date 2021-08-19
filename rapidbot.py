@@ -548,12 +548,17 @@ class Bot_info(commands.Cog):
     @commands.command(aliases=["botinv", "botweb", "botrt", "inservers"])
     async def info(self, ctx):
         try:  # todo fix this error, temp except added
-            timestr = str(ctx.message.created_at - datetime.datetime.utcnow())
-            diff = sum([a * b for a, b in zip([3600, 60, 1], map(float, timestr.split(':')))])
+            try:
+                timestr = str(ctx.message.created_at - datetime.datetime.utcnow())
+            except:
+                timestr = str(ctx.message.created_at - datetime.datetime.now())
+            diff = round(sum([a * b for a, b in zip([3600, 60, 1], map(float, timestr.split(':')))]), 2)
             startx = datetime.datetime.utcnow() - start_time
-            runtime = str(startx)[:-7]
         except:
             diff = "ERROR"
+        try:
+            runtime = str(startx)[:-7]
+        except:
             runtime = "ERROR"
         embed = discord.Embed(title=f"Bot info:", description=f"\n\nRuntime: {runtime}\n"
             f"Started at: {str(start_time)[:-7]}\n"
@@ -565,7 +570,7 @@ class Bot_info(commands.Cog):
             f'Storage: {psutil.disk_usage("/").percent}% used, {round(psutil.disk_usage("/").used/1024/1024, 2)}'
             f'/{round(psutil.disk_usage("/").total/1024/1024, 2)}MB\n'
             f'This bot is in {str(len(bot.guilds))} servers\n'
-            f'The current ping is: {round(diff,2)}s\n'
+            f'The current ping is: {diff}s\n'
             f'\nInvite link: [Click to add bot to another server](https://discord.com/oauth2/'
             f'authorize?client_id=711578412103368707&scope=bot&permissions=8)\n'
             #f'Website link: [Go to website](https://rapidslayer101.wixsite.com/rapidslayer)\n'

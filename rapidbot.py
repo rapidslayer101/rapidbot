@@ -1,8 +1,8 @@
 # MADE BY RAPIDSLAYER101#260, DO NOT COPY, DO NOT SHARE, DO NOT USE
 
 global time, sys, googletrans, google, random, os, zlib, base64, re
-import datetime, decimal, time, os, random, zlib, base64, re, socket, hashlib  # inbuilt
-import googletrans, discord, requests, urllib, praw # installed modules
+import datetime, decimal, time, os, random, re, socket, hashlib  # inbuilt
+import googletrans, discord, requests, urllib, praw  # installed modules
 import psutil as ut
 from discord import Embed
 from discord.ext import commands
@@ -78,7 +78,7 @@ class Encryption(commands.Cog):
 
     @commands.command(aliases=['dec'])  # todo fix dec
     async def decrypt(self, ctx, *args):
-        final_output = enc.decrypt_key(convert_tuple(args))
+        final_output = enc.decrypt_key(convert_tuple(args), "key", "salt")
         if len(final_output) > 1900:
             with open('strs/temp.txt', 'w') as i:
                 i.write(final_output)
@@ -93,39 +93,6 @@ class Encryption(commands.Cog):
 class Random(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
-    @commands.command()
-    async def randword(self, ctx, arg):
-        n = int(arg)
-        allowcmd = 0
-        if n > 1:
-            if n > 100:
-                em = Embed(title="Number over max word limit!", description="There is a 100 words limit")
-                await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
-                allowcmd = 1
-            else:
-                lookup = str(ctx.author.id)
-                with open('settings/coin.txt') as myFile:
-                    for line in myFile:
-                        if lookup in line:
-                            import decimal
-                            balance = decimal.Decimal(line[20:])
-                            balance = balance / 20
-                            head, sep, tail = str(balance).partition('.')
-                if n > int(head):
-                    em = Embed(title="Number over word limit!", description=f"There is a {head} words limit,\
-                    increase this by getting more coins by playing games! do `-help games` to see the games list")
-                    await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
-                    allowcmd = 1
-        if n < 1:
-            await ctx.channel.send("```The minimum words is 1!```")
-            allowcmd = 1
-        if not allowcmd == 1:
-            from nltk.corpus import words  # todo fix, module missing
-            from random import sample
-            rand_words = ' '.join(sample(words.words(), n))
-            em = Embed(title="Random words:", description=rand_words)
-            await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
     @commands.command(aliases=["randnumber"])
     async def randnum(self, ctx, arg1, arg2):
@@ -143,8 +110,7 @@ class Random(commands.Cog):
                 await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                 allowcmd = 1
             else:
-                balance = rcoin.bal(0, ctx.author.id)
-                balance = balance / 10
+                balance = rcoin.bal(0, ctx.author.id) / 10
                 head, sep, tail = str(balance).partition('.')
                 if alpha_amount > int(head):
                     em = Embed(title="Number over limit char limit!",
@@ -159,12 +125,11 @@ class Random(commands.Cog):
         if not allowcmd == 1:
             def get_random_unicode(length):
                 get_char = chr
-                include_ranges = [(0x0021, 0x0021), (0x0023, 0x0026), (0x0028, 0x007E), (0x00A1, 0x00AC),
-                                  (0x00AE, 0x00FF), (0x0100, 0x017F), (0x0180, 0x024F), (0x2C60, 0x2C7F),
-                                  (0x16A0, 0x16F0),
-                                  (0x0370, 0x0377), (0x037A, 0x037E), (0x0384, 0x038A), (0x038C, 0x038C)]
-                alphabet = [get_char(code_point) for current_range in include_ranges
-                            for code_point in range(current_range[0], current_range[1] + 1)]
+                char_ranges = [(0x0021, 0x0021), (0x0023, 0x0026), (0x0028, 0x007E), (0x00A1, 0x00AC), (0x00AE, 0x00FF),
+                               (0x0100, 0x017F), (0x0180, 0x024F), (0x2C60, 0x2C7F), (0x16A0, 0x16F0), (0x0370, 0x0377),
+                               (0x037A, 0x037E), (0x0384, 0x038A), (0x038C, 0x038C)]
+                alphabet = [get_char(code_point) for current_range in char_ranges
+                            for code_point in range(current_range[0], current_range[1]+1)]
                 return ''.join(random.choice(alphabet) for i in range(length))
 
             if __name__ == '__main__':
@@ -176,23 +141,23 @@ class Random(commands.Cog):
     @commands.command()
     async def eight_ball(self, ctx):
         ball_choice = ["It is certain.", "It is decidedly so.", "Without a doubt.", "Yes – definitely.",
-                      "You may rely on it.", "As I see it,yes.", "Most likely.", "Outlook good.", "Yes.",
-                      "Signs point to yes.", "Reply hazy,try again.", "Ask again later.", "Better not tell you now.",
-                      "Cannot predict now.", "Concentrate and ask again.", "Don’t count on it.", "My reply is no.",
-                      "My sources say no.", "Outlook not so good", "Very doubtful"]
+                       "You may rely on it.", "As I see it,yes.", "Most likely.", "Outlook good.", "Yes.",
+                       "Signs point to yes.", "Reply hazy,try again.", "Ask again later.", "Better not tell you now.",
+                       "Cannot predict now.", "Concentrate and ask again.", "Don’t count on it.", "My reply is no.",
+                       "My sources say no.", "Outlook not so good", "Very doubtful"]
         em = Embed(title=ball_choice[random.randint(0, 20)])
         await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
     @commands.command()
     async def leetify(self, ctx):
         change2 = ctx.message.content[9:].replace("o", "0").replace("O", "0").replace("l", "1").replace("L", "1") \
-            .replace("s", "5").replace("S", "5").replace("h", "8").replace("H", "8").replace("e", "3").replace("E", "3") \
-            .replace("i", "1").replace("I", "1")
+            .replace("s", "5").replace("S", "5").replace("h", "8").replace("H", "8").replace("e", "3")\
+            .replace("E", "3").replace("i", "1").replace("I", "1")
         em = Embed(title="Leetified text:", description=change2)
         await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
     @commands.command()
-    async def repeat(self, ctx):  # todo do something usefull with this command
+    async def repeat(self, ctx):
         em = Embed(description=ctx.message.content[8:])
         await ctx.channel.send(embed=em.set_footer(text=f"Requested by ???"))
 
@@ -210,18 +175,13 @@ class Random(commands.Cog):
     @commands.command(aliases=["emoji_letters", "big_text"])
     async def emoji_letter(self, ctx, *args):
         string = ""
-        allow = True
         for i in convert_tuple(args)[:-1].replace(",", "").replace(".", ""):
-            if i.lower() not in "abcdefghijklmnopqrstuvwxyz ":
-                allow = False
-            if i == " ":
-                string += ":black_large_square:"
-            else:
-                string += f":regional_indicator_{i.lower()}:"
-        if allow:
-            await ctx.channel.send(string)
-        else:
-            await ctx.channel.send("This command only supports alphabet chars.")
+            if i.lower() in "abcdefghijklmnopqrstuvwxyz ":
+                if i == " ":
+                    string += ":black_large_square:"
+                else:
+                    string += f":regional_indicator_{i.lower()}:"
+        await ctx.channel.send(string)
 
     @commands.command()
     async def ttb(self, ctx):  # todo add support context for prior conversations
@@ -476,9 +436,6 @@ class Currency(commands.Cog):
                 ii.write(str(round(port, 3)))
                 largeportcounter = largeportcounter + 1
                 if largeportcounter == 5:
-                    # old twilio sms message send here
-                    # client.messages.create(to="+447597299247", from_="+15155188444",
-                    # body=f"YOUR BITCOIN IS ON THE RISE!!! {msg.content}")
                     largeportcounter == 0
             else:
                 ii.write(page11)
@@ -564,31 +521,9 @@ class NSFW(commands.Cog):
             em.add_field(name="Tags", value="`69`,`Amateur`,`Anal`,`Animated`,`Asian`,`Ass`,`Bbc`,`Bbw`,`Bdsm`"
                               ",`Big Ass`,`Big Dick`,`Big Tits`,`Blonde`,`Blowjob`,`Bondage`,`Boobs`\
             `Caption`,`Cartoon`,`Cheating`,`Cosplay`,`Cowgirl`,`Creampie`,`Cuckold`,`Cum`,`Cumshot`,"
-                                               "`Deepthroat`,`Dildo`,`Doggystyle`,`Dp`,`Ebony`,\
+                                            "`Deepthroat`,`Dildo`,`Doggystyle`,`Dp`,`Ebony`,\
             `Feet`,`Ffm`,`Fingering`,`Foursome`,`Fuck`,`Funny`,`Handjob`", inline=False)
             await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
-
-    @commands.command()
-    async def phs(self, ctx):
-        if is_nsfw_on(ctx.channel.id):
-            from pornhub_api import PornhubApi  # todo module missing
-            api = PornhubApi()
-            search = ctx.message.content[7:]
-            data = api.search.search(f"{search}", ordering="mostviewed", period="weekly")
-            limit = int(ctx.message.content[5:7])
-
-            if limit > 20:
-                await ctx.channel.send("```You cant have more than 20 searches per phs search!```")
-            else:
-                for vid in data.videos:
-                    await ctx.channel.send(f"https://www.pornhub.com/view_video.php?viewkey={vid.video_id}")
-                    time.sleep(4)
-                    limit = limit - 1
-                    if limit == 0:
-                        break
-        else:
-            await ctx.channel.send("```NSFW is not enabled in this chat\n"
-                                   " To enable it you must have role admin\n then type -nsfw_on```")
 
     @commands.command()
     async def psi(self, ctx, arg):  # todo functions, tho i dislike it
@@ -838,8 +773,7 @@ class Online_searching(commands.Cog):
                 await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                 allowcmd = 1
             else:
-                balance = rcoin.bal(0, ctx.author.id)
-                balance = balance / 50
+                balance = rcoin.bal(0, ctx.author.id) / 50
                 head, sep, tail = str(balance).partition('.')
                 if int(arg1) > int(head):
                     em = Embed(title="Number over result limit!", description=f"There is a {head} result limit,\
@@ -901,7 +835,7 @@ class Online_searching(commands.Cog):
         hot_posts = reddit.subreddit('dankmemes').hot(limit=postnum)
         postcurrent = 0
         for post in hot_posts:
-            postcurrent = postcurrent + 1
+            postcurrent += 1
             if postcurrent == postnum:
                 em = Embed()
                 em.set_image(url=post.url)
@@ -945,9 +879,6 @@ class Games(commands.Cog):
     # @commands.command()  # todo add this maybe
     # async def daily(self, ctx):
     #        # 10? daily coins, new class probably needed
-    #        em = Embed(title="Coins added ????")
-    #        embed.set_footer(text=f"Requested by {ctx.author}")
-    #        await ctx.channel.send(embed=em)
 
     @commands.command()
     async def bal(self, ctx, *args):
@@ -972,19 +903,19 @@ class Games(commands.Cog):
             flip = random.randint(0, 100)
             if flip < 36:
                 if str(arg1) == "h":
-                    headortail = "heads"
+                    h_or_t = "heads"
                 if str(arg1) == "t":
-                    headortail = "tails"
+                    h_or_t = "tails"
                 rcoin.win(0, ctx.author.id, bet)
-                em = Embed(title=f"You Won {bet}", description=f"Coin landed on {headortail}\
+                em = Embed(title=f"You Won {bet}", description=f"Coin landed on {h_or_t}\
                  and You now have: {rcoin.bal(0, ctx.author.id)}", color=discord.Colour(0x00ff00))
             if flip > 35:
                 if str(arg1) == "h":
-                    headortail = "tails"
+                    h_or_t = "tails"
                 if str(arg1) == "t":
-                    headortail = "heads"
+                    h_or_t = "heads"
                 rcoin.lose(0, ctx.author.id, bet)
-                em = Embed(title=f"You Lost {bet}", description=f"Coin landed on {headortail}\
+                em = Embed(title=f"You Lost {bet}", description=f"Coin landed on {h_or_t}\
                  You now have: {rcoin.bal(0, ctx.author.id)}", color=discord.Colour(0xff0000))
             await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
@@ -1137,8 +1068,7 @@ class Games(commands.Cog):
                     with open('settings/coin.txt') as myFile:
                         for line in myFile:
                             if lookup in line:
-                                balance = decimal.Decimal(line[20:])
-                                balance = balance / 100
+                                balance = decimal.Decimal(line[20:]) / 100
                                 head, sep, tail = str(balance).partition('.')
                     if int(betrevtimes) > int(head):
                         if head == "0":
@@ -1197,8 +1127,7 @@ class Games(commands.Cog):
                     with open('settings/coin.txt') as myFile:
                         for line in myFile:
                             if lookup in line:
-                                balance = decimal.Decimal(line[20:])
-                                balance = balance / 100
+                                balance = decimal.Decimal(line[20:]) / 100
                                 head, sep, tail = str(balance).partition('.')
                     if int(betrevtimes) > int(head):
                         if head == "0":
@@ -1289,7 +1218,7 @@ class Admin(commands.Cog):
 
     @commands.command()
     async def clean(self, ctx, arg1, arg2):
-        savedauthor = ctx.message.author.id
+        #savedauthor = ctx.message.author.id
         allowcmd = 0
         msgnum = 0
         if int(arg2) > 1000:
@@ -1299,15 +1228,15 @@ class Admin(commands.Cog):
                 if arg1 == "bot" and message.author.id == 711578412103368707:
                     await message.delete()
                     time.sleep(1)
-                    msgnum = msgnum + 1
-                if arg1 == "self" and message.author.id == savedauthor:
+                    msgnum += 1
+                if arg1 == "self" and message.author.id == ctx.message.author.id:
                     await message.delete()
                     time.sleep(1)
-                    msgnum = msgnum + 1
+                    msgnum += 1
                 if arg1 == "all":
                     await message.delete()
                     time.sleep(1)
-                    msgnum = msgnum + 1
+                    msgnum += 1
                 if msgnum == 50:
                     await message.channel.send("Reached deletion limit of 50", delete_after=2.5)
                     break
@@ -1321,36 +1250,36 @@ class Help(commands.Cog):
     @commands.command(aliases=["h"])
     async def help(self, ctx, *args):  # todo this command wont work at all with commands like -h colour text
         c_args = convert_tuple(args)[:-1]
-        embed = None
+        em = None
         message = None
         if c_args == "":
             em = Embed(title="Rapidbot command sections", description="We have a wide range of commands!\
                     \nAlso remember the prefix is '-'")
-            em.add_field(name=":hash: Encrypt (3)    :question: Random (11)    :information_source: Info (1)",
+            em.add_field(name=":hash: Encrypt (3)    :question: Random (9)    :information_source: Info (1)",
                          value="`-h enc`       `-h rand`      `-h info`", inline=False)
-            em.add_field(name=":page_facing_up: Server (9)   :dollar: Currency (2)  :rainbow: Coloured text (5)",
+            em.add_field(name=":page_facing_up: Server (9)   :dollar: Currency (2)  :rainbow: Colour text (5)",
                          value="`-h server`    `-h currency`    `-h color text`", inline=False)
 
             if is_nsfw_on(ctx.channel.id):
-                em.add_field(name=":wink: NSFW (8)     :computer: Online searches (6)    :game_die: Games (11)",
+                em.add_field(name=":wink: NSFW (7)     :computer: Online searches (6)    :game_die: Games (11)",
                              value="`-h nsfw`     `-h search`           `-h games`", inline=False)
             else:
-                em.add_field(name="Disabled (8)     :computer: Online searches (6)    :game_die: Games (11)",
+                em.add_field(name="Disabled (7)     :computer: Online searches (6)    :game_die: Games (11)",
                              value="`disabled`   `-h search`           `-h games`", inline=False)
         else:
             if c_args in ["encryption", "encrypt", "enc", "decryption", "decrypt", "dec"]:
                 em = Embed(title=":hash: Encryption commands (3)", description="`encrypt`,`decrypt`,`enc_key`")
                 em.add_field(name="Here is how to use them", value="`-enc <message>`\n`-dec <encrypted message>`\n"
                                   "`-enc_key` makes a random encryption key", inline=False)
-                embed.set_footer(text=f"Requested by {ctx.message.author}")
+                em.set_footer(text=f"Requested by {ctx.message.author}")
                 em.add_field(name="Command aliases", value="`encryption`,`encrypt`,`enc`,"
                                   "`decryption`,`decrypt`,`dec`", inline=False)
 
             if c_args in ["random", "rand"]:
-                em = Embed(title=":question: Random commands (10)", description="`randword`,`randnum`,\
+                em = Embed(title=":question: Random commands (9)", description="`randnum`,\
                         `randuni`,`eight_ball`,`leetify`,`repeat`,\n`joke`,`char_count`,`emoji_letter`,`ttb`")
-                embed.set_footer(text=f"Add -h to the beginning of a command for its help section!"
-                                      f" Requested by {ctx.message.author}")
+                em.set_footer(text=f"Add -h to the beginning of a command for its help section!"
+                                   f" Requested by {ctx.message.author}")
 
             if c_args in ["info", "bot_info", "bot info"]:  # BOT INFO
                 em = Embed(title="INFO HELP:", description="The info command shows data about the bot"
@@ -1360,47 +1289,47 @@ class Help(commands.Cog):
                 em = Embed(title=":page_facing_up: Server commands (9)",
                            description="`chat_links`,`userid`,`serverid`,`channel_ids`,`messageid`,"
                                        "\n`members`,`roles`,`inrole`,`who_spoke`")
-                embed.set_footer(text=f"Add -h to the beginning of a command for its help section! "
-                                      f"Requested by {ctx.message.author}")
+                em.set_footer(text=f"Add -h to the beginning of a command for its help section! "
+                                   f"Requested by {ctx.message.author}")
 
             if c_args in ["currency", "cur"]:
                 em = Embed(title=":dollar: Currency commands (2)", description="`currency_list`,`currency_convert`")
-                embed.set_footer(text=f"Add -h to the beginning of a command for its help section! "
-                                      f"Requested by {ctx.message.author}")
+                em.set_footer(text=f"Add -h to the beginning of a command for its help section! "
+                                   f"Requested by {ctx.message.author}")
 
             if c_args in ["color text", "colored text", "color_text", "colored_text"]:
                 em = Embed(title=":rainbow: Coloured text commands (5)",
-                           description="`redtext`,`orange_text`,`yellowtext`,`blue_text`,`cyantext`")
-                embed.set_footer(text=f"Add -h to the beginning of a command for its help section! "
-                                      f"Requested by {ctx.message.author}")
+                           description="`redtext`,`orange_text`,`yellowtext`,`bluetext`,`cyantext`")
+                em.set_footer(text=f"Add -h to the beginning of a command for its help section! "
+                                   f"Requested by {ctx.message.author}")
 
             if c_args in ["nsfw"]:
                 if is_nsfw_on(ctx.channel.id):
-                    em = Embed(title=":wink: NSFW commands (8)", description="`nsfw_on`,`nsfw_off`,`porntags`,"
-                                     "`phs`,`psi`,`psg`,`porngif`,`hentai`")
-                    embed.set_footer(text=f"Add -h to the beginning of a command for\
+                    em = Embed(title=":wink: NSFW commands (7)", description="`nsfw_on`,`nsfw_off`,`porntags`,"
+                                     "`psi`,`psg`,`porngif`,`hentai`")
+                    em.set_footer(text=f"Add -h to the beginning of a command for\
                     its help section! Requested by {ctx.message.author}")
                 else:
                     em = Embed(title="This is not enabled in your server",
                                description="If your an admin type `-nsfw_on` to enable these commands")
-                    embed.set_footer(text=f"Requested by {ctx.message.author}")
+                    em.set_footer(text=f"Requested by {ctx.message.author}")
 
             if c_args in ["search", "online search", "online_search"]:
                 em = Embed(title=":computer: Online searches commands (6)",
                            description="`ggt_codes`, `ggt_te`,`ggt_ft`,\n`ggsr`,`reddits`,`meme`")
-                embed.set_footer(text=f"Add -h to the beginning of a command for its help section! "
-                                      f"Requested by {ctx.message.author}")
+                em.set_footer(text=f"Add -h to the beginning of a command for its help section! "
+                                   f"Requested by {ctx.message.author}")
 
             if c_args in ["games", "bet"]:
                 em = Embed(title=":game_die: Game commands (11)", description="`claim`,~~daily~~,`bal`,`flip`,\
                         ~~bj~~,`dice`,\n`rps`,`multi`,~~revup~~,~~bet_dubup~~,~~bet crash~~")
-                embed.set_footer(text=f"Add -h to the beginning of a command for its help section! "
+                em.set_footer(text=f"Add -h to the beginning of a command for its help section! "
                                       f"Requested by {ctx.message.author}")
 
             if c_args in ["admin"]:
                 em = Embed(title=":tools: Admin commands (2)", description="`purge`,`clean`")
-                embed.set_footer(text=f"Add -h to the beginning of a command for its help section! "
-                                      f"Requested by {ctx.message.author}")
+                em.set_footer(text=f"Add -h to the beginning of a command for its help section! "
+                                   f"Requested by {ctx.message.author}")
 
             if c_args in ["randword"]:  # RANDOM
                 em = Embed(title="RANDWORD HELP:", description="The random word command picks x random words")
@@ -1530,35 +1459,23 @@ class Help(commands.Cog):
 
             if c_args in ["porntags"]:  # NSFW
                 if is_nsfw_on(ctx.channel.id):
-                    em = Embed(title="PORNTAGS HELP:",
-                                          description="The porn tags command provides suggestions"
-                                                      " for tags to be used in nsfw searches")
-                else:
-                    message = "```This command is not enabled in this chat```"
-
-            if c_args in ["phs"]:  # NSFW
-                if is_nsfw_on(ctx.channel.id):
-                    em = Embed(title="PHS HELP:",
-                                          description="The pornhub search command searches for up to 20 videos")
-                    em.add_field(name="Here is how to use it", value="`-phs <num of results> <search>`",
-                                    inline=False)
+                    em = Embed(title="PORNTAGS HELP:", description="The porn tags command provides suggestions"
+                                     " for tags to be used in nsfw searches")
                 else:
                     message = "```This command is not enabled in this chat```"
 
             if c_args in ["psi"]:  # NSFW
                 if is_nsfw_on(ctx.channel.id):
-                    em = Embed(title="PSI HELP:",
-                                          description="The porn search image command searches for porn images")
+                    em = Embed(title="PSI HELP:", description="The porn search image command searches for porn images")
                     em.add_field(name="Here is how to use it",
-                                    value="`-psi x`\nx is the thing your searching for", inline=False)
+                                 value="`-psi x`\nx is the thing your searching for", inline=False)
                 else:
                     message = "```This command is not enabled in this chat```"
 
             if c_args in ["psg"]:  # NSFW
                 if is_nsfw_on(ctx.channel.id):
                     em = Embed(title="PSG HELP:",
-                                          description="The porn search galleries command "
-                                                      "searches for images in galleries")
+                               description="The porn search galleries command searches for images in galleries")
                     em.add_field(name="Here is how to use it", value="`-psg n x`\nn is the \
                     gallery number to search\nx is the thing/tag your searching for", inline=False)
                 else:
@@ -1567,7 +1484,7 @@ class Help(commands.Cog):
             if c_args in ["porngif"]:  # NSFW
                 if is_nsfw_on(ctx.channel.id):
                     em = Embed(title="PORNGIF HELP:",
-                                          description="The porn gif command finds some gifs and sends them back")
+                               description="The porn gif command finds some gifs and sends them back")
                     em.add_field(name="Here is how to use it", value="`-porngif n x`\nn is the\
                      page number to search\nx is the thing/tag your searching for", inline=False)
                 else:
@@ -1578,8 +1495,7 @@ class Help(commands.Cog):
                     em = Embed(title="HENTAI HELP:",
                                description="The hentai search command finds hentai and sends it back")
                     em.add_field(name="Here is how to use it", value="`-hentai n x`\nn is the page \
-                    number to search\nx is the thing/tag your searching for (you can leave this blank)",
-                                    inline=False)
+                    number to search\nx is the thing/tag your searching for (you can leave this blank)", inline=False)
                 else:
                     message = "```This command is not enabled in this chat```"
 
@@ -1687,10 +1603,10 @@ class Help(commands.Cog):
 
             if c_args in ["clean"]:  # ADMIN
                 em = Embed(title="CLEAN HELP:",
-                           description="The clean command individualy deleted messages where purge cant")
+                           description="The clean command individually deleted messages where purge cant")
                 em.add_field(name="Here is how to use it", value="`-clean <bot/self/all> <num of msg>`", inline=False)
 
-        if embed is not None:
+        if em is not None:
             await ctx.channel.send(embed=em)
         if message is not None:
             await ctx.channel.send(message)
@@ -1737,7 +1653,7 @@ if links_on:
 cooldown_ids = {}
 
 
-class cooldown():
+class cooldown:
     # def add(self, userid, length):
     # todo per command cooldowns and duplication checks required
     def check(self, userid, length):
@@ -1748,7 +1664,7 @@ class cooldown():
             timestr = str(datetime.datetime.now() - cooldown_data[0])
             diff = sum([a * b for a, b in zip([3600, 60, 1], map(float, timestr.split(':')))])
             if diff < cooldown_data[1]:
-                return f"Command sent to fast, please wait {round(cooldown_data[1] - diff, 2)}s"
+                return f"Command sent to fast, please wait {round(cooldown_data[1]-diff, 2)}s"
             else:
                 del cooldown_ids[userid]
 
@@ -1756,7 +1672,7 @@ class cooldown():
 ttb_data = {}
 
 
-class ttb():  # todo add ttb prev conv functionality
+class ttb:  # todo add ttb prev conv functionality
     def run(self, stimulus, context=[], session=None):
         sessions = dict()
         req = requests.get("https://www.cleverbot.com/")
@@ -1776,7 +1692,7 @@ class ttb():  # todo add ttb prev conv functionality
             for i in range(len(sessions[session])):
                 payload += f"vText{i + len(_context) + 2}={requests.utils.requote_uri(_session[i])}&"
             sessions[session] = _context + sessions[session]
-        print("sesh", sessions)
+        #print("sesh", sessions)
 
         payload += "cb_settings_scripting=no&islearning=1&icognoid=wsf&icognocheck="
         payload += hashlib.md5(payload[7:33].encode()).hexdigest()
@@ -1796,7 +1712,7 @@ def dec_crunch(number):
 rcoin_data = {}
 
 
-class rcoin():
+class rcoin:
     with open("strs/rcoin_bals.txt") as f:
         for line in f.readlines():
             userid, bal = line.replace("\n", "").split(", ")
@@ -1846,7 +1762,7 @@ async def on_message(message):
         with open('strs/msgstore.txt', 'a+') as f:
             f.write(f"{msg_data}\n")
 
-    # inserted LINK shard  # todo what to do with this?
+    # inserted LINK shard
 
     if message.channel.id in [867113471241093120] or message.author.id == 425373518566260766:
         if message.content.lower().startswith("-search"):
@@ -1888,33 +1804,26 @@ async def on_message(message):
         if message.content.lower() == "-link":
             for i in range(50):
                 with open("counter.txt", "r") as x:
-                    counter = str(x.readlines())[2:-2]
-                    counter = int(counter)
+                    counter = int(str(x.readlines())[2:-2])
                 with open("counter.txt", "w") as x:
                     x.write(str(counter+1))
 
-                line = str(counter)+links_list[counter-1]
-                await message.channel.send(line)
+                await message.channel.send(str(counter)+links_list[counter-1])
                 time.sleep(1.25)
 
         if message.content.lower() == "-pick":
-            counter = random.randint(0, len(links_list))
-            line = links_list[counter]
-            line = str(counter)+line
-            await message.channel.send(line)
+            await message.channel.send(str(counter)+links_list[random.randint(0, len(links_list))])
 
         if message.content.lower().startswith("-spec"):
             num = int(message.content[6:])
-            line = links_list[num-1]
-            line = str(num) + line
-            await message.channel.send(line)
+            await message.channel.send(str(num)+links_list[num-1])
 
         if message.content.lower().startswith("-links"):
             num = int(message.content[6:])-1
             for i in range(50):
                 line = str(num+1)+links_list[num]
                 await message.channel.send(line)
-                num = num+1
+                num += 1
                 time.sleep(1)
 
         if message.content.lower() == "-data-log":
@@ -1925,11 +1834,10 @@ async def on_message(message):
     if message.content.startswith("-") and message.author.bot is False:
 
         # TOKEN DROPS
-        token_drops_on = True
+        token_drops_on = False
 
         if token_drops_on:
-            tokenluck = random.randint(0, 100)  # todo make certain users more or less lucky
-            if tokenluck == 1:
+            if random.randint(0, 100) == 1:  # todo make certain users more or less lucky
                 import string
                 token = ""
                 for i in range(25):
@@ -1956,6 +1864,7 @@ async def on_message(message):
                 with open('strs/msgstore.txt', 'r') as f:
                     sendback = f.read()
                     with open('strs/linkstore.txt', 'w') as i:
+                        #enc.get_links(sendback)  #todo drop in replacement
                         a = (re.findall(r'(https?://[^\s]+)', sendback))
                         b = (re.findall(r'(http?://[^\s]+)', sendback))
                         c = ('\n'.join(a))
@@ -1969,10 +1878,10 @@ async def on_message(message):
                                 rmdup.writelines(set(uniqlines))
 
                                 bad_words = ['https://discord.com/channels/']
-                                with open('strs/linkndp.txt') as oldfile, open('strs/linknd-ndsc.txt', 'w') as newfile:
+                                with open('strs/linkndp.txt') as oldfile, open('strs/linknd-ndsc.txt', 'w') as new_file:
                                     for line in oldfile:
                                         if not any(bad_word in line for bad_word in bad_words):
-                                            newfile.write(line)
+                                            new_file.write(line)
 
                 await message.channel.send("```Lnk data Success```")
                 file1 = open("strs/msgstore.txt", "r")
@@ -1982,7 +1891,6 @@ async def on_message(message):
                     line = line.strip()
                     line = line.lower()
                     words = line.split(" ")
-
                     for word in words:
                         if word in d:
                             d[word] = d[word]+1
@@ -1990,27 +1898,22 @@ async def on_message(message):
                             d[word] = 1
 
                 with open('strs/occurdata.txt', 'w') as f:
-                    f.write("\n\nNumber of occurrences of each word in file is:")
-                    f.write("\n ===============\n")
-
+                    f.write("\n\nNumber of occurrences of each word in file is:\n ===============\n")
                     for key in list(d.keys()):
-                        yeis = f'{key},":",{d[key]} \n'
-                        writethat = str(yeis)
-                        f.write(writethat)
+                        f.write(str(f'{key},":",{d[key]} \n'))
 
                     file1.close()
                     await message.channel.send("```Occr data Success```")
 
             if message.content.startswith("-randlink"):
-                lines = open('strs/linknd-ndsc.txt').read().splitlines()
-                myline = random.choice(lines)
-                await message.channel.send(myline)
+                with open('strs/linknd-ndsc.txt'):
+                    await message.channel.send(random.choice(f.readlines()))
 
             if message.content.startswith("-allmsg without"):
                 bad_words = message.content[16:].split()
                 await message.channel.send(bad_words)
-                with open('strs/msgstore.txt') as oldfile, open(
-                        f'strs/edits/allmsg-withoutwords-{message.content[16:]}.txt', 'w') as newfile:
+                with open('strs/msgstore.txt') as oldfile,\
+                        open(f'strs/edits/allmsg-withoutwords-{message.content[16:]}.txt', 'w') as newfile:
                     for line in oldfile:
                         if not any(bad_word in line for bad_word in bad_words):
                             newfile.write(line)
@@ -2021,8 +1924,8 @@ async def on_message(message):
                 bad_word = message.content[13:]
                 bad_words = bad_word.split()
                 await message.channel.send(bad_words)
-                with open('strs/msgstore.txt') as oldfile, open(
-                        f'strs/edits/allmsg-findwords-{message.content[13:]}.txt', 'w') as newfile:
+                with open('strs/msgstore.txt') as oldfile,\
+                        open(f'strs/edits/allmsg-findwords-{message.content[13:]}.txt', 'w') as newfile:
                     for line in oldfile:
                         if any(bad_word in line for bad_word in bad_words):
                             newfile.write(line)
@@ -2037,11 +1940,11 @@ async def on_message(message):
             if message.content.startswith("-thischat msg"):
                 bad_words = [f'{message.channel.id}']
                 await message.channel.send(bad_words)
-                with open('strs/msgstore.txt') as oldfile, open(f'strs/edits/chatmsg-{message.channel.id}.txt',
-                                                                'w') as newfile:
+                with open('strs/msgstore.txt') as oldfile,\
+                        open(f'strs/edits/chatmsg-{message.channel.id}.txt', 'w') as new_file:
                     for line in oldfile:
                         if any(bad_word in line for bad_word in bad_words):
-                            newfile.write(line)
+                            new_file.write(line)
                     await message.channel.send("```SUCCESS```")
                     await message.channel.send(file=discord.File(f'strs/edits/chatmsg-{message.channel.id}.txt'))
 
@@ -2058,45 +1961,7 @@ async def on_message(message):
                 if change:
                     await bot.change_presence(status=discord.Status.online, activity=game)
 
-        if message.content.startswith("-beta access"):
-            giveto = message.content[13:]
-            giveto2 = giveto[3:21]
-            if message.author.id == 425373518566260766:
-                with open('settings/beta.txt', 'r') as f:
-                    isin = f'{f.read()}'
-                    if isin.find(str(giveto2)) > -1:
-                        await message.channel.send("```This user is already has the beta rank```")
-                    else:
-                        with open('settings/beta.txt', 'a') as i:
-                            i.write(giveto2)
-                            i.close()
-                        string = f"```User {giveto} has been given beta rank!```"
-                        await message.channel.send(string)
-            else:
-                await message.channel.send("```You will need to ask rapidslayer101 for access to the beta rank")
-
-        # beta commands
-
-        if message.content.startswith("-join vc"):
-            voice_channel = message.author.voice.channel
-            global vc
-            vc = await voice_channel.connect()
-
-        if message.content.startswith("-leave vc"):
-            await vc.disconnect()
-
-        if message.content.startswith("-play"):
-            voicechannel = message.author.voice.channel
-            vc = await voicechannel.connect()
-            vc.play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source=""))
-            await message.channel.send("```now playing: wide_putin.mp4```")
-
-        if message.content.startswith("-tts"):
-            import gtts
-            text = message.content[5:]
-            tts = gtts.gTTS(text)
-            tts.save("temp.mp3")
-            vc.play(discord.FFmpegPCMAudio(executable="ffmpeg/bin/ffmpeg.exe", source="temp.mp3"))
+        # old text to speach vc code was here using gtts module
 
 
 @bot.event
@@ -2131,4 +1996,4 @@ async def on_guild_join(guild):
     await channel.send(embed=em)
 
 
-bot.run('NzQ5OTgzMDcyNzk1MjMwMjc5.X0z6Kg.4G2gqy5rI7yzjuSgBE-1Cvpb6zw')  # actual bot
+bot.run('NzQ5OTgzMDcyNzk1MjMwMjc5.X0z6Kg.4G2gqy5rI7yzjuSgBE-1Cvpb6zw')

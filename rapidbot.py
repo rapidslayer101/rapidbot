@@ -2,13 +2,17 @@
 
 global time, sys, googletrans, google, random, os, zlib, base64, re
 import datetime, decimal, time, os, random, zlib, base64, re, socket, hashlib  # inbuilt
-
-import googletrans, discord, requests, urllib, praw, psutil  # installed modules
+import googletrans, discord, requests, urllib, praw # installed modules
+import psutil as ut
+from discord import Embed
 from discord.ext import commands
 from forex_python.converter import CurrencyRates, CurrencyCodes
 from googletrans import Translator
 
+import enclib as enc  # custom lib
+
 start_time = datetime.datetime.utcnow()
+
 
 print(socket.gethostname(), socket.getfqdn())
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -40,311 +44,11 @@ if not os.path.isfile("strs/rcoin_bals.txt"):
     open("strs/rcoin_bals.txt", "w").close()
 
 
-if not os.path.isfile("settings/event_expire.txt"):  # thomas
-    open("settings/event_expire.txt", "w").close()
-if not os.path.isfile("settings/event_players.txt"):  # thomas
-    open("settings/event_players.txt", "w").close()
-
-# encrypt def stuff
-# the manual setup version of this is found within enc 5.x versions
-config_key = "c-k{jF#Rxp+l&N5BV!X&Gjj_|16|ugYZMQyKeSjyHBL=SLo;5xuspS>q_Q+KzaTm`Fx)jLBr?>~KcKocu{" \
-             "b3yJtHeS$68(4G1$e;-NVb<$I78Drm7;jEGaKnN3SL-!a2;z&)3GzULRzQp@D&drGbF~0LUgO5d"
-c_key = zlib.decompress(base64.b85decode(config_key)).decode('utf-8').split("🶘")
-hex_head, hex_tail = c_key[0].split(" ")
-hexlen_ = random.randint(int(hex_head), int(hex_tail))
-alphagens = c_key[1]
-key_p1_head, key_p1_tail = c_key[2].split(" ")
-key_p1 = random.randint(int(key_p1_head), int(key_p1_tail))
-alphalen = len(alphagens)
-
-
-def generator():
-    run = 0
-    while True:
-        run += 1
-        if run % 5 == 0 or run == 1:
-            hexgens = ""
-            while len(hexgens) != hexlen_:
-                hexgens_add = random.choice(alphagens)
-                if hexgens_add not in hexgens:
-                    hexgens += hexgens_add
-        try:
-            rand_base_alpha = ''
-            while len(rand_base_alpha) != hexlen_:
-                alpha_new_char = random.choice(hexgens)
-                if alpha_new_char not in rand_base_alpha:
-                    rand_base_alpha += alpha_new_char
-
-            conversion_table = []
-            for i in rand_base_alpha:
-                conversion_table.append(i)
-
-            decimal = key_p1
-            old_decimal = key_p1
-            hexadecimal = ''
-
-            while decimal > 0:
-                remainder = decimal % hexlen_
-                hexadecimal = conversion_table[remainder] + hexadecimal
-                decimal = decimal // hexlen_
-
-            conversion_table = {}
-            cvtable_counter = 0
-            for i in rand_base_alpha:
-                conversion_table.__setitem__(i, cvtable_counter)
-                cvtable_counter += 1
-
-            hexadecimal = hexadecimal.strip().upper()
-            decimal = 0
-            power = len(hexadecimal) - 1
-
-            for digit in hexadecimal:
-                decimal += conversion_table[digit] * hexlen_ ** power
-                power -= 1
-
-            if decimal == old_decimal:
-                break
-        except: xx = 0
-
-    master_key = rand_base_alpha + hexadecimal
-
-    conversion_table = {}
-    cvtable_counter = 0
-    for i in master_key[:hexlen_]:
-        conversion_table.__setitem__(i, cvtable_counter)
-        cvtable_counter += 1
-
-    hexadecimal = master_key[hexlen_:].strip().upper()
-    num1 = 0
-    power = len(hexadecimal) - 1
-
-    for digit in hexadecimal:
-        num1 += conversion_table[digit] * hexlen_ ** power
-        power -= 1
-
-    if num1 == key_p1:
-        def alpha_make():
-            rand_base_alpha_ = ''
-            while True:
-                alpha_new_char_ = random.choice(alphagens)
-                if alpha_new_char_ not in rand_base_alpha_:
-                    rand_base_alpha_ = rand_base_alpha_ + alpha_new_char_
-                elif len(rand_base_alpha_) == alphalen:
-                    break
-            return rand_base_alpha_
-
-        master_key = f"{alpha_make()}{str(hexlen_).replace('4', 'a').replace('5', 'b')}{master_key}{alpha_make()}"
-        master_key = base64.b85encode(zlib.compress(master_key.encode('utf-8'), 9)).decode('utf-8')
-    return master_key
-
-
-def shifter(plaintext, newnum, num, num2, alphabet, replace, forwards):
-    output_enc = ""
-    counter = 0
-    for msg in plaintext:
-        counter = counter + 2
-        if msg in alphabet:
-            key = int(newnum[counter:counter + 2])
-            if key > alphalen:
-                key = num2
-            if not forwards:
-                key = key * (-1)
-            if key == 0:
-                new_alphabet = alphabet
-            elif key > 0:
-                new_alphabet = alphabet[key:] + alphabet[:key]
-            else:
-                new_alphabet = alphabet[(alphalen + key):] + alphabet[:(alphalen + key)]
-            encrypted = ""
-            for message_index in range(0, len(msg)):
-                if msg[message_index] == " ":
-                    encrypted += " "
-                for alphabet_index in range(0, len(new_alphabet)):
-                    if msg[message_index] == alphabet[alphabet_index]:
-                        encrypted += new_alphabet[alphabet_index]
-            output_enc += encrypted
-        else:
-            output_enc += msg
-
-    if replace:
-        num = str(num).replace("0", "g").replace("1", "e").replace("2", "k").replace("3", "i").replace("4", "u") \
-            .replace("5", "d").replace("6", "r").replace("7", "w").replace("8", "q").replace("9", "p")
-        return num + output_enc
-    if not replace:
-        return output_enc
-
-
-def get_prime_number(candidate):
-    prime_numbers_ = []
-    while True:
-        if candidate <= 3:
-            prime_numbers_.append(candidate)
-            yield candidate
-        is_prime = True
-        for prime_num in prime_numbers_:
-            if candidate % prime_num == 0:
-                is_prime = False
-                break
-        if is_prime:
-            prime_numbers_.append(candidate)
-            yield candidate
-        candidate += 1
-
-
-def fib_iter(text, num2_):
-    a = 1
-    b = 1
-    c = 1
-    while len(str(b)) < len(text) * 2:
-        total = (a + b * num2_) * c
-        c = b
-        b = a
-        a = total
-    return b
-
-
-def shifter_gen_loop(e_text):
-    new_num = ""
-    while len(new_num) < len(e_text) * 2 + 100:
-        new_num = str(new_num) + str(next(prime_numbers))
-    return new_num
-
-
-def convert(m_key):
-    m_key = zlib.decompress(base64.b85decode(m_key)).decode('utf-8')
-    p0_alpha = m_key[:alphalen]
-    if m_key[alphalen:alphalen+1] == "a":
-        hexlen = 4
-    if m_key[alphalen:alphalen+1] == "b":
-        hexlen = 5
-    p1_key = m_key[alphalen:alphalen+1+hexlen]
-    p1_e = m_key[alphalen+1+hexlen:-alphalen]
-    p3_alpha = m_key[-alphalen:]
-
-    conversion_table = {}
-    cvtable_counter = 0
-    for i in p1_key:
-        conversion_table.__setitem__(i, cvtable_counter)
-        cvtable_counter += 1
-
-    hexadecimal = p1_e.strip().upper()
-    num1 = 0
-    power = len(hexadecimal) - 1
-
-    for digit in hexadecimal:
-        num1 += conversion_table[digit] * hexlen ** power
-        power -= 1
-
-    return p0_alpha, p3_alpha, num1
-
-
-try:
-    with open("settings/enc-key.txt", encoding="utf-8") as f:
-        master_key = str(f.readlines())[2:-2]
-except:
-    print(f"Input an encrypt key below, leave blank to autogenerate a key")
-    while True:
-        master_key = input(" > ")
-        if not master_key == "":
-            try:
-                convert(master_key)
-                break
-            except:
-                print("key convert error")
-        else:
-            master_key = generator()
-            break
-    with open("settings/enc-key.txt", "w", encoding="utf-8") as f:
-        f.write(master_key)
-
-
-while True:
-    with open("settings/enc-key.txt") as f:
-        for line in f.readlines():
-            master_key = line
-    try:
-        mkey_data = convert(master_key)
-        alpha1 = mkey_data[0]
-        alpha2 = mkey_data[1]
-        num2 = mkey_data[2]
-        break
-    except:
-        with open("settings/enc-key.txt", "w", encoding="utf-8") as f:
-            f.write(generator())
-
-print(f"\nENCRYPTION KEY:\n{master_key}\n\nSETTINGS KEY:\n{config_key}\n")
-
-
 def convert_tuple(tup):
     string_ = ''
     for item in tup:
         string_ += item + " "
     return string_
-
-
-def search(data, filter_fr, filter_to):
-    data = str(data)
-    m = re.search(f"""{filter_fr}(.+?){filter_to}""", data)
-    if m:
-        output = m.group(1)
-    else:
-        output = None
-    return output
-
-
-def encrypt(text):
-    plaintext = base64.b85encode(zlib.compress(text.encode('utf-8'), 9)).decode('utf-8')
-    global prime_numbers
-    prime_numbers = get_prime_number(random.randint(100000, 800000))
-    while True:
-        if next(prime_numbers) > 100000 and random.randint(1, 150) == 1:
-            num = next(prime_numbers)
-            break
-
-    new_num = shifter_gen_loop(plaintext)
-    e_text = shifter(plaintext, new_num, num, num2, alpha1, True, True)
-    content = str(e_text[:6]).replace("g", "0").replace("e", "1").replace("k", "2").replace("i", "3") \
-        .replace("u", "4").replace("d", "5").replace("r", "6").replace("w", "7").replace("q", "8").replace("p", "9")
-
-    prime_numbers = get_prime_number(int(content))
-    while True:
-        x = next(prime_numbers)
-        if x == int(content):
-            num = x
-            break
-
-    b = str(fib_iter(e_text, num2))
-    return shifter(e_text, b, num, num2, alpha2, False, True)
-
-
-def decrypt(etext):
-    try:
-        b = str(fib_iter(etext, num2))
-        num = 0
-        d_txt = shifter(etext, b, num, num2, alpha2, False, False)
-        content = str(d_txt[:6]).replace("g", "0").replace("e", "1").replace("k", "2").replace("i", "3") \
-            .replace("u", "4").replace("d", "5").replace("r", "6").replace("w", "7").replace("q", "8").replace("p", "9")
-
-        prime_numbers = get_prime_number(int(content))
-        while True:
-            x = next(prime_numbers)
-            if x == int(content):
-                num = x
-                break
-
-        newnum = ""
-        run = 0
-        while len(newnum) < len(d_txt) * 2 + 100:
-            run += 1
-            newnum = str(newnum) + str(next(prime_numbers))
-            if run % 1000 == 0:
-                print(run, len(d_txt), len(str(newnum)))
-
-        output_end = shifter(d_txt[6:], newnum, num, num2, alpha1, False, False).replace(" ", "")
-        return zlib.decompress(base64.b85decode(output_end)).decode('utf-8')
-    except:
-        print("[CND] " + etext)
-        return "[CND]"
 
 
 print("Opening connection to discord")
@@ -356,38 +60,34 @@ class Encryption(commands.Cog):
 
     @commands.command()
     async def enc_key(self, ctx):
-        await ctx.channel.send(f"Randomly generated encryption key:\n```{generator()}```")
+        await ctx.channel.send(f"Randomly generated key:\n```{enc.pass_to_seed(enc.hex_gens(1000), 'salt')}```")
 
-    @commands.command(aliases=['enc'])
+    @commands.command(aliases=['enc'])  # todo fix enc
     async def encrypt(self, ctx, *, arg):
-        e_text2 = encrypt(arg)
+        e_text2 = enc.encrypt_key(arg, "key", "salt")
         if len(e_text2) > 1900:
             with open('strs/temp.txt', 'w') as i:
                 i.write(e_text2)
-            embed = discord.Embed(title=f"Your encrypted text is over the 1900 char limit as it is {len(e_text2)}"
-                                        f" chars so has to be sent as a file")
-            embed.set_footer(text=f"Requested by {ctx.author}")
-            await ctx.channel.send(embed=embed)
+            em = Embed(title=f"Your encrypted text is over the 1900 char limit as it is {len(e_text2)}"
+                             f" chars so has to be sent as a file")
+            await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
             await ctx.channel.send(file=discord.File('strs/temp.txt'))
         if len(e_text2) < 1900:
             await ctx.channel.send(f"```Encrypted text ({len(ctx.message.content[9:])} --> {len(e_text2)}):"
                                    f" chars:\n{e_text2}\n\nRequested by {ctx.author}```")
 
-    @commands.command(aliases=['dec'])
+    @commands.command(aliases=['dec'])  # todo fix dec
     async def decrypt(self, ctx, *args):
-        final_output = decrypt(convert_tuple(args))
+        final_output = enc.decrypt_key(convert_tuple(args))
         if len(final_output) > 1900:
             with open('strs/temp.txt', 'w') as i:
                 i.write(final_output)
-            embed = discord.Embed(title=f"Your encrypted text is over the 1900 char limit as it is {len(final_output)}"
-                                           f" chars so has to be sent as a file")
-            embed.set_footer(text=f"Requested by {ctx.author}")
-            await ctx.channel.send(embed=embed)
+            em = Embed(title=f"Your encrypted text is over the 1900 char limit as it is {len(final_output)}"
+                             f" chars so has to be sent as a file")
+            await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
             await ctx.channel.send(file=discord.File('strs/temp.txt'))
         if len(final_output) < 1900:
-            await ctx.channel.send(f"```Decrypted text:\n"
-                                   f"{final_output}"
-                                   f"\n\nRequested by {ctx.author}```")
+            await ctx.channel.send(f"```Decrypted text:\n{final_output}\n\nRequested by {ctx.author}```")
 
 
 class Random(commands.Cog):
@@ -400,9 +100,8 @@ class Random(commands.Cog):
         allowcmd = 0
         if n > 1:
             if n > 100:
-                embed = discord.Embed(title="Number over max word limit!", description="There is a 100 words limit")
-                embed.set_footer(text=f"Requested by {ctx.author}")
-                await ctx.channel.send(embed=embed)
+                em = Embed(title="Number over max word limit!", description="There is a 100 words limit")
+                await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                 allowcmd = 1
             else:
                 lookup = str(ctx.author.id)
@@ -414,10 +113,9 @@ class Random(commands.Cog):
                             balance = balance / 20
                             head, sep, tail = str(balance).partition('.')
                 if n > int(head):
-                    embed = discord.Embed(title="Number over word limit!", description=f"There is a {head} words limit,\
+                    em = Embed(title="Number over word limit!", description=f"There is a {head} words limit,\
                     increase this by getting more coins by playing games! do `-help games` to see the games list")
-                    embed.set_footer(text=f"Requested by {ctx.author}")
-                    await ctx.channel.send(embed=embed)
+                    await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                     allowcmd = 1
         if n < 1:
             await ctx.channel.send("```The minimum words is 1!```")
@@ -426,17 +124,14 @@ class Random(commands.Cog):
             from nltk.corpus import words  # todo fix, module missing
             from random import sample
             rand_words = ' '.join(sample(words.words(), n))
-            embed = discord.Embed(title="Random words:", description=rand_words)
-            embed.set_footer(text=f"Requested by {ctx.author}")
-            await ctx.channel.send(embed=embed)
+            em = Embed(title="Random words:", description=rand_words)
+            await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
     @commands.command(aliases=["randnumber"])
     async def randnum(self, ctx, arg1, arg2):
-        outputn = random.randint(int(arg1), int(arg2))
         string = f"Your random number between {int(arg1)} and {int(arg2)} is:"
-        embed = discord.Embed(title=string, description=outputn)
-        embed.set_footer(text=f"Requested by {ctx.author}")
-        await ctx.channel.send(embed=embed)
+        em = Embed(title=string, description=random.randint(int(arg1), int(arg2)))
+        await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
     @commands.command()
     async def randuni(self, ctx, arg):
@@ -444,20 +139,19 @@ class Random(commands.Cog):
         allowcmd = False
         if alpha_amount > 1:
             if alpha_amount > 500:
-                embed = discord.Embed(title="Number over max char limit!", description="There is a 500 char limit")
-                embed.set_footer(text=f"Requested by {ctx.author}")
-                await ctx.channel.send(embed=embed)
+                em = Embed(title="Number over max char limit!", description="There is a 500 char limit")
+                await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                 allowcmd = 1
             else:
                 balance = rcoin.bal(0, ctx.author.id)
                 balance = balance / 10
                 head, sep, tail = str(balance).partition('.')
                 if alpha_amount > int(head):
-                    embed = discord.Embed(title="Number over limit char limit!",
-                    description=f"There is a {head} char limit, increase this by getting more coins by playing games!"
-                    f" do `-h games` to see the games list")
-                    embed.set_footer(text=f"Requested by {ctx.author}")
-                    await ctx.channel.send(embed=embed)
+                    em = Embed(title="Number over limit char limit!",
+                               description=f"There is a {head} char limit, increase this"
+                                           f" by getting more coins by playing games!"
+                                           f" do `-h games` to see the games list")
+                    await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                     allowcmd = 1
         if alpha_amount < 1:
             await ctx.channel.send("```The minimum char amount is 1!```")
@@ -466,64 +160,58 @@ class Random(commands.Cog):
             def get_random_unicode(length):
                 get_char = chr
                 include_ranges = [(0x0021, 0x0021), (0x0023, 0x0026), (0x0028, 0x007E), (0x00A1, 0x00AC),
-                (0x00AE, 0x00FF), (0x0100, 0x017F), (0x0180, 0x024F), (0x2C60, 0x2C7F), (0x16A0, 0x16F0),
-                (0x0370, 0x0377), (0x037A, 0x037E), (0x0384, 0x038A), (0x038C, 0x038C)]
+                                  (0x00AE, 0x00FF), (0x0100, 0x017F), (0x0180, 0x024F), (0x2C60, 0x2C7F),
+                                  (0x16A0, 0x16F0),
+                                  (0x0370, 0x0377), (0x037A, 0x037E), (0x0384, 0x038A), (0x038C, 0x038C)]
                 alphabet = [get_char(code_point) for current_range in include_ranges
                             for code_point in range(current_range[0], current_range[1] + 1)]
                 return ''.join(random.choice(alphabet) for i in range(length))
 
             if __name__ == '__main__':
                 time.sleep(0.25)
-                embed = discord.Embed(title=f'A random string of {alpha_amount} symbols: ',
-                                      description=get_random_unicode(alpha_amount))
-                embed.set_footer(text=f"Requested by {ctx.author}")
-                await ctx.channel.send(embed=embed)
+                em = Embed(title=f'A random string of {alpha_amount} symbols: ',
+                           description=get_random_unicode(alpha_amount))
+                await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
     @commands.command()
     async def eight_ball(self, ctx):
-        ballchoice = ["It is certain.", "It is decidedly so.", "Without a doubt.", "Yes – definitely.",
-            "You may rely on it.", "As I see it,yes.", "Most likely.", "Outlook good.", "Yes.",
-            "Signs point to yes.", "Reply hazy,try again.", "Ask again later.", "Better not tell you now.",
-            "Cannot predict now.", "Concentrate and ask again.", "Don’t count on it.", "My reply is no.",
-            "My sources say no.", "Outlook not so good", "Very doubtful"]
-        embed = discord.Embed(title=ballchoice[random.randint(0, 20)])
-        embed.set_footer(text=f"Requested by {ctx.author}")
-        await ctx.channel.send(embed=embed)
+        ball_choice = ["It is certain.", "It is decidedly so.", "Without a doubt.", "Yes – definitely.",
+                      "You may rely on it.", "As I see it,yes.", "Most likely.", "Outlook good.", "Yes.",
+                      "Signs point to yes.", "Reply hazy,try again.", "Ask again later.", "Better not tell you now.",
+                      "Cannot predict now.", "Concentrate and ask again.", "Don’t count on it.", "My reply is no.",
+                      "My sources say no.", "Outlook not so good", "Very doubtful"]
+        em = Embed(title=ball_choice[random.randint(0, 20)])
+        await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
     @commands.command()
     async def leetify(self, ctx):
-        change2 = ctx.message.content[9:].replace("o", "0").replace("O", "0").replace("l", "1").replace("L", "1")\
-        .replace("s", "5").replace("S", "5").replace("h", "8").replace("H", "8").replace("e", "3").replace("E", "3")\
-        .replace("i", "1").replace("I", "1")
-        embed = discord.Embed(title="Leetified text:", description=change2)
-        embed.set_footer(text=f"Requested by {ctx.author}")
-        await ctx.channel.send(embed=embed)
+        change2 = ctx.message.content[9:].replace("o", "0").replace("O", "0").replace("l", "1").replace("L", "1") \
+            .replace("s", "5").replace("S", "5").replace("h", "8").replace("H", "8").replace("e", "3").replace("E", "3") \
+            .replace("i", "1").replace("I", "1")
+        em = Embed(title="Leetified text:", description=change2)
+        await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
     @commands.command()
     async def repeat(self, ctx):  # todo do something usefull with this command
-        embed = discord.Embed(description=ctx.message.content[8:])
-        embed.set_footer(text=f"Requested by ???")
-        await ctx.channel.send(embed=embed)
+        em = Embed(description=ctx.message.content[8:])
+        await ctx.channel.send(embed=em.set_footer(text=f"Requested by ???"))
 
     @commands.command()
     async def joke(self, ctx):
-        headers = {'Accept': 'text/plain'}
-        response = requests.get('https://icanhazdadjoke.com/', headers=headers)
-        embed = discord.Embed(title="Here is your joke", description=response.text)
-        embed.set_footer(text=f"Requested by {ctx.author}")
-        await ctx.channel.send(embed=embed)
+        response = requests.get('https://icanhazdadjoke.com/', headers={'Accept': 'text/plain'})
+        em = Embed(title="Here is your joke", description=response.text)
+        await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
     @commands.command()
     async def char_count(self, ctx):  # todo add support for files? or make this more useful
-        embed = discord.Embed(title=f"Total Number of Characters in this String = {len(ctx.message.content[12:])}")
-        embed.set_footer(text=f"Requested by {ctx.author}")
-        await ctx.channel.send(embed=embed)
+        em = Embed(title=f"Total Number of Characters in this String = {len(ctx.message.content[12:])}")
+        await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
     @commands.command(aliases=["emoji_letters", "big_text"])
     async def emoji_letter(self, ctx, *args):
         string = ""
         allow = True
-        for i in convert_tuple(args)[:-1].replace(",","").replace(".", ""):
+        for i in convert_tuple(args)[:-1].replace(",", "").replace(".", ""):
             if i.lower() not in "abcdefghijklmnopqrstuvwxyz ":
                 allow = False
             if i == " ":
@@ -537,8 +225,7 @@ class Random(commands.Cog):
 
     @commands.command()
     async def ttb(self, ctx):  # todo add support context for prior conversations
-        send = ttb.run(0, ctx.message.content[5:])
-        await ctx.channel.send(send)
+        await ctx.channel.send(ttb.run(0, ctx.message.content[5:]))
 
 
 class Bot_info(commands.Cog):
@@ -560,23 +247,23 @@ class Bot_info(commands.Cog):
             runtime = str(startx)[:-7]
         except:
             runtime = "ERROR"
-        embed = discord.Embed(title=f"Bot info:", description=f"\n\nRuntime: {runtime}\n"
-            f"Started at: {str(start_time)[:-7]}\n"
-            f'Cpu: {psutil.cpu_percent()}% of {psutil.cpu_count(logical=False)} cores\n'
-            f'Ram: {psutil.virtual_memory().percent}% in use, '
-            f'{round(psutil.virtual_memory().available * 100 / psutil.virtual_memory().total, 1)}% free '
-            f'({round(psutil.virtual_memory().used/1024/1024, 0)}/'
-            f'{round(psutil.virtual_memory().total/1024/1024, 0)}MB)\n'
-            f'Storage: {psutil.disk_usage("/").percent}% used, {round(psutil.disk_usage("/").used/1024/1024, 2)}'
-            f'/{round(psutil.disk_usage("/").total/1024/1024, 2)}MB\n'
-            f'This bot is in {str(len(bot.guilds))} servers\n'
-            f'The current ping is: {diff}s\n'
-            f'\nInvite link: [Click to add bot to another server](https://discord.com/oauth2/'
-            f'authorize?client_id=711578412103368707&scope=bot&permissions=8)\n'
-            #f'Website link: [Go to website](https://rapidslayer101.wixsite.com/rapidslayer)\n'
-            f'\nDevice bot is running on: {device}')
-        embed.set_footer(text=f"Requested by {ctx.author}")
-        await ctx.channel.send(embed=embed)
+        em = Embed(title=f"Bot info:",
+                   description=f"\n\nRuntime: {runtime}\n"
+                               f"Started at: {str(start_time)[:-7]}\n"
+                               f'Cpu: {ut.cpu_percent()}% of {ut.cpu_count(logical=False)} cores\n'
+                               f'Ram: {ut.virtual_memory().percent}% in use, '
+                               f'{round(ut.virtual_memory().available*100/ut.virtual_memory().total, 1)}% free '
+                               f'({round(ut.virtual_memory().used/1024/1024, 0)}/'
+                               f'{round(ut.virtual_memory().total/1024/1024, 0)}MB)\n'
+                               f'Storage: {ut.disk_usage("/").percent}% used, {round(ut.disk_usage("/").used/1024/1024, 2)}'
+                               f'/{round(ut.disk_usage("/").total/1024/1024, 2)}MB\n'
+                               f'This bot is in {str(len(bot.guilds))} servers\n'
+                               f'The current ping is: {diff}s\n'
+                               f'\nInvite link: [Click to add bot to another server](https://discord.com/oauth2/'
+                               f'authorize?client_id=711578412103368707&scope=bot&permissions=8)\n'
+        # f'Website link: [Go to website](https://rapidslayer101.wixsite.com/rapidslayer)\n'
+                               f'\nDevice bot is running on: {device}')
+        await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
 
 class Server(commands.Cog):
@@ -610,9 +297,9 @@ class Server(commands.Cog):
                     message.content = ""
                 rmdup.close()
                 await msg3.edit(content=f"Processed {counter} messages")
-                embed = discord.Embed(title=f"Here is this chats entire link history, total {linksfound} links")
-                embed.set_footer(text=f"Took {round(time.time() - started_at,2)} seconds, Requested by {requestedby}")
-                await ctx.channel.send(embed=embed)
+                em = Embed(title=f"Here is this chats entire link history, total {linksfound} links")
+                em.set_footer(text=f"Took {round(time.time() - started_at, 2)} seconds, Requested by {requestedby}")
+                await ctx.channel.send(embed=em)
                 await ctx.channel.send(file=discord.File('strs/edits/chatmsg-onlylinks-temp.txt'))
 
     @commands.command()
@@ -622,7 +309,7 @@ class Server(commands.Cog):
     @commands.command()
     async def serverid(self, ctx):
         await ctx.channel.send(f'The ID for {ctx.guild} (this server) is: {ctx.guild.id}\n\n'
-        f'To get to this server online copy this link:\ndiscord.com/channels/{ctx.guild.id}')
+                               f'To get to this server online copy this link:\ndiscord.com/channels/{ctx.guild.id}')
 
     @commands.command(aliases=["channelids"])
     async def channel_ids(self, ctx, *args):
@@ -641,33 +328,30 @@ class Server(commands.Cog):
         if c_args == "":
             text_channel_list += f"\nThe ID for this channel ({ctx.channel}) is: {ctx.channel.id}"
 
-        embed = discord.Embed(title=f"Channels in this server ({channels_amount}):", description=text_channel_list)
-        embed.set_footer(text=f"Requested by {ctx.author}")
-        await ctx.channel.send(embed=embed)
+        em = Embed(title=f"Channels in this server ({channels_amount}):", description=text_channel_list)
+        await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
     @commands.command()
     async def messageid(self, ctx):  # todo make this a message search and return id or remove
         await ctx.channel.send(f'The ID for the message you sent made output is: {ctx.message.id}'
-        f'\n\nTo get to this message online copy this link:'
-        f'\ndiscord.com/channels/{ctx.guild.id}/{ctx.channel.id}/{ctx.message.id}')
+                               f'\n\nTo get to this message online copy this link:'
+                               f'\ndiscord.com/channels/{ctx.guild.id}/{ctx.channel.id}/{ctx.message.id}')
 
     @commands.command()
     async def members(self, ctx):
         e4 = ""
         for item in ctx.guild.members:
             e4 += f"<@!{item.id}>"
-        embed = discord.Embed(title=f"Member count: {len(ctx.guild.members)}", description=str(e4))
-        embed.set_footer(text=f"Requested by {ctx.author}")
-        await ctx.channel.send(embed=embed)
+        em = Embed(title=f"Member count: {len(ctx.guild.members)}", description=str(e4))
+        await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
     @commands.command()
     async def roles(self, ctx):
         e4 = ""
         for item in ctx.guild.roles:
             e4 = e4 + f"\n{item.id} <@&{item.id}>"
-        embed = discord.Embed(title=f"Role count: {len(ctx.guild.roles)}", description=str(e4))
-        embed.set_footer(text=f"Requested by {ctx.author}")
-        await ctx.channel.send(embed=embed)
+        em = Embed(title=f"Role count: {len(ctx.guild.roles)}", description=str(e4))
+        await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
     @commands.command()
     async def inrole(self, ctx):  # todo this command may still be broken from before
@@ -681,10 +365,8 @@ class Server(commands.Cog):
             if str(rolecheck) in str(ctx.guild.get_member(item.id).roles):
                 e4 += f"\n<@!{item.id}>"
                 with_num += 1
-        embed = discord.Embed(title=f"Members with role {ctx.guild.get_role(int(rolecheck))} ({with_num}):",
-                              description=str(e4))
-        embed.set_footer(text=f"Requested by {ctx.author}")
-        await ctx.channel.send(embed=embed)
+        em = Embed(title=f"Members with role {ctx.guild.get_role(int(rolecheck))} ({with_num}):", description=str(e4))
+        await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
     @commands.command()
     async def who_spoke(self, ctx, arg1):  # todo resource intensive maybe redo
@@ -699,9 +381,9 @@ class Server(commands.Cog):
                     id_list.append(message.author.id)
                 for x in set(id_list):
                     stuffs = stuffs + f"<@!{x}> spoke {id_list.count(x)} times \n"
-                embed = discord.Embed(title=f"Members who spoke in last {int(arg1)} messages", description=stuffs)
-                embed.set_footer(text=f"Took {round(time.time() - started_at,2)} seconds, Requested by {ctx.author}")
-                await ctx.channel.send(embed=embed)
+                em = Embed(title=f"Members who spoke in last {int(arg1)} messages", description=stuffs)
+                em.set_footer(text=f"Took {round(time.time() - started_at, 2)} seconds, Requested by {ctx.author}")
+                await ctx.channel.send(embed=em)
 
 
 class Currency(commands.Cog):
@@ -717,9 +399,8 @@ class Currency(commands.Cog):
     async def currency_convert(self, ctx, arg1, arg2, arg3):
         d = CurrencyCodes()
         output = CurrencyRates().convert(arg1.upper(), arg2.upper(), float(arg3))
-        embed = discord.Embed(title=f"Here is the value in {arg2}: {d.get_symbol(arg2.upper())}{round(output,2)}")
-        embed.set_footer(text=f"Requested by {ctx.author}")
-        await ctx.channel.send(embed=embed)
+        em = discord.Embed(title=f"Here is the value in {arg2}: {d.get_symbol(arg2.upper())}{round(output, 2)}")
+        await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
     @commands.command()
     async def bitcoin(self, ctx):  # todo remove or redo functionality
@@ -796,8 +477,8 @@ class Currency(commands.Cog):
                 largeportcounter = largeportcounter + 1
                 if largeportcounter == 5:
                     # old twilio sms message send here
-                    #client.messages.create(to="+447597299247", from_="+15155188444",
-                    #body=f"YOUR BITCOIN IS ON THE RISE!!! {msg.content}")
+                    # client.messages.create(to="+447597299247", from_="+15155188444",
+                    # body=f"YOUR BITCOIN IS ON THE RISE!!! {msg.content}")
                     largeportcounter == 0
             else:
                 ii.write(page11)
@@ -878,15 +559,14 @@ class NSFW(commands.Cog):
     @commands.command()
     async def porntags(self, ctx):
         if is_nsfw_on(ctx.channel.id):
-            embed = discord.Embed(title="porntags HELP:",
-                                  description="suggested tags that can be used with the many nsfw search commands")
-            embed.add_field(name="Tags", value="`69`,`Amateur`,`Anal`,`Animated`,`Asian`,`Ass`,`Bbc`,`Bbw`,`Bdsm`"
-                                               ",`Big Ass`,`Big Dick`,`Big Tits`,`Blonde`,`Blowjob`,`Bondage`,`Boobs`\
+            em = Embed(title="porntags HELP:",
+                       description="suggested tags that can be used with the many nsfw search commands")
+            em.add_field(name="Tags", value="`69`,`Amateur`,`Anal`,`Animated`,`Asian`,`Ass`,`Bbc`,`Bbw`,`Bdsm`"
+                              ",`Big Ass`,`Big Dick`,`Big Tits`,`Blonde`,`Blowjob`,`Bondage`,`Boobs`\
             `Caption`,`Cartoon`,`Cheating`,`Cosplay`,`Cowgirl`,`Creampie`,`Cuckold`,`Cum`,`Cumshot`,"
                                                "`Deepthroat`,`Dildo`,`Doggystyle`,`Dp`,`Ebony`,\
             `Feet`,`Ffm`,`Fingering`,`Foursome`,`Fuck`,`Funny`,`Handjob`", inline=False)
-            embed.set_footer(text=f"Requested by {ctx.author}")
-            await ctx.channel.send(embed=embed)
+            await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
     @commands.command()
     async def phs(self, ctx):
@@ -927,24 +607,21 @@ class NSFW(commands.Cog):
             for imgn in range(200):
                 e6 = ''.join(e5[imgn:imgn + 1])
                 if 'https://cdni.pornpics.com' in e6:
-                    embed = discord.Embed()
-                    embed.set_image(url=e6[:-1])
-                    embed.set_footer(text=f"Requested by {ctx.author}")
-                    await ctx.channel.send(embed=embed)
+                    em = Embed()
+                    em.set_image(url=e6[:-1])
+                    await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                     time.sleep(2)
                     imgsent = imgsent + 1
                 if 'https://img.pornpics.com' in e6:
-                    embed = discord.Embed()
-                    embed.set_image(url=e6[:-1])
-                    embed.set_footer(text=f"Requested by {ctx.author}")
-                    await ctx.channel.send(embed=embed)
+                    em = Embed()
+                    em.set_image(url=e6[:-1])
+                    await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                     time.sleep(2)
                     imgsent = imgsent + 1
                 if 'https://images.pornpics.com' in e6:
-                    embed = discord.Embed()
-                    embed.set_image(url=e6[:-1])
-                    embed.set_footer(text=f"Requested by {ctx.author}")
-                    await ctx.channel.send(embed=embed)
+                    em = Embed()
+                    em.set_image(url=e6[:-1])
+                    await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                     time.sleep(2)
                     imgsent = imgsent + 1
                 if imgn == 199:
@@ -994,22 +671,19 @@ class NSFW(commands.Cog):
                         for imgn in range(200):
                             e6 = ''.join(e5[imgn:imgn + 1])
                             if 'https://cdni.pornpics.com/1280' in e6:
-                                embed = discord.Embed()
-                                embed.set_image(url=e6[:-1])
-                                embed.set_footer(text=f"Requested by {ctx.author}")
-                                await ctx.channel.send(embed=embed)
+                                em = Embed()
+                                em.set_image(url=e6[:-1])
+                                await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                                 time.sleep(2)
                             if 'https://img.pornpics.com/460' in e6:
-                                embed = discord.Embed()
-                                embed.set_image(url=e6[:-1])
-                                embed.set_footer(text=f"Requested by {ctx.author}")
-                                await ctx.channel.send(embed=embed)
+                                em = Embed()
+                                em.set_image(url=e6[:-1])
+                                await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                                 time.sleep(2)
                             if 'https://images.pornpics.com/1280' in e6:
-                                embed = discord.Embed()
-                                embed.set_image(url=e6[:-1])
-                                embed.set_footer(text=f"Requested by {ctx.author}")
-                                await ctx.channel.send(embed=embed)
+                                em = Embed()
+                                em.set_image(url=e6[:-1])
+                                await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                                 time.sleep(2)
                             if imgn == 199:
                                 pgnum = ctx.message.content[5:7]
@@ -1072,9 +746,8 @@ class NSFW(commands.Cog):
                             e7 = e6[:45]
                             e8 = e7[5:]
                             finale = "https://www.pornhub.com" + e8
-                            embed = discord.Embed(title=f"Full video link: {finale}")
-                            embed.set_footer(text=f"Requested by {ctx.author}")
-                            await ctx.channel.send(embed=embed)
+                            em = Embed(title=f"Full video link: {finale}")
+                            await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                     time.sleep(4)
                     imgsent = imgsent + 1
                 if imgn == 199:
@@ -1105,17 +778,15 @@ class NSFW(commands.Cog):
             for imgn in range(200):
                 e6 = ''.join(e5[imgn:imgn + 1])
                 if 'https://konachan.com/jpeg/' in e6:
-                    embed = discord.Embed()
-                    embed.set_image(url=e6)
-                    embed.set_footer(text=f"Requested by {ctx.author}")
-                    await ctx.channel.send(embed=embed)
+                    em = Embed()
+                    em.set_image(url=e6)
+                    await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                     time.sleep(3)
                     imgsent = imgsent + 1
                 if 'https://konachan.com/image/' in e6:
-                    embed = discord.Embed()
-                    embed.set_image(url=e6)
-                    embed.set_footer(text=f"Requested by {ctx.author}")
-                    await ctx.channel.send(embed=embed)
+                    em = Embed()
+                    em.set_image(url=e6)
+                    await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                     time.sleep(3)
                     imgsent = imgsent + 1
                 if imgn == 199:
@@ -1123,7 +794,8 @@ class NSFW(commands.Cog):
                     pgnum2 = pgnum.replace(" ", "")
                     pgnum3 = int(pgnum2) + 1
                     if imgsent > 0:
-                        await ctx.channel.send(f"```diff\nWant more? Type this command:\n-hentai {pgnum3} {hensearch}```")
+                        await ctx.channel.send(
+                            f"```diff\nWant more? Type this command:\n-hentai {pgnum3} {hensearch}```")
                     else:
                         await ctx.channel.send("```OH NO! There was no results for your search! try another search```")
         else:
@@ -1137,26 +809,23 @@ class Online_searching(commands.Cog):
 
     @commands.command()
     async def ggt_codes(self, ctx):  # todo make less horrible to read
-        embed = discord.Embed(title="Here are the language codes:", description=str(googletrans.LANGCODES))
-        embed.set_footer(text=f"Requested by {ctx.author}")
-        await ctx.channel.send(embed=embed)
+        em = Embed(title="Here are the language codes:", description=str(googletrans.LANGCODES))
+        await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
     @commands.command()
     async def ggt_te(self, ctx):  # todo fix
         translator = Translator()
         translated = translator.translate(ctx.message.content[8:])
-        embed = discord.Embed(title="Translated text:", description=translated.text)
-        embed.set_footer(text=f"Requested by {ctx.author}")
-        await ctx.channel.send(embed=embed)
+        em = Embed(title="Translated text:", description=translated.text)
+        await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
     @commands.command()
     async def ggt_ft(self, ctx, arg1, arg2):  # todo fix
         values5 = (ctx.message.content[14:])
         translator = Translator()
         translated = translator.translate(values5, src=arg1, dest=arg2)
-        embed = discord.Embed(title="Translated text:", description=translated.text)
-        embed.set_footer(text=f"Requested by {ctx.author}")
-        await ctx.channel.send(embed=embed)
+        em = Embed(title="Translated text:", description=translated.text)
+        await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
     # todo, 3 practically identical commands, use def to turn much much smaller
 
@@ -1165,19 +834,17 @@ class Online_searching(commands.Cog):
         allowcmd = 0
         if int(arg1) > 1:
             if int(arg1) > 30:
-                embed = discord.Embed(title="Number over max result limit!", description="There is a 30 result limit")
-                embed.set_footer(text=f"Requested by {ctx.author}")
-                await ctx.channel.send(embed=embed)
+                em = Embed(title="Number over max result limit!", description="There is a 30 result limit")
+                await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                 allowcmd = 1
             else:
                 balance = rcoin.bal(0, ctx.author.id)
                 balance = balance / 50
                 head, sep, tail = str(balance).partition('.')
                 if int(arg1) > int(head):
-                    embed = discord.Embed(title="Number over result limit!", description=f"There is a {head} result limit,\
+                    em = Embed(title="Number over result limit!", description=f"There is a {head} result limit,\
                     increase this by getting more coins by playing games! do `-help games` to see the games list")
-                    embed.set_footer(text=f"Requested by {ctx.author}")
-                    await ctx.channel.send(embed=embed)
+                    await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                     allowcmd = 1
         if int(arg1) < 1:
             await ctx.channel.send("```The minimum results is 1!```")
@@ -1186,8 +853,8 @@ class Online_searching(commands.Cog):
             await ctx.channel.send("```You cant search for nothing!```")
             allowcmd = 1
         if not allowcmd == 1:
-            embed = discord.Embed(description=f"Below results requested by {ctx.author}")
-            await ctx.channel.send(embed=embed)
+            em = Embed(description=f"Below results requested by {ctx.author}")
+            await ctx.channel.send(embed=em)
             send = ""
             from googlesearch import search
             for j in search((ctx.message.content[8:]), tld="co.in", num=int(arg1), stop=int(arg1), pause=2):
@@ -1205,22 +872,21 @@ class Online_searching(commands.Cog):
             postcurrent += 1
             if postcurrent == int(arg2):
                 if "redgifs.com/" in str(post.url):
-                    embed = discord.Embed(description=f"Below results requested by {ctx.author}")
-                    await ctx.channel.send(embed=embed)
+                    em = Embed(description=f"Below results requested by {ctx.author}")
+                    await ctx.channel.send(embed=em)
                     await ctx.channel.send(str(post.url) + "/")
                     break
                     post_type = 1
                 if "https://i.imgur.com/" in str(post.url):
-                    embed = discord.Embed(description=f"Below results requested by {ctx.author}")
-                    await ctx.channel.send(embed=embed)
+                    em = Embed(description=f"Below results requested by {ctx.author}")
+                    await ctx.channel.send(embed=em)
                     await ctx.channel.send(str(post.url) + "/")
                     break
                     post_type = 1
                 if not post_type == 1:
-                    embed = discord.Embed(description=f"[Click to go to post]({post.url})")
-                    embed.set_image(url=post.url)
-                    embed.set_footer(text=f"Requested by {ctx.author}")
-                    await ctx.channel.send(embed=embed)
+                    em = Embed(description=f"[Click to go to post]({post.url})")
+                    em.set_image(url=post.url)
+                    await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                     break
 
     @commands.command()
@@ -1237,10 +903,9 @@ class Online_searching(commands.Cog):
         for post in hot_posts:
             postcurrent = postcurrent + 1
             if postcurrent == postnum:
-                embed = discord.Embed()
-                embed.set_image(url=post.url)
-                embed.set_footer(text=f"Requested by {ctx.author}")
-                await ctx.channel.send(embed=embed)
+                em = Embed()
+                em.set_image(url=post.url)
+                await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
 
 class Games(commands.Cog):
@@ -1259,7 +924,7 @@ class Games(commands.Cog):
                     line_num = lnum3
         if found:
             if reward == "CLAIMED":
-                embed = discord.Embed(title="This token has already been claimed", color=discord.Colour(0xff0000))
+                em = Embed(title="This token has already been claimed", color=discord.Colour(0xff0000))
             else:
                 with open('strs/tokens.txt', 'r') as file:
                     data = file.readlines()
@@ -1270,44 +935,39 @@ class Games(commands.Cog):
                     file.writelines(data)
 
                 rcoin.win(0, ctx.author.id, float(reward))
-                embed = discord.Embed(title=f"{reward} rcoins have been added to your balance",
-                                      description=f"You now have: {rcoin.bal(0, ctx.author.id)}",
-                                      color=discord.Colour(0x00ff00))
+                em = Embed(title=f"{reward} rcoins have been added to your balance",
+                           description=f"You now have: {rcoin.bal(0, ctx.author.id)}",
+                           color=discord.Colour(0x00ff00))
         else:
-            embed = discord.Embed(title="This is not a valid token", color=discord.Colour(0xff0000))
-        embed.set_footer(text=f"Requested by {ctx.author}")
-        await ctx.channel.send(embed=embed)
+            em = Embed(title="This is not a valid token", color=discord.Colour(0xff0000))
+        await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
-    #@commands.command()  # todo add this maybe
-    #async def daily(self, ctx):
+    # @commands.command()  # todo add this maybe
+    # async def daily(self, ctx):
     #        # 10? daily coins, new class probably needed
-    #        embed = discord.Embed(title="Coins added ????")
+    #        em = Embed(title="Coins added ????")
     #        embed.set_footer(text=f"Requested by {ctx.author}")
-    #        await ctx.channel.send(embed=embed)
+    #        await ctx.channel.send(embed=em)
 
     @commands.command()
     async def bal(self, ctx, *args):
         c_args = convert_tuple(args)[:-1]
         if c_args == "":
-            embed = discord.Embed(title=f"Your balance is {rcoin.bal(0, ctx.author.id)}")
-            embed.set_footer(text=f"Requested by {ctx.author}")
+            em = Embed(title=f"Your balance is {rcoin.bal(0, ctx.author.id)}")
         else:
             if str(args[0]).startswith("<@!") and str(args[0]).endswith(">"):
                 userid = int(args[0].replace("<@!", "").replace(">", ""))
-                embed = discord.Embed(description=f"{args[0]}'s balance is {rcoin.bal(0, userid)}")
-                embed.set_footer(text=f"Requested by {ctx.author}")
+                em = Embed(description=f"{args[0]}'s balance is {rcoin.bal(0, userid)}")
             else:
-                embed = discord.Embed(description=f"<@!{args[0]}>'s balance is {rcoin.bal(0, int(args[0]))}")
-                embed.set_footer(text=f"Requested by {ctx.author}")
-        await ctx.channel.send(embed=embed)
+                em = Embed(description=f"<@!{args[0]}>'s balance is {rcoin.bal(0, int(args[0]))}")
+        await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
     @commands.command(aliases=["bet_flip"])
     async def flip(self, ctx, arg1, arg2):
         bet = rcoin.check(0, ctx.author.id, float(arg2))
         if str(bet).startswith("This is") or str(bet).startswith("You cannot"):
-            embed = discord.Embed(title=bet)
-            embed.set_footer(text=f"Requested by {ctx.author}")
-            await ctx.channel.send(embed=embed)
+            em = Embed(title=bet)
+            await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
         else:
             flip = random.randint(0, 100)
             if flip < 36:
@@ -1316,56 +976,51 @@ class Games(commands.Cog):
                 if str(arg1) == "t":
                     headortail = "tails"
                 rcoin.win(0, ctx.author.id, bet)
-                embed = discord.Embed(title=f"You Won {bet}", description=f"Coin landed on {headortail}\
+                em = Embed(title=f"You Won {bet}", description=f"Coin landed on {headortail}\
                  and You now have: {rcoin.bal(0, ctx.author.id)}", color=discord.Colour(0x00ff00))
-                embed.set_footer(text=f"Requested by {ctx.author}")
             if flip > 35:
                 if str(arg1) == "h":
                     headortail = "tails"
                 if str(arg1) == "t":
                     headortail = "heads"
                 rcoin.lose(0, ctx.author.id, bet)
-                embed = discord.Embed(title=f"You Lost {bet}", description=f"Coin landed on {headortail}\
+                em = Embed(title=f"You Lost {bet}", description=f"Coin landed on {headortail}\
                  You now have: {rcoin.bal(0, ctx.author.id)}", color=discord.Colour(0xff0000))
-                embed.set_footer(text=f"Requested by {ctx.author}")
-            await ctx.channel.send(embed=embed)
+            await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
     @commands.command(aliases=["bet_dice"])
     async def dice(self, ctx, arg1, arg2):
         bet = rcoin.check(0, ctx.author.id, float(arg2))
         if str(bet).startswith("This is") or str(bet).startswith("You cannot"):
-            embed = discord.Embed(title=bet)
-            embed.set_footer(text=f"Requested by {ctx.author}")
-            await ctx.channel.send(embed=embed)
+            em = Embed(title=bet)
+            await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
         else:
             dice_num = int(arg1)
             allowbet = True
             if dice_num > 6 or dice_num < 0:
-                embed = discord.Embed(title="You must bet on a number 1-6")
+                em = Embed(title="You must bet on a number 1-6")
                 allowbet = False
             if allowbet:
                 dice_roll = random.randint(1, 6)
                 if dice_num == dice_roll:
-                    rcoin.win(0, ctx.author.id, bet*5)
-                    embed = discord.Embed(title=f"Dice rolled {dice_roll} and You Won {bet*5}",
-                                          description=f"You now have: {rcoin.bal(0, ctx.author.id)}",
-                                          color=discord.Colour(0x00ff00))
+                    rcoin.win(0, ctx.author.id, bet * 5)
+                    em = Embed(title=f"Dice rolled {dice_roll} and You Won {bet * 5}",
+                               description=f"You now have: {rcoin.bal(0, ctx.author.id)}",
+                               color=discord.Colour(0x00ff00))
                 else:
                     rcoin.lose(0, ctx.author.id, bet)
-                    embed = discord.Embed(title=f"Dice rolled {dice_roll} You Lost {bet}",
-                                          description=f"You now have: {rcoin.bal(0, ctx.author.id)}",
-                                          color=discord.Colour(0xff0000))
+                    em = Embed(title=f"Dice rolled {dice_roll} You Lost {bet}",
+                               description=f"You now have: {rcoin.bal(0, ctx.author.id)}",
+                               color=discord.Colour(0xff0000))
 
-            embed.set_footer(text=f"Requested by {ctx.author}")
-            await ctx.channel.send(embed=embed)
+            await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
     @commands.command(aliases=["bet_rps"])
     async def rps(self, ctx, arg1, arg2):
         bet = rcoin.check(0, ctx.author.id, float(arg2))
         if str(bet).startswith("This is") or str(bet).startswith("You cannot"):
-            embed = discord.Embed(title=bet)
-            embed.set_footer(text=f"Requested by {ctx.author}")
-            await ctx.channel.send(embed=embed)
+            em = Embed(title=bet)
+            await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
         else:
             t = ["R", "P", "S"]
             computer = t[random.randint(0, 2)]
@@ -1381,47 +1036,46 @@ class Games(commands.Cog):
                 elif player == "r":
                     if computer == "P":
                         rcoin.lose(0, ctx.author.id, bet)
-                        embed = discord.Embed(title=f"You Lose! rapidbot covers {ctx.author}",
-                        description=f"You now have: {rcoin.bal(0, ctx.author.id)}", color=discord.Colour(0xff0000))
-                        embed.set_footer(text=f"Requested by {ctx.author}")
-                        await ctx.channel.send(embed=embed)
+                        em = Embed(title=f"You Lose! rapidbot covers {ctx.author}",
+                                   description=f"You now have: {rcoin.bal(0, ctx.author.id)}",
+                                   color=discord.Colour(0xff0000))
+                        await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                     else:
                         rcoin.win(0, ctx.author.id, (rpsbet2[0] / rpsbet2[1]))
-                        embed = discord.Embed(title=f"You Win! {ctx.author} smashes rapidbot",
-                        description=f"You now have: {rcoin.bal(0, ctx.author.id)}", color=discord.Colour(0x00ff00))
-                        embed.set_footer(text=f"Requested by {ctx.author}")
-                        await ctx.channel.send(embed=embed)
+                        em = Embed(title=f"You Win! {ctx.author} smashes rapidbot",
+                                   description=f"You now have: {rcoin.bal(0, ctx.author.id)}",
+                                   color=discord.Colour(0x00ff00))
+                        await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
                 elif player == "p":
                     if computer == "S":
                         rcoin.lose(0, ctx.author.id, bet)
-                        embed = discord.Embed(title=f"You Lose! rapidbot cut {ctx.author}",
-                        description=f"You now have: {rcoin.bal(0, ctx.author.id)}", color=discord.Colour(0xff0000))
-                        embed.set_footer(text=f"Requested by {ctx.author}")
-                        await ctx.channel.send(embed=embed)
+                        em = Embed(title=f"You Lose! rapidbot cut {ctx.author}",
+                                   description=f"You now have: {rcoin.bal(0, ctx.author.id)}",
+                                   color=discord.Colour(0xff0000))
+                        await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                     else:
                         rcoin.win(0, ctx.author.id, (rpsbet2[0] / rpsbet2[1]))
-                        embed = discord.Embed(title=f"You Win! {ctx.author} covers rapidbot",
-                        description=f"You now have: {rcoin.bal(0, ctx.author.id)}", color=discord.Colour(0x00ff00))
-                        embed.set_footer(text=f"Requested by {ctx.author}")
-                        await ctx.channel.send(embed=embed)
+                        em = Embed(title=f"You Win! {ctx.author} covers rapidbot",
+                                   description=f"You now have: {rcoin.bal(0, ctx.author.id)}",
+                                   color=discord.Colour(0x00ff00))
+                        await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                 elif player == "s":
                     if computer == "R":
                         rcoin.lose(0, ctx.author.id, bet)
-                        embed = discord.Embed(title=f"You Lose! rapidbot smashes {ctx.author}",
-                        description=f"You now have: {rcoin.bal(0, ctx.author.id)}", color=discord.Colour(0xff0000))
-                        embed.set_footer(text=f"Requested by {ctx.author}")
-                        await ctx.channel.send(embed=embed)
+                        em = Embed(title=f"You Lose! rapidbot smashes {ctx.author}",
+                                   description=f"You now have: {rcoin.bal(0, ctx.author.id)}",
+                                   color=discord.Colour(0xff0000))
+                        await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                     else:
                         rcoin.win(0, ctx.author.id, (rpsbet2[0] / rpsbet2[1]))
-                        embed = discord.Embed(title=f"You Win! {ctx.author} cut rapidbot",
-                        description=f"You now have: {rcoin.bal(0, ctx.author.id)}", color=discord.Colour(0x00ff00))
-                        embed.set_footer(text=f"Requested by {ctx.author}")
-                        await ctx.channel.send(embed=embed)
+                        em = Embed(title=f"You Win! {ctx.author} cut rapidbot",
+                                   description=f"You now have: {rcoin.bal(0, ctx.author.id)}",
+                                   color=discord.Colour(0x00ff00))
+                        await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                 else:
-                    embed = discord.Embed(title="Thats not a move")
-                    embed.set_footer(text=f"Requested by {ctx.author}")
-                    await ctx.channel.send(embed=embed)
+                    em = Embed(title="Thats not a move")
+                    await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
                 player = True
                 computer = t[random.randint(0, 2)]
@@ -1430,20 +1084,17 @@ class Games(commands.Cog):
     async def multi(self, ctx, arg1, arg2):
         bet = rcoin.check(0, ctx.author.id, float(arg2))
         if str(bet).startswith("This is") or str(bet).startswith("You cannot"):
-            embed = discord.Embed(title=bet)
-            embed.set_footer(text=f"Requested by {ctx.author}")
-            await ctx.channel.send(embed=embed)
+            em = Embed(title=bet)
+            await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
         else:
             allowbet = 0
             if int(arg1) < 3:
-                embed = discord.Embed(title="You cant have a multiplier lower than 3!")
-                embed.set_footer(text=f"Requested by {ctx.author}")
-                await ctx.channel.send(embed=embed)
+                em = Embed(title="You cant have a multiplier lower than 3!")
+                await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                 allowbet = 1
             if int(arg1) > 100000:
-                embed = discord.Embed(title="You cant have a multiplier higher than 100000!")
-                embed.set_footer(text=f"Requested by {ctx.author}")
-                await ctx.channel.send(embed=embed)
+                em = Embed(title="You cant have a multiplier higher than 100000!")
+                await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                 allowbet = 1
             if not allowbet == 1:
                 multiplyerunedit = int(arg1) * 1.20 * 10  # change multiplier here
@@ -1454,27 +1105,23 @@ class Games(commands.Cog):
                 botmultichoice = random.randint(1, int(head))
                 print(str(botmultichoice) + "/" + str(multiplyerunedit))
                 if botmultichoice < 11:
-                    rcoin.win(0, ctx.author.id, bet*float(arg1))
-                    embed = discord.Embed(title=f"You Won: {bet*float(arg1)}",
-                    description=f"You bet {bet} on a {arg1}"
-                                f"X multiplier and you now have: {rcoin.bal(0, ctx.author.id)}",
-                    color=discord.Colour(0x00ff00))
+                    rcoin.win(0, ctx.author.id, bet * float(arg1))
+                    em = Embed(title=f"You Won: {bet * float(arg1)}", description=f"You bet {bet} on a {arg1}"
+                                     f"X multiplier and you now have: {rcoin.bal(0, ctx.author.id)}",
+                               color=discord.Colour(0x00ff00))
                 else:
                     rcoin.lose(0, ctx.author.id, bet)
-                    embed = discord.Embed(title=f"You Lost: {bet}",
-                    description=f"You bet {bet} on a {arg1}"
-                                f"X multiplier and you now have: {rcoin.bal(0, ctx.author.id)}",
-                    color=discord.Colour(0xff0000))
-                embed.set_footer(text=f"Requested by {ctx.author}")
-                await ctx.channel.send(embed=embed)
+                    em = Embed(title=f"You Lost: {bet}", description=f"You bet {bet} on a {arg1}"
+                                     f"X multiplier and you now have: {rcoin.bal(0, ctx.author.id)}",
+                               color=discord.Colour(0xff0000))
+                await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
     @commands.command(aliases=["bet_revup"])
     async def revup(self, ctx, arg1, arg2):  # todo this has been left broken, fix it
         bet = rcoin.check(0, ctx.author.id, float(arg1))
         if str(bet).startswith("This is") or str(bet).startswith("You cannot"):
-            embed = discord.Embed(title=bet)
-            embed.set_footer(text=f"Requested by {ctx.author}")
-            await ctx.channel.send(embed=embed)
+            em = Embed(title=bet)
+            await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
         else:
             revupbet = arg1
             betrevtimes = arg2
@@ -1482,9 +1129,8 @@ class Games(commands.Cog):
 
             if int(betrevtimes) > 1:
                 if int(betrevtimes) > 15:
-                    embed = discord.Embed(title="Number over max goes limit!", description="There is a 15 goes limit")
-                    embed.set_footer(text=f"Requested by {ctx.author}")
-                    await ctx.channel.send(embed=embed)
+                    em = Embed(title="Number over max goes limit!", description="There is a 15 goes limit")
+                    await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                     allowcmd = 1
                 elif int(betrevtimes) > 1:
                     lookup = str(ctx.author.id)
@@ -1497,11 +1143,10 @@ class Games(commands.Cog):
                     if int(betrevtimes) > int(head):
                         if head == "0":
                             head = "1"
-                        embed = discord.Embed(title="Number over goes limit!",
-                                              description=f"There is a {head} goes limit, increase this by getting more"
-                                              f" coins by playing games! do `-help games` to see the games list")
-                        embed.set_footer(text=f"Requested by {ctx.author}")
-                        await ctx.channel.send(embed=embed)
+                        em = Embed(title="Number over goes limit!",
+                                   description=f"There is a {head} goes limit, increase this by getting more"
+                                               f" coins by playing games! do `-help games` to see the games list")
+                        await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                         allowcmd = 1
             if int(betrevtimes) < 1:
                 await ctx.channel.send("```The minimum goes is 1!```")
@@ -1521,25 +1166,22 @@ class Games(commands.Cog):
                     revupbet = decimal.Decimal(revupbet)
 
                     if coinadd > revupbet:
-                        embed = discord.Embed(title=f"You Won: {round(coinadd, 2)}",
-                        description=f"You bet {revupbet} and got a {round(revumtotal, 2)}\
+                        em = Embed(title=f"You Won: {round(coinadd, 2)}",
+                                   description=f"You bet {revupbet} and got a {round(revumtotal, 2)}\
                         X multiplier and you now have: {coin}", color=discord.Colour(0x00ff00))
-                        embed.set_footer(text=f"Requested by {ctx.author}")
-                        await ctx.channel.send(embed=embed)
+                        await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                     if coinadd < revupbet:
-                        embed = discord.Embed(title=f"You Got Back: {revupbet - (revupbet - round(coinadd, 2))}",
-                        description=f"You bet {revupbet} and got a {round(revumtotal, 2)}\
+                        em = Embed(title=f"You Got Back: {revupbet - (revupbet - round(coinadd, 2))}",
+                                   description=f"You bet {revupbet} and got a {round(revumtotal, 2)}\
                         X multiplier and you now have: {coin}", color=discord.Colour(0xff0000))
-                        embed.set_footer(text=f"Requested by {ctx.author}")
-                        await ctx.channel.send(embed=embed)
+                        await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
     @commands.command()
     async def bet_dubup(self, ctx, arg1, arg2):  # todo this has been left broken, fix it
         bet = rcoin.check(0, ctx.author.id, float(arg2))
         if str(bet).startswith("This is") or str(bet).startswith("You cannot"):
-            embed = discord.Embed(title=bet)
-            embed.set_footer(text=f"Requested by {ctx.author}")
-            await ctx.channel.send(embed=embed)
+            em = Embed(title=bet)
+            await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
         else:
             revupbet = arg1
             betrevtimes = arg2
@@ -1547,9 +1189,8 @@ class Games(commands.Cog):
 
             if int(betrevtimes) > 1:
                 if int(betrevtimes) > 15:
-                    embed = discord.Embed(title="Number over max goes limit!", description="There is a 15 goes limit")
-                    embed.set_footer(text=f"Requested by {ctx.author}")
-                    await ctx.channel.send(embed=embed)
+                    em = Embed(title="Number over max goes limit!", description="There is a 15 goes limit")
+                    await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                     allowcmd = 1
                 if int(betrevtimes) > 1:
                     lookup = str(ctx.author.id)
@@ -1562,11 +1203,10 @@ class Games(commands.Cog):
                     if int(betrevtimes) > int(head):
                         if head == "0":
                             head = "1"
-                        embed = discord.Embed(title="Number over goes limit!",
-                                              description=f"There is a {head} goes limit, increase this by getting"
-                                              f" more coins by playing games! do `-help games` to see the games list")
-                        embed.set_footer(text=f"Requested by {ctx.author}")
-                        await ctx.channel.send(embed=embed)
+                        em = Embed(title="Number over goes limit!",
+                                   description=f"There is a {head} goes limit, increase this by getting"
+                                               f" more coins by playing games! do `-help games` to see the games list")
+                        await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                         allowcmd = 1
             if int(betrevtimes) < 1:
                 await ctx.channel.send("```The minimum goes is 1!```")
@@ -1575,14 +1215,12 @@ class Games(commands.Cog):
                 for i in range(int(betrevtimes)):
                     allowbet = 0
                     if int(revupbet) > coin:
-                        embed = discord.Embed(title="You cant bet more than you have!")
-                        embed.set_footer(text=f"Requested by {ctx.author}")
-                        await ctx.channel.send(embed=embed)
+                        em = Embed(title="You cant bet more than you have!")
+                        await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                         allowbet = 1
                     if int(revupbet) < 1:
-                        embed = discord.Embed(title="You cant bet nothing!")
-                        embed.set_footer(text=f"Requested by {ctx.author}")
-                        await ctx.channel.send(embed=embed)
+                        em = Embed(title="You cant bet nothing!")
+                        await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                         allowbet = 1
                     if not allowbet == 1:
                         revupdivider = decimal.Decimal(random.randrange(0, 1000))  # change multiplier here
@@ -1606,18 +1244,16 @@ class Games(commands.Cog):
                         revupbet = decimal.Decimal(revupbet)
 
                         if coinadd > revupbet:
-                            embed = discord.Embed(title=f"You Won: {round(coinadd, 2)}", description=
+                            em = Embed(title=f"You Won: {round(coinadd, 2)}", description=
                             f"You bet {revupbet} and got a ({round(revupmulti, 2)}x{round(revupmulti2, 2)}) \
                             {round(revuptotal, 2)}X multiplier\nyou now have: {coin}", color=discord.Colour(0x00ff00))
-                            embed.set_footer(text=f"Requested by {ctx.author}")
-                            await ctx.channel.send(embed=embed)
+                            await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
                         if coinadd < revupbet:
-                            embed = discord.Embed(title=f"You Got Back: {revupbet - (revupbet - round(coinadd, 2))}",
-                            description=f"You bet {revupbet, round(revupmulti, 2)} and got a ({round(revupmulti2, 2)}x\
+                            em = Embed(title=f"You Got Back: {revupbet - (revupbet - round(coinadd, 2))}",
+                                       description=f"You bet {revupbet, round(revupmulti, 2)} and got a ({round(revupmulti2, 2)}x\
                             {round(revuptotal, 2)}) {round(revupmulti, 2)}X multiplier\nyou now have: {coin}",
-                            color=discord.Colour(0xff0000))
-                            embed.set_footer(text=f"Requested by {ctx.author}")
-                            await ctx.channel.send(embed=embed)
+                                       color=discord.Colour(0xff0000))
+                            await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
 
 class Admin(commands.Cog):
@@ -1627,25 +1263,27 @@ class Admin(commands.Cog):
     @commands.command()
     async def purge(self, ctx, arg1, arg2):
         if arg1 == "all":
-            if discord.utils.get(ctx.author.roles, name="admin") or discord.utils.get(ctx.author.roles, name="Admin")\
-            or discord.utils.get(ctx.author.roles, name="administrator") or discord.utils.get(ctx.author.roles, name="Administrator"):
+            if discord.utils.get(ctx.author.roles, name="admin") or discord.utils.get(ctx.author.roles, name="Admin") \
+                    or discord.utils.get(ctx.author.roles, name="administrator") \
+                    or discord.utils.get(ctx.author.roles, name="Administrator"):
                 await ctx.channel.send("```user permission success```", delete_after=1)
                 time.sleep(1)
                 deleted = await ctx.channel.purge(limit=int(arg2))
                 await ctx.send('Deleted {} message(s)'.format(len(deleted)), delete_after=2.5)
             else:
-                embed = discord.Embed(description="You need the role 'admin' or 'administrator'"
-                                                  " to purge everyones messages")
-                embed.set_footer(text=f"Requested by {ctx.author}")
-                await ctx.channel.send(embed=embed)
+                em = Embed(description="You need the role 'admin' or 'administrator'"
+                                                  " to purge everyone's messages")
+                await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
         if arg1 == "self":
             def is_me(m):
                 return m.author == ctx.message.author
+
             deleted = await ctx.channel.purge(limit=int(arg2), check=is_me)
             await ctx.send('Deleted {} message(s)'.format(len(deleted)), delete_after=2.5)
         if arg1 == "bot":
             def is_me(m):
                 return m.author.id == 711578412103368707
+
             deleted = await ctx.channel.purge(limit=int(arg2), check=is_me)
             await ctx.send('Deleted {} message(s)'.format(len(deleted)), delete_after=2.5)
 
@@ -1661,119 +1299,19 @@ class Admin(commands.Cog):
                 if arg1 == "bot" and message.author.id == 711578412103368707:
                     await message.delete()
                     time.sleep(1)
-                    msgnum = msgnum+1
+                    msgnum = msgnum + 1
                 if arg1 == "self" and message.author.id == savedauthor:
                     await message.delete()
                     time.sleep(1)
-                    msgnum = msgnum+1
+                    msgnum = msgnum + 1
                 if arg1 == "all":
                     await message.delete()
                     time.sleep(1)
-                    msgnum = msgnum+1
+                    msgnum = msgnum + 1
                 if msgnum == 50:
                     await message.channel.send("Reached deletion limit of 50", delete_after=2.5)
                     break
             await message.channel.send(f"Deleted {msgnum} messages(s)", delete_after=2.5)
-
-
-class Thomas(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-
-    @commands.command()
-    async def draw(self, ctx, *args):
-        if ctx.author.id in [530791679704301580, 425373518566260766]:
-            c_args = convert_tuple(args)[:-1]
-            if c_args == "":
-                await ctx.channel.send("Missing number of people to draw, -draw <num>")
-            else:
-                with open("settings/event_players.txt") as f:
-                    players = f.readlines()
-                if int(c_args) > len(set(players)):
-                    await ctx.channel.send(f"The max number that can be drawn from this data is {len(set(players))}")
-                else:
-                    total_players = len(players)
-                    draw = ""
-                    for i in range(int(c_args)):
-                        while True:
-                            new_draw = players[random.randint(1, total_players)-1]
-                            if str(new_draw).replace("\n", "") not in draw:
-                                draw += f"<@!{players[random.randint(1, total_players)-1]}>, ".replace("\n", "")
-                                print(draw)
-                                break
-                    await ctx.channel.send(f"Drew {draw[:-2]} from {total_players-int(c_args)} entries")
-                    open("settings/event_expire.txt", "w").close()
-                    open("settings/event_players.txt", "w").close()
-
-    @commands.command(aliases=["current time", "currenttime"])
-    async def current_time(self, ctx):
-        await ctx.channel.send(str(datetime.datetime.now())[:-7])
-
-    @commands.command(aliases=["start event", "startevent"])
-    async def start_event(self, ctx, *args):
-        if ctx.author.id in [530791679704301580, 425373518566260766]:
-            c_args = convert_tuple(args)[:-1]
-            with open("settings/event_expire.txt") as f:
-                data = f.read()
-            try:
-                dt_object = datetime.datetime.strptime(data, "%Y-%m-%d %H:%M:%S")
-                await ctx.channel.send("There is already a running event\n"
-                                       f"Time remaining in running event: {dt_object - datetime.datetime.now()}")
-            except:
-                if c_args == "":
-                    await ctx.channel.send("No expire time provided")
-                else:
-                    dt_object = datetime.datetime.strptime(c_args, "%Y-%m-%d %H:%M:%S")
-                    await ctx.channel.send(f"Time remaining in event: {dt_object-datetime.datetime.now()}")
-                    with open("settings/event_expire.txt", "w") as f:
-                        f.write(c_args)
-
-    @commands.command(aliases=["expire time", "expiretime"])
-    async def expire_time(self, ctx):
-        with open("settings/event_expire.txt") as f:
-            data = f.read()
-        try:
-            dt_object = datetime.datetime.strptime(data, "%Y-%m-%d %H:%M:%S")
-            await ctx.channel.send(f"Time remaining in running event: {dt_object - datetime.datetime.now()}")
-        except:
-            await ctx.channel.send("There is no running event")
-
-    @commands.command(aliases=["join event", "joinevent"])
-    async def join_event(self, ctx):
-        with open("settings/event_expire.txt") as f:
-            data = f.read()
-        try:
-            dt_object = datetime.datetime.strptime(data, "%Y-%m-%d %H:%M:%S")
-            if datetime.datetime.now() > dt_object:
-                await ctx.channel.send(f"This event has expired, you can no longer enter")
-            else:
-                allow_apply = True
-                with open("settings/event_players.txt") as f:
-                    total_entries = 0
-                    for line in f.readlines():
-                        if str(ctx.author.id) in line:
-                            total_entries += 1
-                            allow_apply = False
-                if allow_apply:
-                    total_entries = 0
-                    if discord.utils.get(ctx.author.roles, name="Member"):
-                        total_entries += 1
-                    if discord.utils.get(ctx.author.roles, name="Server Booster"):
-                        total_entries += 3
-                    if discord.utils.get(ctx.author.roles, name="staff"):
-                        total_entries += 1
-                    if discord.utils.get(ctx.author.roles, name="Gold Role"):
-                        total_entries += 2
-                    embed = discord.Embed(title=f"Application allowed with {total_entries} entries"
-                                          , color=discord.Colour(0x00ff00))
-                    await ctx.channel.send(embed=embed)
-                    with open("settings/event_players.txt", "a+") as f:
-                        for i in range(total_entries):
-                            f.write(f"{ctx.author.id}\n")
-                else:
-                    await ctx.channel.send(f"You have already applied before, you have {total_entries} entries")
-        except:
-            await ctx.channel.send("There is no running event")
 
 
 class Help(commands.Cog):
@@ -1786,241 +1324,213 @@ class Help(commands.Cog):
         embed = None
         message = None
         if c_args == "":
-            embed = discord.Embed(title="Rapidbot command sections", description="We have a wide range of commands!\
+            em = Embed(title="Rapidbot command sections", description="We have a wide range of commands!\
                     \nAlso remember the prefix is '-'")
-            embed.add_field(name=":hash: Encrypt (3)    :question: Random (11)    :information_source: Info (1)",
-                            value="`-h enc`       `-h rand`      `-h info`", inline=False)
-            embed.add_field(name=":page_facing_up: Server (9)   :dollar: Currency (2)  :rainbow: Coloured text (5)",
-                            value="`-h server`    `-h currency`    `-h color text`", inline=False)
+            em.add_field(name=":hash: Encrypt (3)    :question: Random (11)    :information_source: Info (1)",
+                         value="`-h enc`       `-h rand`      `-h info`", inline=False)
+            em.add_field(name=":page_facing_up: Server (9)   :dollar: Currency (2)  :rainbow: Coloured text (5)",
+                         value="`-h server`    `-h currency`    `-h color text`", inline=False)
 
             if is_nsfw_on(ctx.channel.id):
-                embed.add_field(name=":wink: NSFW (8)     :computer: Online searches (6)    :game_die: Games (11)",
-                                value="`-h nsfw`     `-h search`           `-h games`", inline=False)
+                em.add_field(name=":wink: NSFW (8)     :computer: Online searches (6)    :game_die: Games (11)",
+                             value="`-h nsfw`     `-h search`           `-h games`", inline=False)
             else:
-                embed.add_field(name="Disabled (8)     :computer: Online searches (6)    :game_die: Games (11)",
-                                value="`disabled`   `-h search`           `-h games`", inline=False)
+                em.add_field(name="Disabled (8)     :computer: Online searches (6)    :game_die: Games (11)",
+                             value="`disabled`   `-h search`           `-h games`", inline=False)
         else:
             if c_args in ["encryption", "encrypt", "enc", "decryption", "decrypt", "dec"]:
-                embed = discord.Embed(title=":hash: Encryption commands (3)",
-                                      description="`encrypt`,`decrypt`,`enc_key`")
-                embed.add_field(name="Here is how to use them",
-                                value="`-enc <message>`\n`-dec <encrypted message>`\n"
-                                      "`-enc_key` makes a random encryption key", inline=False)
+                em = Embed(title=":hash: Encryption commands (3)", description="`encrypt`,`decrypt`,`enc_key`")
+                em.add_field(name="Here is how to use them", value="`-enc <message>`\n`-dec <encrypted message>`\n"
+                                  "`-enc_key` makes a random encryption key", inline=False)
                 embed.set_footer(text=f"Requested by {ctx.message.author}")
-                embed.add_field(name="Command aliases", value="`encryption`,`encrypt`,`enc`,"
-                                                              "`decryption`,`decrypt`,`dec`", inline=False)
+                em.add_field(name="Command aliases", value="`encryption`,`encrypt`,`enc`,"
+                                  "`decryption`,`decrypt`,`dec`", inline=False)
 
             if c_args in ["random", "rand"]:
-                embed = discord.Embed(title=":question: Random commands (10)", description="`randword`,`randnum`,\
+                em = Embed(title=":question: Random commands (10)", description="`randword`,`randnum`,\
                         `randuni`,`eight_ball`,`leetify`,`repeat`,\n`joke`,`char_count`,`emoji_letter`,`ttb`")
                 embed.set_footer(text=f"Add -h to the beginning of a command for its help section!"
                                       f" Requested by {ctx.message.author}")
 
             if c_args in ["info", "bot_info", "bot info"]:  # BOT INFO
-                embed = discord.Embed(title="INFO HELP:",
-                                      description="The info command shows data about the bot"
-                                                  "\n\nThis commands aliases are: `botinv`,`botweb`,`botrt`,`inservers`")
+                em = Embed(title="INFO HELP:", description="The info command shows data about the bot"
+                                 "\n\nThis commands aliases are: `botinv`,`botweb`,`botrt`,`inservers`")
 
             if c_args in ["server"]:
-                embed = discord.Embed(title=":page_facing_up: Server commands (9)", description="\
-                        `chat_links`,`userid`,`serverid`,`channel_ids`,`messageid`,"
-                        "\n`members`,`roles`,`inrole`,`who_spoke`")
-                embed.set_footer(
-                    text=f"Add -h to the beginning of a command for its help section! "
-                         f"Requested by {ctx.message.author}")
+                em = Embed(title=":page_facing_up: Server commands (9)",
+                           description="`chat_links`,`userid`,`serverid`,`channel_ids`,`messageid`,"
+                                       "\n`members`,`roles`,`inrole`,`who_spoke`")
+                embed.set_footer(text=f"Add -h to the beginning of a command for its help section! "
+                                      f"Requested by {ctx.message.author}")
 
             if c_args in ["currency", "cur"]:
-                embed = discord.Embed(title=":dollar: Currency commands (2)",
-                                      description="`currency_list`,`currency_convert`")
-                embed.set_footer(
-                    text=f"Add -h to the beginning of a command for its help section! "
-                         f"Requested by {ctx.message.author}")
+                em = Embed(title=":dollar: Currency commands (2)", description="`currency_list`,`currency_convert`")
+                embed.set_footer(text=f"Add -h to the beginning of a command for its help section! "
+                                      f"Requested by {ctx.message.author}")
 
             if c_args in ["color text", "colored text", "color_text", "colored_text"]:
-                embed = discord.Embed(title=":rainbow: Coloured text commands (5)",
-                                      description="`redtext`,`orange_text`,`yellowtext`,`blue_text`,`cyantext`")
-                embed.set_footer(
-                    text=f"Add -h to the beginning of a command for its help section! "
-                         f"Requested by {ctx.message.author}")
+                em = Embed(title=":rainbow: Coloured text commands (5)",
+                           description="`redtext`,`orange_text`,`yellowtext`,`blue_text`,`cyantext`")
+                embed.set_footer(text=f"Add -h to the beginning of a command for its help section! "
+                                      f"Requested by {ctx.message.author}")
 
             if c_args in ["nsfw"]:
                 if is_nsfw_on(ctx.channel.id):
-                    embed = discord.Embed(title=":wink: NSFW commands (8)",
-                                          description="`nsfw_on`,`nsfw_off`,`porntags`,"
-                                                      "`phs`,`psi`,`psg`,`porngif`,`hentai`")
+                    em = Embed(title=":wink: NSFW commands (8)", description="`nsfw_on`,`nsfw_off`,`porntags`,"
+                                     "`phs`,`psi`,`psg`,`porngif`,`hentai`")
                     embed.set_footer(text=f"Add -h to the beginning of a command for\
                     its help section! Requested by {ctx.message.author}")
                 else:
-                    embed = discord.Embed(title="This is not enabled in your server",
-                                          description="If your an admin type `-nsfw_on` to enable these commands")
+                    em = Embed(title="This is not enabled in your server",
+                               description="If your an admin type `-nsfw_on` to enable these commands")
                     embed.set_footer(text=f"Requested by {ctx.message.author}")
 
             if c_args in ["search", "online search", "online_search"]:
-                embed = discord.Embed(title=":computer: Online searches commands (6)",
-                                      description="`ggt_codes`, `ggt_te`,`ggt_ft`,\
-                        \n`ggsr`,`reddits`,`meme`")
+                em = Embed(title=":computer: Online searches commands (6)",
+                           description="`ggt_codes`, `ggt_te`,`ggt_ft`,\n`ggsr`,`reddits`,`meme`")
                 embed.set_footer(text=f"Add -h to the beginning of a command for its help section! "
                                       f"Requested by {ctx.message.author}")
 
             if c_args in ["games", "bet"]:
-                embed = discord.Embed(title=":game_die: Game commands (11)",
-                                      description="`claim`,~~daily~~,`bal`,`flip`,\
+                em = Embed(title=":game_die: Game commands (11)", description="`claim`,~~daily~~,`bal`,`flip`,\
                         ~~bj~~,`dice`,\n`rps`,`multi`,~~revup~~,~~bet_dubup~~,~~bet crash~~")
                 embed.set_footer(text=f"Add -h to the beginning of a command for its help section! "
                                       f"Requested by {ctx.message.author}")
 
             if c_args in ["admin"]:
-                embed = discord.Embed(title=":tools: Admin commands (2)", description="`purge`,`clean`")
+                em = Embed(title=":tools: Admin commands (2)", description="`purge`,`clean`")
                 embed.set_footer(text=f"Add -h to the beginning of a command for its help section! "
                                       f"Requested by {ctx.message.author}")
 
             if c_args in ["randword"]:  # RANDOM
-                embed = discord.Embed(title="RANDWORD HELP:",
-                                      description="The random word command picks x random words")
-                embed.add_field(name="Here is how to use it", value="`-randword <number of words>`", inline=False)
+                em = Embed(title="RANDWORD HELP:", description="The random word command picks x random words")
+                em.add_field(name="Here is how to use it", value="`-randword <number of words>`", inline=False)
 
             if c_args in ["randnum", "randnumber"]:  # RANDOM # not reworked
-                embed = discord.Embed(title="RANDNUM HELP:",
-                                      description="The random number command picks a number between two numbers")
-                embed.add_field(name="Here is how to use it", value="`randnum <1st number> <2nd number>`", inline=False)
-                embed.add_field(name="Command aliases", value="`randumber`", inline=False)
+                em = Embed(title="RANDNUM HELP:",
+                           description="The random number command picks a number between two numbers")
+                em.add_field(name="Here is how to use it", value="`randnum <1st number> <2nd number>`", inline=False)
+                em.add_field(name="Command aliases", value="`randumber`", inline=False)
 
             if c_args in ["randuni"]:  # RANDOM
-                embed = discord.Embed(title="RANDUNI HELP:",
-                                      description="The random Unicode command picks x"
-                                                  " number of random Unicode characters")
-                embed.add_field(name="Here is how to use it", value="`randuni <number of uni chars>`", inline=False)
+                em = Embed(title="RANDUNI HELP:", description="The random Unicode command picks x"
+                                 " number of random Unicode characters")
+                em.add_field(name="Here is how to use it", value="`randuni <number of uni chars>`", inline=False)
 
             if c_args in ["eight_ball"]:  # RANDOM
-                embed = discord.Embed(title="EIGHT_BALL HELP:",
-                                      description="The eight ball command is a question and answer command")
-                embed.add_field(name="Here is how to use it", value="`-eight_ball <question>`", inline=False)
+                em = Embed(title="EIGHT_BALL HELP:",
+                           description="The eight ball command is a question and answer command")
+                em.add_field(name="Here is how to use it", value="`-eight_ball <question>`", inline=False)
 
             if c_args in ["leetify"]:  # RANDOM
-                embed = discord.Embed(title="LEETIFY HELP:",
-                                      description="The leetify command turns your message into leet speak")
-                embed.add_field(name="Here is how to use it", value="`-leetify <message>`", inline=False)
+                em = Embed(title="LEETIFY HELP:", description="The leetify command turns your message into leet speak")
+                em.add_field(name="Here is how to use it", value="`-leetify <message>`", inline=False)
 
             if c_args in ["repeat"]:  # RANDOM
-                embed = discord.Embed(title="REPEAT HELP:", description="The repeat command repeats your message")
-                embed.add_field(name="Here is how to use it", value="`-repeat <message>`", inline=False)
+                em = Embed(title="REPEAT HELP:", description="The repeat command repeats your message")
+                em.add_field(name="Here is how to use it", value="`-repeat <message>`", inline=False)
 
             if c_args in ["joke"]:  # RANDOM # not reworked
-                embed = discord.Embed(title="JOKE HELP:", description="The joke command sends a funny joke!")
+                em = Embed(title="JOKE HELP:", description="The joke command sends a funny joke!")
 
             if c_args in ["char_count", "char count"]:  # RANDOM
-                embed = discord.Embed(title="CHAR_COUNT HELP:",
-                                      description="The char_count command counts the number of"
-                                                  " characters in your message")
-                embed.add_field(name="Here is how to use it", value="`-char_count <message>`", inline=False)
+                em = Embed(title="CHAR_COUNT HELP:", description="The char_count command counts the number of"
+                                 " characters in your message")
+                em.add_field(name="Here is how to use it", value="`-char_count <message>`", inline=False)
 
             if c_args in ["emoji_letter", "emoji_letters", "big_text"]:  # RANDOM
-                embed = discord.Embed(title="EMOJI_LETTERS HELP:",
-                                      description="The emoji letter command turns your message into letter emojis")
-                embed.add_field(name="Here is how to use it", value="`-emoji_letter <message>`", inline=False)
-                embed.add_field(name="Command aliases", value="`emoji_letters`,`big_text`", inline=False)
+                em = Embed(title="EMOJI_LETTERS HELP:",
+                           description="The emoji letter command turns your message into letter emojis")
+                em.add_field(name="Here is how to use it", value="`-emoji_letter <message>`", inline=False)
+                em.add_field(name="Command aliases", value="`emoji_letters`,`big_text`", inline=False)
 
             if c_args in ["ttb"]:  # RANDOM
-                embed = discord.Embed(title="TTB HELP:",
-                                      description="The talk to bot command asks an AI your message/question")
-                embed.add_field(name="Here is how to use it", value="`-ttb <message/question>`", inline=False)
+                em = Embed(title="TTB HELP:", description="The talk to bot command asks an AI your message/question")
+                em.add_field(name="Here is how to use it", value="`-ttb <message/question>`", inline=False)
 
             if c_args in ["chat_links"]:  # SERVER INFO
-                embed = discord.Embed(title="CHAT_LINKS HELP:", description="The chat links \
+                em = Embed(title="CHAT_LINKS HELP:", description="The chat links \
                 command retrieves every link ever sent in a channel then it sends all of these links in one file")
 
             if c_args in ["userid"]:  # SERVER INFO
-                embed = discord.Embed(title="USER ID HELP:", description="The user id command retrieves a users id")
-                embed.add_field(name="Here is how to use it", value="`-userid <@user>`", inline=False)
+                em = Embed(title="USER ID HELP:", description="The user id command retrieves a users id")
+                em.add_field(name="Here is how to use it", value="`-userid <@user>`", inline=False)
 
             if c_args in ["serverid"]:  # SERVER INFO
-                embed = discord.Embed(title="SERVER ID HELP:",
-                                      description="The server id command retrieves current servers id")
+                em = Embed(title="SERVER ID HELP:", description="The server id command retrieves current servers id")
 
             if c_args in ["channelids", "channel_ids"]:  # SERVER INFO
-                embed = discord.Embed(title="CHANNEL_IDS HELP:",
-                                      description="The channel ids command gets all channel ids from current server")
-                embed.add_field(name="Here is how to use it", value="`-channel id` shows channel ids and names"
-                                "\n`-channel id raw` shows just channel ids", inline=False)
-                embed.add_field(name="Command aliases", value="`channelids`", inline=False)
+                em = Embed(title="CHANNEL_IDS HELP:",
+                           description="The channel ids command gets all channel ids from current server")
+                em.add_field(name="Here is how to use it", value="`-channel id` shows channel ids and names"
+                                  "\n`-channel id raw` shows just channel ids", inline=False)
+                em.add_field(name="Command aliases", value="`channelids`", inline=False)
 
             if c_args in ["messageid"]:  # SERVER INFO
-                embed = discord.Embed(title="MESSAGE ID HELP:",
-                                      description="The message id retrieves the id of the message you just sent")
+                em = Embed(title="MESSAGE ID HELP:",
+                           description="The message id retrieves the id of the message you just sent")
 
             if c_args in ["members"]:  # SERVER INFO
-                embed = discord.Embed(title="MEMBERS HELP:",
-                                      description="The members command lists all the members in the server")
+                em = Embed(title="MEMBERS HELP:", description="The members command lists all the members in the server")
 
             if c_args in ["roles"]:  # SERVER INFO
-                embed = discord.Embed(title="ROLES HELP:",
-                                      description="The roles command lists all the roles in the server")
+                em = Embed(title="ROLES HELP:", description="The roles command lists all the roles in the server")
 
             if c_args in ["inrole"]:  # SERVER INFO
-                embed = discord.Embed(title="MEMBERS HELP:",
-                                      description="The in role command lists all members with a role")
-                embed.add_field(name="Here is how to use it", value="`-inrole <@role>`", inline=False)
+                em = Embed(title="MEMBERS HELP:", description="The in role command lists all members with a role")
+                em.add_field(name="Here is how to use it", value="`-inrole <@role>`", inline=False)
 
             if c_args in ["who_spoke"]:  # SERVER INFO
-                embed = discord.Embed(title="WHO_SPOKE HELP:",
-                                      description="The who spoke command finds how many times"
-                                                  " people spoke in last x messages")
-                embed.add_field(name="Here is how to use it",
-                                value="`-who_spoke <how many msg's to look at>` limited to 1000 messages",
-                                inline=False)
+                em = Embed(title="WHO_SPOKE HELP:", description="The who spoke command finds how many times"
+                                 " people spoke in last x messages")
+                em.add_field(name="Here is how to use it",
+                             value="`-who_spoke <how many msg's to look at>` limited to 1000 messages", inline=False)
 
             if c_args in ["currency_list"]:  # CURRENCY
-                embed = discord.Embed(title="CURRENCY_LIST HELP:",
-                                      description="The currency_listing command shows values of many currencies")
-                embed.add_field(name="Here is how to use it",
-                                value="`-currency_list`\n`-currency_list <Currency to convert from>`", inline=False)
+                em = Embed(title="CURRENCY_LIST HELP:",
+                           description="The currency_listing command shows values of many currencies")
+                em.add_field(name="Here is how to use it",
+                             value="`-currency_list`\n`-currency_list <Currency to convert from>`", inline=False)
 
             if c_args in ["currency_convert"]:  # CURRENCY
-                embed = discord.Embed(title="CURRENCY_CONVERT HELP:",
-                                      description="The currency conversion command converts between 2 currencies")
-                embed.add_field(name="Here is how to use it",
-                                value="`-currency_convert <currency from> <currency to> <amount>`", inline=False)
+                em = Embed(title="CURRENCY_CONVERT HELP:",
+                           description="The currency conversion command converts between 2 currencies")
+                em.add_field(name="Here is how to use it",
+                             value="`-currency_convert <currency from> <currency to> <amount>`", inline=False)
 
             if c_args in ["redtext", "red_text"]:  # COLOURED TEXT
-                embed = discord.Embed(title="REDTEXT HELP:",
-                                      description="The red text command turns your message red")
-                embed.add_field(name="Here is how to use it", value="`-redtext <message>", inline=False)
+                em = Embed(title="REDTEXT HELP:", description="The red text command turns your message red")
+                em.add_field(name="Here is how to use it", value="`-redtext <message>", inline=False)
 
             if c_args in ["orangetext", "orange_text"]:  # COLOURED TEXT
-                embed = discord.Embed(title="ORANGETEXT HELP:",
-                                      description="The orange text command turns your message orange")
-                embed.add_field(name="Here is how to use it", value="`-orangetext <message>", inline=False)
+                em = Embed(title="ORANGETEXT HELP:", description="The orange text command turns your message orange")
+                em.add_field(name="Here is how to use it", value="`-orangetext <message>", inline=False)
 
             if c_args in ["yellowtext", "yellow_text"]:  # COLOURED TEXT
-                embed = discord.Embed(title="YELLOWTEXT HELP:",
-                                      description="The yellow text command turns your message yellow")
-                embed.add_field(name="Here is how to use it", value="`-yellowtext <message>", inline=False)
+                em = Embed(title="YELLOWTEXT HELP:", description="The yellow text command turns your message yellow")
+                em.add_field(name="Here is how to use it", value="`-yellowtext <message>", inline=False)
 
             if c_args in ["bluetext", "blue_text"]:  # COLOURED TEXT
-                embed = discord.Embed(title="BLUETEXT HELP:",
-                                      description="The blue text command turns your message blue")
-                embed.add_field(name="Here is how to use it", value="`-bluetext <message>", inline=False)
+                em = Embed(title="BLUETEXT HELP:", description="The blue text command turns your message blue")
+                em.add_field(name="Here is how to use it", value="`-bluetext <message>", inline=False)
 
             if c_args in ["cyantext", "cyan_text"]:  # COLOURED TEXT
-                embed = discord.Embed(title="CYANTEXT HELP:",
-                                      description="The cyan text command turns your message cyan")
-                embed.add_field(name="Here is how to use it", value="`-cyantext <message>", inline=False)
+                em = Embed(title="CYANTEXT HELP:", description="The cyan text command turns your message cyan")
+                em.add_field(name="Here is how to use it", value="`-cyantext <message>", inline=False)
 
-            if c_args in ["nsfw_on"]: # NSFW
-                embed = discord.Embed(title="NSFW_ON HELP:",
-                                      description="The nsfw on command enables nsfw in a channel/chat")
-                embed.add_field(name="Command requirements",
-                                value="you will need the role admin to use this command", inline=False)
+            if c_args in ["nsfw_on"]:  # NSFW
+                em = Embed(title="NSFW_ON HELP:", description="The nsfw on command enables nsfw in a channel/chat")
+                em.add_field(name="Command requirements", value="you will need the role admin to use this command",
+                             inline=False)
 
             if c_args in ["nsfw_off"]:  # NSFW
-                embed = discord.Embed(title="NSFW_OFF HELP:",
-                                      description="The nsfw_off command disables nsfw in a channel/chat")
-                embed.add_field(name="Command requirements",
-                                value="you will need the role admin to use this command", inline=False)
+                em = Embed(title="NSFW_OFF HELP:", description="The nsfw_off command disables nsfw in a channel/chat")
+                em.add_field(name="Command requirements", value="you will need the role admin to use this command",
+                             inline=False)
 
             if c_args in ["porntags"]:  # NSFW
                 if is_nsfw_on(ctx.channel.id):
-                    embed = discord.Embed(title="PORNTAGS HELP:",
+                    em = Embed(title="PORNTAGS HELP:",
                                           description="The porn tags command provides suggestions"
                                                       " for tags to be used in nsfw searches")
                 else:
@@ -2028,181 +1538,160 @@ class Help(commands.Cog):
 
             if c_args in ["phs"]:  # NSFW
                 if is_nsfw_on(ctx.channel.id):
-                    embed = discord.Embed(title="PHS HELP:",
+                    em = Embed(title="PHS HELP:",
                                           description="The pornhub search command searches for up to 20 videos")
-                    embed.add_field(name="Here is how to use it", value="`-phs <num of results> <search>`",
+                    em.add_field(name="Here is how to use it", value="`-phs <num of results> <search>`",
                                     inline=False)
                 else:
                     message = "```This command is not enabled in this chat```"
 
             if c_args in ["psi"]:  # NSFW
                 if is_nsfw_on(ctx.channel.id):
-                    embed = discord.Embed(title="PSI HELP:",
+                    em = Embed(title="PSI HELP:",
                                           description="The porn search image command searches for porn images")
-                    embed.add_field(name="Here is how to use it",
+                    em.add_field(name="Here is how to use it",
                                     value="`-psi x`\nx is the thing your searching for", inline=False)
                 else:
                     message = "```This command is not enabled in this chat```"
 
             if c_args in ["psg"]:  # NSFW
                 if is_nsfw_on(ctx.channel.id):
-                    embed = discord.Embed(title="PSG HELP:",
+                    em = Embed(title="PSG HELP:",
                                           description="The porn search galleries command "
                                                       "searches for images in galleries")
-                    embed.add_field(name="Here is how to use it", value="`-psg n x`\nn is the \
+                    em.add_field(name="Here is how to use it", value="`-psg n x`\nn is the \
                     gallery number to search\nx is the thing/tag your searching for", inline=False)
                 else:
                     message = "```This command is not enabled in this chat```"
 
             if c_args in ["porngif"]:  # NSFW
                 if is_nsfw_on(ctx.channel.id):
-                    embed = discord.Embed(title="PORNGIF HELP:",
+                    em = Embed(title="PORNGIF HELP:",
                                           description="The porn gif command finds some gifs and sends them back")
-                    embed.add_field(name="Here is how to use it", value="`-porngif n x`\nn is the\
+                    em.add_field(name="Here is how to use it", value="`-porngif n x`\nn is the\
                      page number to search\nx is the thing/tag your searching for", inline=False)
                 else:
                     message = "```This command is not enabled in this chat```"
 
             if c_args in ["hentai"]:  # NSFW
                 if is_nsfw_on(ctx.channel.id):
-                    embed = discord.Embed(title="HENTAI HELP:",
-                                          description="The hentai search command finds hentai and sends it back")
-                    embed.add_field(name="Here is how to use it", value="`-hentai n x`\nn is the page \
+                    em = Embed(title="HENTAI HELP:",
+                               description="The hentai search command finds hentai and sends it back")
+                    em.add_field(name="Here is how to use it", value="`-hentai n x`\nn is the page \
                     number to search\nx is the thing/tag your searching for (you can leave this blank)",
                                     inline=False)
                 else:
                     message = "```This command is not enabled in this chat```"
 
             if c_args in ["ggt_codes"]:  # SEARCHES
-                embed = discord.Embed(title="GGT_CODES HELP:",
-                                      description="The Google translate language codes command shows "
-                                                  "you the abbreviated letters for that language")
+                em = Embed(title="GGT_CODES HELP:", description="The Google translate language codes command shows "
+                                 "you the abbreviated letters for that language")
 
             if c_args in ["ggt_te"]:  # SEARCHES
-                embed = discord.Embed(title="GGT_TE HELP:",
-                                      description="The Google translate to english command attempts "
-                                                  "to convert a message to english")
-                embed.add_field(name="Here is how to use it", value="`-ggt_te <message>`", inline=False)
+                em = Embed(title="GGT_TE HELP:", description="The Google translate to english command attempts "
+                                 "to convert a message to english")
+                em.add_field(name="Here is how to use it", value="`-ggt_te <message>`", inline=False)
 
             if c_args in ["ggt_ft"]:  # SEARCHES
-                embed = discord.Embed(title="GGT_FT HELP:",
-                                      description="The Google translate from to command translates "
-                                                  "a message from one language to another")
-                embed.add_field(name="Here is how to use it", value="`-ggt_ft <lang from> <lang to> <message>`",
-                                inline=False)
+                em = Embed(title="GGT_FT HELP:", description="The Google translate from to command translates "
+                                 "a message from one language to another")
+                em.add_field(name="Here is how to use it", value="`-ggt_ft <lang from> <lang to> <message>`",
+                             inline=False)
 
             if c_args in ["ggsr", "ggsi", "ggsv"]:  # SEARCHES
-                embed = discord.Embed(title="GGSR HELP:",
-                                      description="The google search result command searches "
-                                                  "\n google for x amount of results")
-                embed.add_field(name="Here is how to use it", value="`-ggsr <num of results> <search>`",
-                                inline=False)
-                embed.add_field(name="Command aliases", value="`ggsi`,`ggsv`", inline=False)
+                em = Embed(title="GGSR HELP:", description="The google search result command searches "
+                                 "\n google for x amount of results")
+                em.add_field(name="Here is how to use it", value="`-ggsr <num of results> <search>`", inline=False)
+                em.add_field(name="Command aliases", value="`ggsi`,`ggsv`", inline=False)
 
             if c_args in ["reddits"]:  # SEARCHES
-                embed = discord.Embed(title="REDDITS HELP:",
-                                      description="The reddit search command retrieves a img/gif/vid from a subreddit")
-                embed.add_field(name="Here is how to use it",
-                                value="`-reddits <subreddit> <post number>` Suggest post num of 1", inline=False)
+                em = Embed(title="REDDITS HELP:",
+                           description="The reddit search command retrieves a img/gif/vid from a subreddit")
+                em.add_field(name="Here is how to use it",
+                             value="`-reddits <subreddit> <post number>` Suggest post num of 1", inline=False)
 
             if c_args in ["meme"]:  # SEARCHES
-                embed = discord.Embed(title="MEME HELP:", description="The meme command retrieves a meme!")
+                em = Embed(title="MEME HELP:", description="The meme command retrieves a meme!")
 
             if c_args in ["claim", "claim_token"]:  # GAMES
-                embed = discord.Embed(title="CLAIM HELP:",
-                                      description="The claim command means you can claim rewards!")
-                embed.add_field(name="Here is how to use it", value="`-claim <token>`", inline=False)
-                embed.add_field(name="Command aliases", value="`claim_token`", inline=False)
+                em = Embed(title="CLAIM HELP:", description="The claim command means you can claim rewards!")
+                em.add_field(name="Here is how to use it", value="`-claim <token>`", inline=False)
+                em.add_field(name="Command aliases", value="`claim_token`", inline=False)
 
             if c_args in ["daily"]:  # GAMES
-                embed = discord.Embed(title="DAILY COINS HELP:",
-                                      description="The daily coins command gives you some coins!")
+                em = Embed(title="DAILY COINS HELP:", description="The daily coins command gives you some coins!")
 
             if c_args in ["bal"]:  # GAMES
-                embed = discord.Embed(title="BAL HELP:",
-                                      description="The balance command displays your current balance")
-                embed.add_field(name="Here is how to use it",
-                                value="`-bal` for your balance\n `-bal <@user>` for someone elses balance",
-                                inline=False)
+                em = Embed(title="BAL HELP:", description="The balance command displays your current balance")
+                em.add_field(name="Here is how to use it",
+                             value="`-bal` for your balance\n `-bal <@user>` for someone elses balance", inline=False)
 
             if c_args in ["flip", "bet_flip"]:  # GAMES
-                embed = discord.Embed(title="COINFLIP HELP:",
-                                      description="The coinflip command is a betting game for 2x money")
-                embed.add_field(name="Here is how to use it", value="`-flip <h or t> <amount to bet>`",
-                                inline=False)
-                embed.add_field(name="Command aliases", value="`bet_flip`", inline=False)
+                em = Embed(title="COINFLIP HELP:", description="The coinflip command is a betting game for 2x money")
+                em.add_field(name="Here is how to use it", value="`-flip <h or t> <amount to bet>`",
+                             inline=False)
+                em.add_field(name="Command aliases", value="`bet_flip`", inline=False)
 
             if c_args in ["dice", "bet_dice"]:  # GAMES
-                embed = discord.Embed(title="DICE HELP:",
-                                      description="The dice roll command is a betting game for 5x money")
-                embed.add_field(name="Here is how to use it",
-                                value="`-dice <dice side num (1-6)> <amount to bet>`",
-                                inline=False)
-                embed.add_field(name="Command aliases", value="`bet_dice`", inline=False)
+                em = Embed(title="DICE HELP:", description="The dice roll command is a betting game for 5x money")
+                em.add_field(name="Here is how to use it", value="`-dice <dice side num (1-6)> <amount to bet>`",
+                             inline=False)
+                em.add_field(name="Command aliases", value="`bet_dice`", inline=False)
 
             if c_args in ["bj", "bet_bj"]:  # GAMES
-                embed = discord.Embed(title="BJ HELP:",
-                                      description="The blackjack command is a betting game for 1.66x money")
-                embed.add_field(name="Here is how to use it", value="`-bj <bet amount>`", inline=False)
-                embed.add_field(name="Command aliases", value="`bet_bj`", inline=False)
+                em = Embed(title="BJ HELP:", description="The blackjack command is a betting game for 1.66x money")
+                em.add_field(name="Here is how to use it", value="`-bj <bet amount>`", inline=False)
+                em.add_field(name="Command aliases", value="`bet_bj`", inline=False)
 
             if c_args in ["rps", "bet_rps"]:  # GAMES
-                embed = discord.Embed(title="RPS HELP:",
-                                      description="The rock paper scissors command is a betting game for 1.5x money")
-                embed.add_field(name="Here is how to use it", value="`-rps <r or p or s> <amount to bet>`",
-                                inline=False)
-                embed.add_field(name="Command aliases", value="`bet_rps`", inline=False)
+                em = Embed(title="RPS HELP:",
+                           description="The rock paper scissors command is a betting game for 1.5x money")
+                em.add_field(name="Here is how to use it", value="`-rps <r or p or s> <amount to bet>`", inline=False)
+                em.add_field(name="Command aliases", value="`bet_rps`", inline=False)
 
             if c_args in ["multi", "bet_multi"]:  # GAMES
-                embed = discord.Embed(title="MULTI HELP:",
-                                      description="The multiplier command is a betting game where you"
-                                                  " decide the multiplier! Min multiplier of 3")
-                embed.add_field(name="Here is how to use it", value="`-multi <multiplier> <amount to bet>`",
-                                inline=False)
-                embed.add_field(name="Command aliases", value="`bet_multi`", inline=False)
+                em = Embed(title="MULTI HELP:", description="The multiplier command is a betting game where you"
+                                 " decide the multiplier! Min multiplier of 3")
+                em.add_field(name="Here is how to use it", value="`-multi <multiplier> <amount to bet>`", inline=False)
+                em.add_field(name="Command aliases", value="`bet_multi`", inline=False)
 
             if c_args in ["revup", "bet_revup"]:  # GAMES
-                embed = discord.Embed(title="REVUP HELP:",
-                                      description="The rev up command is a betting game where "
-                                                  "you get a random multiplier from 0 to 1000!")
-                embed.add_field(name="Here is how to use it", value="`-revup <amount to bet> <num of goes>`",
-                                inline=False)
-                embed.add_field(name="Command aliases", value="`bet_revup`", inline=False)
+                em = Embed(title="REVUP HELP:", description="The rev up command is a betting game where "
+                                 "you get a random multiplier from 0 to 1000!")
+                em.add_field(name="Here is how to use it", value="`-revup <amount to bet> <num of goes>`", inline=False)
+                em.add_field(name="Command aliases", value="`bet_revup`", inline=False)
 
             if c_args in ["dubup", "bet_dubup"]:  # GAMES
-                embed = discord.Embed(title="DUBUP HELP:", description="The rev up double up command is a \
+                em = Embed(title="DUBUP HELP:", description="The rev up double up command is a \
                 betting game where you get 2 multipliers that could get you up to 40000X!")
-                embed.add_field(name="Here is how to use it", value="`-dubup <amount to bet> <num of goes>`",
-                                inline=False)
-                embed.add_field(name="Command aliases", value="`bet_dubup`", inline=False)
+                em.add_field(name="Here is how to use it", value="`-dubup <amount to bet> <num of goes>`",
+                             inline=False)
+                em.add_field(name="Command aliases", value="`bet_dubup`", inline=False)
 
             if c_args in ["crash", "bet crash"]:  # GAMES
-                embed = discord.Embed(title="CRASH HELP:", description="The crash command is a \
+                em = Embed(title="CRASH HELP:", description="The crash command is a \
                 betting game where chose when you pull out of the game and keep your winnings!")
-                embed.add_field(name="Here is how to use it", value="`-crash <amount to bet>`", inline=False)
+                em.add_field(name="Here is how to use it", value="`-crash <amount to bet>`", inline=False)
 
             if c_args in ["quiz"]:  # GAMES
-                embed = discord.Embed(title="QUIZ HELP:", description="The quiz command is a knowledge game!")
-                embed.add_field(name="Here is how to use it",
-                                value="`-quiz`, and then `-a` to answer the question asked", inline=False)
+                em = Embed(title="QUIZ HELP:", description="The quiz command is a knowledge game!")
+                em.add_field(name="Here is how to use it",
+                             value="`-quiz`, and then `-a` to answer the question asked", inline=False)
 
             # admin help
 
             if c_args in ["purge"]:  # ADMIN
-                embed = discord.Embed(title="PURGE HELP:",
-                                      description="The purge command deletes x number of messages"
-                                                  " up to 14 days old, use clean for anything older")
-                embed.add_field(name="Here is how to use it", value="`-purge <bot/self/all> <num of msg>`",
-                                inline=False)
+                em = Embed(title="PURGE HELP:", description="The purge command deletes x number of messages"
+                                 " up to 14 days old, use clean for anything older")
+                em.add_field(name="Here is how to use it", value="`-purge <bot/self/all> <num of msg>`", inline=False)
 
             if c_args in ["clean"]:  # ADMIN
-                embed = discord.Embed(title="CLEAN HELP:",
-                                      description="The clean command individualy deleted messages where purge cant")
-                embed.add_field(name="Here is how to use it", value="`-clean <bot/self/all> <num of msg>`",
-                                inline=False)
+                em = Embed(title="CLEAN HELP:",
+                           description="The clean command individualy deleted messages where purge cant")
+                em.add_field(name="Here is how to use it", value="`-clean <bot/self/all> <num of msg>`", inline=False)
 
         if embed is not None:
-            await ctx.channel.send(embed=embed)
+            await ctx.channel.send(embed=em)
         if message is not None:
             await ctx.channel.send(message)
 
@@ -2220,10 +1709,10 @@ async def on_command_error(ctx, error):
     if not error_check.startswith("Command \""):
         message = ctx.message.content[1:]
         message = message.split()
-        embed = discord.Embed(title=f"Command error, {error_check}", description=f"Need help? `-h {message[0]}`",
-                              color=discord.Colour(0xff0000))
-        embed.set_footer(text=f"Requested by {ctx.author}")
-        await ctx.channel.send(embed=embed)
+        em = Embed(title=f"Command error, {error_check}", description=f"Need help? `-h {message[0]}`",
+                   color=discord.Colour(0xff0000))
+        await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
+
 
 bot.add_cog(Encryption(bot))
 bot.add_cog(Random(bot))
@@ -2235,23 +1724,21 @@ bot.add_cog(NSFW(bot))
 bot.add_cog(Online_searching(bot))
 bot.add_cog(Games(bot))
 bot.add_cog(Admin(bot))
-bot.add_cog(Thomas(bot))  # thomas special cog
 bot.add_cog(Help(bot))
 
-global theshit  # todo what to do with this stuff?
+global links_list  # todo what to do with this stuff?
 
-cum_on = False
+links_on = False
 
-if cum_on:
-    with open("cum2.txt", "r", encoding="utf-8") as f:
-        theshit = f.readlines()
-
+if links_on:
+    with open("links.txt", "r", encoding="utf-8") as f:
+        links_list = f.readlines()
 
 cooldown_ids = {}
 
 
 class cooldown():
-    #def add(self, userid, length):
+    # def add(self, userid, length):
     # todo per command cooldowns and duplication checks required
     def check(self, userid, length):
         if userid not in cooldown_ids:
@@ -2261,7 +1748,7 @@ class cooldown():
             timestr = str(datetime.datetime.now() - cooldown_data[0])
             diff = sum([a * b for a, b in zip([3600, 60, 1], map(float, timestr.split(':')))])
             if diff < cooldown_data[1]:
-                return f"Command sent to fast, please wait {round(cooldown_data[1] - diff,2)}s"
+                return f"Command sent to fast, please wait {round(cooldown_data[1] - diff, 2)}s"
             else:
                 del cooldown_ids[userid]
 
@@ -2293,17 +1780,15 @@ class ttb():  # todo add ttb prev conv functionality
 
         payload += "cb_settings_scripting=no&islearning=1&icognoid=wsf&icognocheck="
         payload += hashlib.md5(payload[7:33].encode()).hexdigest()
-        req = requests.post(
-            "https://www.cleverbot.com/webservicemin?uc=UseOfficialCleverbotAPI",
-            cookies=cookies,
-            data=payload)
+        req = requests.post("https://www.cleverbot.com/webservicemin?uc=UseOfficialCleverbotAPI",
+                            cookies=cookies, data=payload)
         response = str(req.content)[2:].split("\\r")
         return response[0]
 
 
 def dec_crunch(number):
     if str(number)[::-1].find('.') > 3:
-        return float(number)//0.001/1000
+        return float(number) // 0.001 / 1000
     else:
         return round(float(number), 3)
 
@@ -2361,13 +1846,13 @@ async def on_message(message):
         with open('strs/msgstore.txt', 'a+') as f:
             f.write(f"{msg_data}\n")
 
-    # inserted CUM shard  # todo what to do with this?
+    # inserted LINK shard  # todo what to do with this?
 
     if message.channel.id in [867113471241093120] or message.author.id == 425373518566260766:
         if message.content.lower().startswith("-search"):
             search = message.content[8:]
             with open(f"temp.txt", "w+", encoding="utf-8") as p:
-                for line in theshit:
+                for line in links_list:
                     if search in line:
                         p.write(line)
 
@@ -2400,43 +1885,42 @@ async def on_message(message):
             except:
                 await message.channel.send(f"Search file not found for {open1}, maybe try '-search {open1}' first!")
 
-        if message.content.lower() == "-cum":
+        if message.content.lower() == "-link":
             for i in range(50):
                 with open("counter.txt", "r") as x:
                     counter = str(x.readlines())[2:-2]
                     counter = int(counter)
                 with open("counter.txt", "w") as x:
-                    x.write(str(counter + 1))
+                    x.write(str(counter+1))
 
-                line = str(counter) + theshit[counter - 1]
+                line = str(counter)+links_list[counter-1]
                 await message.channel.send(line)
                 time.sleep(1.25)
 
         if message.content.lower() == "-pick":
-            len(theshit)
-            counter = random.randint(0, len(theshit))
-            line = theshit[counter]
-            line = str(counter) + line
+            counter = random.randint(0, len(links_list))
+            line = links_list[counter]
+            line = str(counter)+line
             await message.channel.send(line)
 
         if message.content.lower().startswith("-spec"):
             num = int(message.content[6:])
-            line = theshit[num-1]
+            line = links_list[num-1]
             line = str(num) + line
             await message.channel.send(line)
 
-        if message.content.lower().startswith("-coom"):
-            num = int(message.content[6:]) - 1
+        if message.content.lower().startswith("-links"):
+            num = int(message.content[6:])-1
             for i in range(50):
-                line = str(num+1)+theshit[num]
+                line = str(num+1)+links_list[num]
                 await message.channel.send(line)
-                num = num + 1
+                num = num+1
                 time.sleep(1)
 
         if message.content.lower() == "-data-log":
             await message.channel.send(file=discord.File(r'indexed_data.txt'))
 
-    # inserted CUM shard above
+    # inserted LINK shard above
 
     if message.content.startswith("-") and message.author.bot is False:
 
@@ -2451,72 +1935,71 @@ async def on_message(message):
                 for i in range(25):
                     token = token + (random.choice(string.ascii_uppercase))
                     if i in [4, 9, 14, 19]:
-                        token = token + "-"
+                        token += "-"
                 token_value = random.randint(10, 100)
                 with open('strs/tokens.txt', 'a+') as f:
                     f.write(f"{token}, {token_value}\n")
 
-                embed = discord.Embed(title=f"{token}",
-                                      description=f"Claim the above {token_value}"
-                                                  f" coin token by typing -claim <token>")
-                await message.channel.send(embed=embed)
+                em = Embed(title=f"{token}", description=f"Claim the above {token_value}"
+                                 f" coin token by typing -claim <token>")
+                await message.channel.send(embed=em)
 
         allow_command = cooldown.check(0, message.author.id, 1.5)
         if allow_command is not None:
             await message.channel.send(allow_command)
             message.content = ""
-        
+
         await bot.process_commands(message)
 
         if message.author.id == 425373518566260766:
             if message.content.startswith("-update strs"):
-                    with open('strs/msgstore.txt', 'r') as f:
-                        sendback = f.read()
-                        with open('strs/linkstore.txt', 'w') as i:
-                            a = (re.findall(r'(https?://[^\s]+)', sendback))
-                            b = (re.findall(r'(http?://[^\s]+)', sendback))
-                            c = ('\n'.join(a))
-                            d = ('\n'.join(b))
-                            write = f'{c},{d}'
-                            i.write(write)
-                            i.close()
-                            with open('strs/linkstore.txt') as result:
-                                uniqlines = set(result.readlines())
-                                with open('strs/linkndp.txt', 'w') as rmdup:
-                                    rmdup.writelines(set(uniqlines))
+                with open('strs/msgstore.txt', 'r') as f:
+                    sendback = f.read()
+                    with open('strs/linkstore.txt', 'w') as i:
+                        a = (re.findall(r'(https?://[^\s]+)', sendback))
+                        b = (re.findall(r'(http?://[^\s]+)', sendback))
+                        c = ('\n'.join(a))
+                        d = ('\n'.join(b))
+                        write = f'{c},{d}'
+                        i.write(write)
+                        i.close()
+                        with open('strs/linkstore.txt') as result:
+                            uniqlines = set(result.readlines())
+                            with open('strs/linkndp.txt', 'w') as rmdup:
+                                rmdup.writelines(set(uniqlines))
 
-                                    bad_words = ['https://discord.com/channels/']
-                                    with open('strs/linkndp.txt') as oldfile, open('strs/linknd-ndsc.txt', 'w') as newfile:
-                                        for line in oldfile:
-                                            if not any(bad_word in line for bad_word in bad_words):
-                                                newfile.write(line)
+                                bad_words = ['https://discord.com/channels/']
+                                with open('strs/linkndp.txt') as oldfile, open('strs/linknd-ndsc.txt', 'w') as newfile:
+                                    for line in oldfile:
+                                        if not any(bad_word in line for bad_word in bad_words):
+                                            newfile.write(line)
 
-                    await message.channel.send("```Lnk data Success```")
-                    file1 = open("strs/msgstore.txt", "r")
-                    d = dict()
+                await message.channel.send("```Lnk data Success```")
+                file1 = open("strs/msgstore.txt", "r")
+                d = dict()
 
-                    for line in file1:
-                        line = line.strip()
-                        line = line.lower()
-                        words = line.split(" ")
+                for line in file1:
+                    line = line.strip()
+                    line = line.lower()
+                    words = line.split(" ")
 
-                        for word in words:
-                            if word in d:
-                                d[word] = d[word] + 1
-                            else:
-                                d[word] = 1
+                    for word in words:
+                        if word in d:
+                            d[word] = d[word]+1
+                        else:
+                            d[word] = 1
 
-                    with open('strs/occurdata.txt', 'w') as f:
-                        f.write("\n\nNumber of occurrences of each word in file is:")
-                        f.write("\n ===============\n")
+                with open('strs/occurdata.txt', 'w') as f:
+                    f.write("\n\nNumber of occurrences of each word in file is:")
+                    f.write("\n ===============\n")
 
-                        for key in list(d.keys()):
-                            yeis = f'{key},":",{d[key]} \n'
-                            writethat = str(yeis)
-                            f.write(writethat)
+                    for key in list(d.keys()):
+                        yeis = f'{key},":",{d[key]} \n'
+                        writethat = str(yeis)
+                        f.write(writethat)
 
-                        file1.close()
-                        await message.channel.send("```Occr data Success```")
+                    file1.close()
+                    await message.channel.send("```Occr data Success```")
 
             if message.content.startswith("-randlink"):
                 lines = open('strs/linknd-ndsc.txt').read().splitlines()
@@ -2595,9 +2078,9 @@ async def on_message(message):
         # beta commands
 
         if message.content.startswith("-join vc"):
-            voicechannel = message.author.voice.channel
+            voice_channel = message.author.voice.channel
             global vc
-            vc = await voicechannel.connect()
+            vc = await voice_channel.connect()
 
         if message.content.startswith("-leave vc"):
             await vc.disconnect()
@@ -2620,13 +2103,14 @@ async def on_message(message):
 async def on_connect():
     print(f'Connection established to discord, Logged in as {bot.user} ({bot.user.id})')
     print(f'-----------------------------------------------\n'
-          f'cpu: {psutil.cpu_percent()}% of {psutil.cpu_count(logical=False)} cores\n'
-          f'ram: {psutil.virtual_memory().percent}% in use, '
-          f'{round(psutil.virtual_memory().available * 100 / psutil.virtual_memory().total,1)}% free '
-          f'({round(psutil.virtual_memory().used/1024/1024,0)}/{round(psutil.virtual_memory().total/1024/1024,0)}MB)\n'
-          f'storage: {psutil.disk_usage("/").percent}% used, {round(psutil.disk_usage("/").used/1024/1024,2)}'
-          f'/{round(psutil.disk_usage("/").total/1024/1024,2)}MB\n'
+          f'cpu: {ut.cpu_percent()}% of {ut.cpu_count(logical=False)} cores\n'
+          f'ram: {ut.virtual_memory().percent}% in use, '
+          f'{round(ut.virtual_memory().available*100/ut.virtual_memory().total, 1)}% free '
+          f'({round(ut.virtual_memory().used/1024/1024, 0)}/{round(ut.virtual_memory().total/1024/1024, 0)}MB)\n'
+          f'storage: {ut.disk_usage("/").percent}% used, {round(ut.disk_usage("/").used/1024/1024, 2)}'
+          f'/{round(ut.disk_usage("/").total/1024/1024, 2)}MB\n'
           f'-----------------------------------------------')
+
 
 @bot.event
 async def on_disconnect():
@@ -2642,8 +2126,9 @@ async def on_guild_join(guild):
             return c
 
     channel = await find_channel(guild)
-    embed = discord.Embed(title='Hi im rapidbot!!', description="My command prefix is '-'\
+    em = Embed(title='Hi im rapidbot!!', description="My command prefix is '-'\
      try -help to see a commands list", colour=discord.Color.gold())
-    await channel.send(embed=embed)
+    await channel.send(embed=em)
 
-bot.run('NzExNTc4NDEyMTAzMzY4NzA3.XsFGcw.kuaqIiivBkE0Ji1Bq2koZWnfFLw')  # actual bot
+
+bot.run('NzQ5OTgzMDcyNzk1MjMwMjc5.X0z6Kg.4G2gqy5rI7yzjuSgBE-1Cvpb6zw')  # actual bot

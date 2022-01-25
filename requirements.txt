@@ -5,3 +5,8 @@ psutil==5.8.0
 requests==2.26.0
 forex-python==1.6
 praw==7.3.0
+yahoo-fin
+yfinance
+matplotlib
+forex_python
+numpy

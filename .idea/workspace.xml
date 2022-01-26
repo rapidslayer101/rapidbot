@@ -4,10 +4,20 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a4216da4-c4ef-4c08-be3a-2444a9d19dc3" name="Default Changelist" comment="Loads and loads of patches to loads of bits of code">
+    <list default="true" id="a4216da4-c4ef-4c08-be3a-2444a9d19dc3" name="Default Changelist" comment="GC7 - Rapidbot is now exactly 2k lines (was 2649)">
+      <change afterPath="$PROJECT_DIR$/strs/msgstore.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/strs/nsfw.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/strs/rcoin_bals.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/strs/tokens.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/3n+1.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/9anime.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ebot.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/geckodriver.exe" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mal.py" beforeDir="false" afterPath="$PROJECT_DIR$/mal.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/rapidbot.py" beforeDir="false" afterPath="$PROJECT_DIR$/rapidbot.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -65,7 +75,7 @@
       <recent name="C:\Users\rapidslayer101\PycharmProjects\rapidbot" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.rapidbot">
+  <component name="RunManager" selected="Python.mal">
     <configuration name="3n+1" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="rapidbot" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -133,15 +143,15 @@
       <method v="2" />
     </configuration>
     <configuration name="mal" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
-      <module name="rapidbot" />
+      <module name="rapidbot-25-01-22" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="" />
+      <option name="SDK_HOME" value="C:\Users\rapidslayer101\PycharmProjects\rapidbot-25-01-22\venv\Scripts\python.exe" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
+      <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
@@ -224,6 +234,7 @@
       <option name="presentableId" value="Default" />
       <updated>1626903287960</updated>
       <workItem from="1643131935566" duration="3612000" />
+      <workItem from="1643228351009" duration="5682000" />
     </task>
     <task id="LOCAL-00001" summary="Git lfs broke the entire IDE lol, this commit fixes that">
       <created>1626903958087</created>
@@ -365,6 +376,7 @@
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <ignored-roots>
       <path value="$PROJECT_DIR$/9anime-Scraper" />
+      <path value="$PROJECT_DIR$/rapidbot" />
     </ignored-roots>
     <MESSAGE value="Git lfs broke the entire IDE lol, this commit fixes that" />
     <MESSAGE value="Help commands rewrite complete, cooldown system rewrite mostly complete" />
@@ -383,6 +395,7 @@
     <option name="LAST_COMMIT_MESSAGE" value="Loads and loads of patches to loads of bits of code" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/rapidbot_25_01_22$rapidbot.coverage" NAME="rapidbot Coverage Results" MODIFIED="1643200431091" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/rapidbot_25_01_22$mal.coverage" NAME="mal Coverage Results" MODIFIED="1643233799343" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/rapidbot_25_01_22$rapidbot.coverage" NAME="rapidbot Coverage Results" MODIFIED="1643231274587" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

@@ -1,14 +1,7 @@
+import random
+
 import requests, re
-
-
-def search(data, filter_fr, filter_to):
-    data = str(data)
-    m = re.search(f"""{filter_fr}(.+?){filter_to}""", data)
-    if m:
-        output = m.group(1)
-    else:
-        output = None
-    return output
+from enclib import search
 
 
 def gogo_get_download(gogo_category_page, anime_nme):
@@ -96,10 +89,10 @@ def get_links(a, name):
     def edits1(word):
         alphabet = "1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_: "
         splits = [(word[:i], word[i:]) for i in range(len(word) + 1)]
-        deletes = [a + b[1:] for a, b in splits if b]
-        transposes = [a + b[1] + b[0] + b[2:] for a, b in splits if len(b) > 1]
-        replaces = [a + c + b[1:] for a, b in splits for c in alphabet if b]
-        inserts = [a + c + b for a, b in splits for c in alphabet]
+        deletes = [a+b[1:] for a, b in splits if b]
+        transposes = [a+b[1] + b[0] + b[2:] for a, b in splits if len(b) > 1]
+        replaces = [a+c+b[1:] for a, b in splits for c in alphabet if b]
+        inserts = [a+c+b for a, b in splits for c in alphabet]
         return set(deletes + transposes + replaces + inserts)
 
     urls2 = []
@@ -117,86 +110,55 @@ def get_links(a, name):
         return urls
 
 
-# load user data
+load_user_data = False
 
-user_anime_list = requests.get("https://myanimelist.net/animelist/rapidslayer101").content
-#user_anime_list = requests.get("https://myanimelist.net/animelist/BappoHacko").content
-table_data = search(user_anime_list, '<table class="list-table" data-items="',
-                    '<tbody><tr class="list-table-header">')[:-12].split("{&quot;status&quot;:")
+if load_user_data:
+    #user_anime_list = requests.get("https://myanimelist.net/animelist/rapidslayer101").content
+    user_anime_list = requests.get("https://myanimelist.net/animelist/BappoHacko").content
+    table_data = search(user_anime_list, '<table class="list-table" data-items="',
+                        '<tbody><tr class="list-table-header">')[:-12].split("{&quot;status&quot;:")
 
-watched_ttl = 0
-for item in table_data[1:]:
-    if item[:1] == "1":
-        status = "Watching"
-    if item[:1] == "2":
-        status = "Completed"
-    if item[:1] == "3":
-        status = "On Hold"
-    if item[:1] == "4":
-        status = "Dropped"
-    if item[:1] == "6":
-        status = "Plan to Watch"
+    watched_ttl = 0
+    for item in table_data[1:]:
+        if item[:1] == "1":
+            status = "Watching"
+        if item[:1] == "2":
+            status = "Completed"
+        if item[:1] == "3":
+            status = "On Hold"
+        if item[:1] == "4":
+            status = "Dropped"
+        if item[:1] == "6":
+            status = "Plan to Watch"
 
-    air_type = search(item, "anime_airing_status&quot;:", ",&quot;")
-    if air_type == "1":
-        air_type = "Airing"
-    if air_type == "2":
-        air_type = "Aired"
-    if air_type == "3":
-        air_type = "Not yet aired"
+        air_type = search(item, "anime_airing_status&quot;:", ",&quot;")
+        if air_type == "1":
+            air_type = "Airing"
+        if air_type == "2":
+            air_type = "Aired"
+        if air_type == "3":
+            air_type = "Not yet aired"
 
-    anime_title = search(item, "anime_title&quot;:&quot;", "&quot;,&quot;")
-    score = search(item, "score&quot;:", ",&quot;")
-    watched = search(item, "num_watched_episodes&quot;:", ",&quot;")
-    total_eps = search(item, "anime_num_episodes&quot;:", ",&quot;")  # todo amount aired, use gogo
-    mpaa = search(item, "anime_mpaa_rating_string&quot;:&quot;", "&quot;,&quot;")
-    media_type = search(item, "anime_media_type_string&quot;:&quot;", "&quot;,&quot;")
-    anime_id = search(item, "anime_id&quot;:", ",&quot;")
+        anime_title = search(item, "anime_title&quot;:&quot;", "&quot;,&quot;")
+        score = search(item, "score&quot;:", ",&quot;")
+        watched = search(item, "num_watched_episodes&quot;:", ",&quot;")
+        total_eps = search(item, "anime_num_episodes&quot;:", ",&quot;")  # todo amount aired, use gogo
+        mpaa = search(item, "anime_mpaa_rating_string&quot;:&quot;", "&quot;,&quot;")
+        media_type = search(item, "anime_media_type_string&quot;:&quot;", "&quot;,&quot;")
+        anime_id = search(item, "anime_id&quot;:", ",&quot;")
 
-    print(f"https://myanimelist.net/anime/{anime_id} -- {anime_title} - {media_type} ({air_type})({mpaa}): {status},"
-          f" scored {score}, watched eps {watched}/{total_eps}")
+        print(f"https://myanimelist.net/anime/{anime_id} -- {anime_title} - {media_type} ({air_type})({mpaa}): {status},"
+              f" scored {score}, watched eps {watched}/{total_eps}")
 
-    watched_ttl += int(watched)
+        watched_ttl += int(watched)
 
-    # todo add this data to a list thing that can be accessed later down script
+        # todo add this data to a list thing that can be accessed later down script
 
-print(f"You have watched {watched_ttl} anime eps")
-input()
-
-
-anime_name = input("Anime name: ").replace("(", "").replace(")", "")  # or link
-#anime_name = "Saenai Heroine no Sodatekata ♭"
-
-#print("\nEnter 'y' to include related anime search, leave blank for just download pages")
-#if input().lower() == "y":
-# todo toggles the searching of related anime
-
-print(f"\nSearching for: {anime_name}")
-anime_name = anime_name.replace(": ", "__")
-page = f"https://myanimelist.net/anime.php?q={anime_name.replace(' ', '+')}&cat=anime"
-print(f"Finding MAL page --> {page}")
-anime_mal_link = get_links(requests.get(page).content, anime_name)
-if type(anime_mal_link) == list:
-    if len(anime_mal_link) == 1:
-        anime_mal_link = str(anime_mal_link)[2:-2]
-    else:
-        print("Autodetect failed, enter a number from below")
-        counter = 0
-        for url in anime_mal_link:
-            counter += 1
-            if not counter > 30:
-                print(f"{counter} - {url}")
-        while True:
-            try:
-                anime_mal_link = anime_mal_link[int(input())-1]
-                break
-            except:
-                print("Invalid input")
-print(f"MAL page found, collecting page data <--> {anime_mal_link}")
+    print(f"You have watched {watched_ttl} anime eps")
 
 
 def anime_data(url):
-    page_data = requests.get(anime_mal_link).content
+    page_data = requests.get(url).content
     name_data = search(page_data, "<title>", "- MyAnimeList.net").replace("\\n", "")
     null, score = search(page_data, "score-label score-", "</span>").replace("\\n", "").split(">")
     rank = search(page_data, "Ranked:</span>", "<sup>").replace("\\n", "").replace(" ", "")
@@ -205,6 +167,9 @@ def anime_data(url):
     eps = search(page_data, "Episodes:</span>", "</div>").replace("\\n", "").replace(" ", "")
     ep_duration = search(page_data, "Duration:</span>", "</div>")\
         .replace("\\n", "").replace("   ", "").replace("  ", "")
+
+    genres = search(page_data, "Genres:</span>", "</div>").split('style="display: none">')
+    genre_lst = "".join([genre.split("</span>")[0]+", " for genre in genres[1:]])[:-2]
 
     if name_data.endswith(" "):
         name_data = name_data[:-1]
@@ -216,13 +181,15 @@ def anime_data(url):
     except:
         dur_ttl = ""
 
-    print(f"\n{name_data} --- {url}")
-    print(f"{eps} Episodes with a duration of {ep_duration}{dur_ttl},"
-          f" Score: {score}, Ranked: {rank}, Popularity: {popularity}, Members: {members}")
+    with open("mal_data.txt", "a+") as f:
+        f.write(f"{url} --- {name_data} -- {eps} Episodes with a duration of {ep_duration}{dur_ttl},"
+                f" Score: {score}, Ranked: {rank}, Popularity: {popularity}, Members: {members}, Genres: {genre_lst}\n")
+    print(f"\n{url} --- {name_data}\n{eps} Episodes with a duration of {ep_duration}{dur_ttl},"
+          f" Score: {score}, Ranked: {rank}, Popularity: {popularity}, Members: {members}, Genres: {genre_lst}")
 
     # linked anime's here
 
-    prequel = True
+    prequel = False
     while prequel:
         try:
             prequel = "https://myanimelist.net/" \
@@ -231,12 +198,53 @@ def anime_data(url):
             page_data = requests.get(prequel).content
         except:
             prequel = False
-    print("Prequel loop exited, now checking upwards")  # todo go upwards / across if alternatives
+    # print("Prequel loop exited, now checking upwards")  # todo go upwards / across if alternatives
 
 
-anime_data(anime_mal_link)
-anime_name_old = anime_name.replace("__", " ")
+anime_finder = False
 
+if anime_finder:
+    anime_name = input("Anime name: ").replace("(", "").replace(")", "")  # or link
+    # print("\nEnter 'y' to include related anime search, leave blank for just download pages")
+    # if input().lower() == "y": # todo toggles the searching of related anime
+
+    print(f"\nSearching for: {anime_name}")
+    print(f"\nSearching for: {anime_name}")
+    anime_name = anime_name.replace(": ", "__")
+    page = f"https://myanimelist.net/anime.php?q={anime_name.replace(' ', '+')}&cat=anime"
+    print(f"Finding MAL page --> {page}")
+    anime_mal_link = get_links(requests.get(page).content, anime_name)
+    if type(anime_mal_link) == list:
+        if len(anime_mal_link) == 1:
+            anime_mal_link = str(anime_mal_link)[2:-2]
+        else:
+            print("Autodetect failed, enter a number from below")
+            counter = 0
+            for url in anime_mal_link:
+                counter += 1
+                if not counter > 30:
+                    print(f"{counter} - {url}")
+            while True:
+                try:
+                    anime_mal_link = anime_mal_link[int(input())-1]
+                    break
+                except:
+                    print("Invalid input")
+    print(f"MAL page found, collecting page data <--> {anime_mal_link}")
+
+    anime_data(anime_mal_link)
+    anime_name_old = anime_name.replace("__", " ")
+
+
+import time
+start_point = int(input("Input last number in txt: "))+1
+for i in range(53000-start_point):
+    try:
+        anime_data(f"https://myanimelist.net/anime/{i+start_point}")
+        time.sleep(1.5)
+    except AttributeError:
+        pass
+input()
 # grab name out of MAL url
 
 anime_name = anime_mal_link.split("/")[-1].replace("__", ": ").replace("_", " ")

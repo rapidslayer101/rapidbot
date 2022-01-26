@@ -1,5 +1,3 @@
-# MADE BY RAPIDSLAYER101#260, DO NOT COPY, DO NOT SHARE, DO NOT USE
-
 global time, sys, googletrans, google, random, os, zlib, base64, re
 import datetime, decimal, time, os, random, re, socket, hashlib  # inbuilt
 import googletrans, discord, requests, urllib, praw  # installed modules
@@ -11,9 +9,8 @@ from googletrans import Translator
 
 import enclib as enc  # custom lib
 
+# rapidbot - CREATED BY RAPIDSLAYER101 (Scott Bree)
 start_time = datetime.datetime.utcnow()
-
-
 print(socket.gethostname(), socket.getfqdn())
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.connect(("8.8.8.8", 80))
@@ -27,7 +24,6 @@ else:
 
 # todo color embeds
 # todo maybe move all print statements to a webhook and a debug console
-# todo prefix changes?
 
 # file system checks
 if not os.path.isdir("settings"):
@@ -45,10 +41,7 @@ if not os.path.isfile("strs/rcoin_bals.txt"):
 
 
 def convert_tuple(tup):
-    string_ = ''
-    for item in tup:
-        string_ += item + " "
-    return string_
+    return "".join(item+" " for item in tup)
 
 
 print("Opening connection to discord")
@@ -188,7 +181,7 @@ class Random(commands.Cog):
         await ctx.channel.send(ttb.run(0, ctx.message.content[5:]))
 
 
-class Bot_info(commands.Cog):
+class BotInfo(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -199,7 +192,7 @@ class Bot_info(commands.Cog):
                 timestr = str(ctx.message.created_at - datetime.datetime.utcnow())
             except:
                 timestr = str(ctx.message.created_at - datetime.datetime.now())
-            diff = round(sum([a * b for a, b in zip([3600, 60, 1], map(float, timestr.split(':')))]), 2)
+            diff = round(sum([a*b for a, b in zip([3600, 60, 1], map(float, timestr.split(':')))]), 2)
             startx = datetime.datetime.utcnow() - start_time
         except:
             diff = "ERROR"
@@ -207,22 +200,21 @@ class Bot_info(commands.Cog):
             runtime = str(startx)[:-7]
         except:
             runtime = "ERROR"
-        em = Embed(title=f"Bot info:",
-                   description=f"\n\nRuntime: {runtime}\n"
-                               f"Started at: {str(start_time)[:-7]}\n"
-                               f'Cpu: {ut.cpu_percent()}% of {ut.cpu_count(logical=False)} cores\n'
-                               f'Ram: {ut.virtual_memory().percent}% in use, '
-                               f'{round(ut.virtual_memory().available*100/ut.virtual_memory().total, 1)}% free '
-                               f'({round(ut.virtual_memory().used/1024/1024, 0)}/'
-                               f'{round(ut.virtual_memory().total/1024/1024, 0)}MB)\n'
-                               f'Storage: {ut.disk_usage("/").percent}% used, {round(ut.disk_usage("/").used/1024/1024, 2)}'
-                               f'/{round(ut.disk_usage("/").total/1024/1024, 2)}MB\n'
-                               f'This bot is in {str(len(bot.guilds))} servers\n'
-                               f'The current ping is: {diff}s\n'
-                               f'\nInvite link: [Click to add bot to another server](https://discord.com/oauth2/'
-                               f'authorize?client_id=711578412103368707&scope=bot&permissions=8)\n'
+        em = Embed(title=f"Bot info:", description=f"\n\nRuntime: {runtime}\n"
+                         f"Started at: {str(start_time)[:-7]}\n"
+                         f'Cpu: {ut.cpu_percent()}% of {ut.cpu_count(logical=False)}core/{ut.cpu_count()}thread\n'
+                         f'Ram: {ut.virtual_memory().percent}% in use, '
+                         f'{round(ut.virtual_memory().available*100/ut.virtual_memory().total, 1)}% free '
+                         f'({round(ut.virtual_memory().used/1048576, 0)}/'
+                         f'{round(ut.virtual_memory().total/1048576, 0)}MB)\n'
+                         f'Storage: {ut.disk_usage("/").percent}% used, {round(ut.disk_usage("/").used/1048576, 2)}'
+                         f'/{round(ut.disk_usage("/").total/1048576, 2)}MB\n'
+                         f'This bot is in {str(len(bot.guilds))} servers\n'
+                         f'The current ping is: {diff}s\n'
+                         f'\nInvite link: [Click to add bot to another server](https://discord.com/oauth2/'
+                         f'authorize?client_id=711578412103368707&scope=bot&permissions=8)\n'
         # f'Website link: [Go to website](https://rapidslayer101.wixsite.com/rapidslayer)\n'
-                               f'\nDevice bot is running on: {device}')
+                         f'\nDevice bot is running on: {device}')
         await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
 
@@ -231,36 +223,16 @@ class Server(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    async def chat_links(self, ctx):  # todo resource intensive command, redo or remove, also broken atm
+    async def chat_links(self, ctx, arg1):
+        started_at = time.time()
         async with ctx.typing():
-            started_at = time.time()
-            counter = 0
-            linksfound = 0
-            requestedby = ctx.author
-            msg3 = await ctx.channel.send("Processing messages")
-            with open('strs/edits/chatmsg-onlylinks-temp.txt', 'w', encoding='utf-8') as rmdup:
-                async for message in ctx.channel.history(limit=10000):
-                    a = (re.findall(r'(https?://[^\s]+)', str(message.content)))
-                    b = (re.findall(r'(http?://[^\s]+)', str(message.content)))
-                    if not str(a) == "[]":
-                        linksfound += 1
-                        rmdup.write(str(a) + "\n")
-                    if not str(b) == "[]":
-                        linksfound += 1
-                        rmdup.write(str(b) + "\n")
-                    if counter % 500 == 0:
-                        await msg3.edit(content=f"Processed {counter} messages")
-                    if counter == 10000:
-                        await msg3.edit(content=f"Processed {counter} messages, You hit the 10k messages processing limit!\
-                        any messages further back than 100k have not be included in the text file below")
-                    counter += 1
-                    message.content = ""
-                rmdup.close()
-                await msg3.edit(content=f"Processed {counter} messages")
-                em = Embed(title=f"Here is this chats entire link history, total {linksfound} links")
-                em.set_footer(text=f"Took {round(time.time() - started_at, 2)} seconds, Requested by {requestedby}")
+            if int(arg1) > 1000:
+                await ctx.send("There is a 1000 message search limit on this command")
+            else:
+                msg_list = "".join([message.content+" " async for message in ctx.channel.history(limit=int(arg1))])
+                em = Embed(title=f"Number of links: {int(arg1)}", description=enc.get_links(msg_list))
+                em.set_footer(text=f"Took {round(time.time()-started_at, 2)} seconds, Requested by {ctx.author}")
                 await ctx.channel.send(embed=em)
-                await ctx.channel.send(file=discord.File('strs/edits/chatmsg-onlylinks-temp.txt'))
 
     @commands.command()
     async def userid(self, ctx, arg):
@@ -299,33 +271,25 @@ class Server(commands.Cog):
 
     @commands.command()
     async def members(self, ctx):
-        e4 = ""
-        for item in ctx.guild.members:
-            e4 += f"<@!{item.id}>"
+        e4 = "".join([f"<@!{item.id}>" for item in ctx.guild.members])
         em = Embed(title=f"Member count: {len(ctx.guild.members)}", description=str(e4))
         await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
     @commands.command()
     async def roles(self, ctx):
-        e4 = ""
-        for item in ctx.guild.roles:
-            e4 = e4 + f"\n{item.id} <@&{item.id}>"
+        e4 = "".join([f"\n{item.id} <@&{item.id}>" for item in ctx.guild.roles])
         em = Embed(title=f"Role count: {len(ctx.guild.roles)}", description=str(e4))
         await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
     @commands.command()
-    async def inrole(self, ctx):  # todo this command may still be broken from before
+    async def inrole(self, ctx):
         if ctx.message.content[8:9] == "<":
-            rolecheck = ctx.message.content[11:].replace(">", "")
+            role = ctx.message.content[11:].replace(">", "")
         else:
-            rolecheck = ctx.message.content[8:]
-        with_num = 0
-        e4 = ""
-        for item in ctx.guild.members:
-            if str(rolecheck) in str(ctx.guild.get_member(item.id).roles):
-                e4 += f"\n<@!{item.id}>"
-                with_num += 1
-        em = Embed(title=f"Members with role {ctx.guild.get_role(int(rolecheck))} ({with_num}):", description=str(e4))
+            role = ctx.message.content[8:]
+        e4 = [f"\n<@!{item.id}>" for item in ctx.guild.members
+              if str(role) in str(ctx.guild.get_member(item.id).roles)]
+        em = Embed(title=f"Members with role {ctx.guild.get_role(int(role))} ({len(e4)}):", description="".join(e4))
         await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
     @commands.command()
@@ -335,12 +299,8 @@ class Server(commands.Cog):
             if int(arg1) > 1000:
                 await ctx.send("There is a 1000 message search limit on this command")
             else:
-                id_list = []
-                stuffs = ""
-                async for message in ctx.channel.history(limit=int(arg1)):
-                    id_list.append(message.author.id)
-                for x in set(id_list):
-                    stuffs = stuffs + f"<@!{x}> spoke {id_list.count(x)} times \n"
+                id_list = [message.author.id async for message in ctx.channel.history(limit=int(arg1))]
+                stuffs = "".join([f"<@!{x}> spoke {id_list.count(x)} times \n" for x in set(id_list)])
                 em = Embed(title=f"Members who spoke in last {int(arg1)} messages", description=stuffs)
                 em.set_footer(text=f"Took {round(time.time() - started_at, 2)} seconds, Requested by {ctx.author}")
                 await ctx.channel.send(embed=em)
@@ -444,7 +404,7 @@ class Currency(commands.Cog):
         prex = x
 
 
-class Coloured_text(commands.Cog):
+class ColourText(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -738,7 +698,7 @@ class NSFW(commands.Cog):
                                    " To enable it you must have role admin\n then type -nsfw_on```")
 
 
-class Online_searching(commands.Cog):
+class OnlineSearching(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -749,8 +709,7 @@ class Online_searching(commands.Cog):
 
     @commands.command()
     async def ggt_te(self, ctx):  # todo fix
-        translator = Translator()
-        translated = translator.translate(ctx.message.content[8:])
+        translated = Translator().translate(ctx.message.content[8:])
         em = Embed(title="Translated text:", description=translated.text)
         await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
 
@@ -789,10 +748,9 @@ class Online_searching(commands.Cog):
         if not allowcmd == 1:
             em = Embed(description=f"Below results requested by {ctx.author}")
             await ctx.channel.send(embed=em)
-            send = ""
             from googlesearch import search
-            for j in search((ctx.message.content[8:]), tld="co.in", num=int(arg1), stop=int(arg1), pause=2):
-                send += f"{j}\n"
+            send = "".join(f"{j}\n" for j in search((ctx.message.content[8:]), tld="co.in",
+                                                    num=int(arg1), stop=int(arg1), pause=2))
             await ctx.channel.send(send)
 
     @commands.command()
@@ -927,11 +885,11 @@ class Games(commands.Cog):
             await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
         else:
             dice_num = int(arg1)
-            allowbet = True
+            allow_bet = True
             if dice_num > 6 or dice_num < 0:
                 em = Embed(title="You must bet on a number 1-6")
-                allowbet = False
-            if allowbet:
+                allow_bet = False
+            if allow_bet:
                 dice_roll = random.randint(1, 6)
                 if dice_num == dice_roll:
                     rcoin.win(0, ctx.author.id, bet * 5)
@@ -960,7 +918,6 @@ class Games(commands.Cog):
             while player is False:
                 player = arg1
                 rpsbet2 = bet / 2  # change multiplier here
-                print(rpsbet2)
                 rpsbet2 = rpsbet2.as_integer_ratio()
                 if player == computer:
                     await ctx.channel.send("Tie!")
@@ -1018,16 +975,16 @@ class Games(commands.Cog):
             em = Embed(title=bet)
             await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
         else:
-            allowbet = 0
+            allow_bet = 0
             if int(arg1) < 3:
                 em = Embed(title="You cant have a multiplier lower than 3!")
                 await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
-                allowbet = 1
+                allow_bet = 1
             if int(arg1) > 100000:
                 em = Embed(title="You cant have a multiplier higher than 100000!")
                 await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
-                allowbet = 1
-            if not allowbet == 1:
+                allow_bet = 1
+            if not allow_bet == 1:
                 multiplyerunedit = int(arg1) * 1.20 * 10  # change multiplier here
                 lookup = "."
                 if lookup in str(multiplyerunedit):
@@ -1142,16 +1099,16 @@ class Games(commands.Cog):
                 allowcmd = 1
             if not allowcmd == 1:
                 for i in range(int(betrevtimes)):
-                    allowbet = 0
+                    allow_bet = 0
                     if int(revupbet) > coin:
                         em = Embed(title="You cant bet more than you have!")
                         await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
-                        allowbet = 1
+                        allow_bet = 1
                     if int(revupbet) < 1:
                         em = Embed(title="You cant bet nothing!")
                         await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
-                        allowbet = 1
-                    if not allowbet == 1:
+                        allow_bet = 1
+                    if not allow_bet == 1:
                         revupdivider = decimal.Decimal(random.randrange(0, 1000))  # change multiplier here
                         revupmulti = (decimal.Decimal(random.randrange(0, 200)) / revupdivider)
                         revupmulti2 = (decimal.Decimal(random.randrange(0, 200)) / revupdivider)
@@ -1200,8 +1157,7 @@ class Admin(commands.Cog):
                 deleted = await ctx.channel.purge(limit=int(arg2))
                 await ctx.send('Deleted {} message(s)'.format(len(deleted)), delete_after=2.5)
             else:
-                em = Embed(description="You need the role 'admin' or 'administrator'"
-                                                  " to purge everyone's messages")
+                em = Embed(description="You need the role 'admin' or 'administrator' to purge everyone's messages")
                 await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
         if arg1 == "self":
             def is_me(m):
@@ -1218,29 +1174,28 @@ class Admin(commands.Cog):
 
     @commands.command()
     async def clean(self, ctx, arg1, arg2):
-        #savedauthor = ctx.message.author.id
-        allowcmd = 0
-        msgnum = 0
+        allow_cmd = False
+        msg_num = 0
         if int(arg2) > 1000:
-            allowcmd = 1
-        if not allowcmd == 1:
+            allow_cmd = True
+        if not allow_cmd:
             async for message in ctx.history(limit=int(arg2)):
                 if arg1 == "bot" and message.author.id == 711578412103368707:
                     await message.delete()
                     time.sleep(1)
-                    msgnum += 1
+                    msg_num += 1
                 if arg1 == "self" and message.author.id == ctx.message.author.id:
                     await message.delete()
                     time.sleep(1)
-                    msgnum += 1
+                    msg_num += 1
                 if arg1 == "all":
                     await message.delete()
                     time.sleep(1)
-                    msgnum += 1
-                if msgnum == 50:
+                    msg_num += 1
+                if msg_num == 50:
                     await message.channel.send("Reached deletion limit of 50", delete_after=2.5)
                     break
-            await message.channel.send(f"Deleted {msgnum} messages(s)", delete_after=2.5)
+            await message.channel.send(f"Deleted {msg_num} messages(s)", delete_after=2.5)
 
 
 class Help(commands.Cog):
@@ -1378,8 +1333,9 @@ class Help(commands.Cog):
                 em.add_field(name="Here is how to use it", value="`-ttb <message/question>`", inline=False)
 
             if c_args in ["chat_links"]:  # SERVER INFO
-                em = Embed(title="CHAT_LINKS HELP:", description="The chat links \
-                command retrieves every link ever sent in a channel then it sends all of these links in one file")
+                em = Embed(title="CHAT_LINKS HELP:", description="The chat links command retrieves all the links"
+                                                                 "in chat from upto 1000 messages")
+                em.add_field(name="Here is how to use it", value="`-chat_links <num>`", inline=False)
 
             if c_args in ["userid"]:  # SERVER INFO
                 em = Embed(title="USER ID HELP:", description="The user id command retrieves a users id")
@@ -1632,12 +1588,12 @@ async def on_command_error(ctx, error):
 
 bot.add_cog(Encryption(bot))
 bot.add_cog(Random(bot))
-bot.add_cog(Bot_info(bot))
+bot.add_cog(BotInfo(bot))
 bot.add_cog(Server(bot))
 bot.add_cog(Currency(bot))
-bot.add_cog(Coloured_text(bot))
+bot.add_cog(ColourText(bot))
 bot.add_cog(NSFW(bot))
-bot.add_cog(Online_searching(bot))
+bot.add_cog(OnlineSearching(bot))
 bot.add_cog(Games(bot))
 bot.add_cog(Admin(bot))
 bot.add_cog(Help(bot))
@@ -1662,7 +1618,7 @@ class cooldown:
         else:
             cooldown_data = cooldown_ids[userid]
             timestr = str(datetime.datetime.now() - cooldown_data[0])
-            diff = sum([a * b for a, b in zip([3600, 60, 1], map(float, timestr.split(':')))])
+            diff = sum([a*b for a, b in zip([3600, 60, 1], map(float, timestr.split(':')))])
             if diff < cooldown_data[1]:
                 return f"Command sent to fast, please wait {round(cooldown_data[1]-diff, 2)}s"
             else:
@@ -1680,20 +1636,16 @@ class ttb:  # todo add ttb prev conv functionality
         payload = f"stimulus={requests.utils.requote_uri(stimulus)}&"
         _context = context[:]
         reverse_context = list(reversed(_context))
-
         for i in range(len(_context)):
             payload += f"vText{i + 2}={requests.utils.requote_uri(reverse_context[i])}&"
 
         if session:
             if session not in sessions.keys():
                 sessions[session] = list()
-
             _session = list(reversed(sessions[session]))
             for i in range(len(sessions[session])):
                 payload += f"vText{i + len(_context) + 2}={requests.utils.requote_uri(_session[i])}&"
             sessions[session] = _context + sessions[session]
-        #print("sesh", sessions)
-
         payload += "cb_settings_scripting=no&islearning=1&icognoid=wsf&icognocheck="
         payload += hashlib.md5(payload[7:33].encode()).hexdigest()
         req = requests.post("https://www.cleverbot.com/webservicemin?uc=UseOfficialCleverbotAPI",
@@ -1727,8 +1679,7 @@ class rcoin:
 
     def save(self):
         with open("strs/rcoin_bals.txt", "w") as f:
-            for key, value in rcoin_data.items():
-                f.write(f"{key}, {value}\n")
+            [f.write(f"{key}, {value}\n") for key, value in rcoin_data.items()]
 
     def win(self, userid, amount):
         rcoin_data.update({int(userid): rcoin_data[int(userid)]+amount})
@@ -1768,14 +1719,11 @@ async def on_message(message):
         if message.content.lower().startswith("-search"):
             search = message.content[8:]
             with open(f"temp.txt", "w+", encoding="utf-8") as p:
-                for line in links_list:
-                    if search in line:
-                        p.write(line)
-
+                [p.write(line) for line in links_list if search in line]
             with open('temp.txt') as result:
-                uniqlines = set(result.readlines())
+                unique_lines = set(result.readlines())
                 with open(f"search-{search}.txt", "w+", encoding="utf-8") as rmdup:
-                    rmdup.writelines(set(uniqlines))
+                    rmdup.writelines(set(unique_lines))
 
             with open(f"search-{search}.txt", encoding="utf-8") as f:
                 search_yield = len(f.readlines())
@@ -1873,9 +1821,9 @@ async def on_message(message):
                         i.write(write)
                         i.close()
                         with open('strs/linkstore.txt') as result:
-                            uniqlines = set(result.readlines())
+                            unique_lines = set(result.readlines())
                             with open('strs/linkndp.txt', 'w') as rmdup:
-                                rmdup.writelines(set(uniqlines))
+                                rmdup.writelines(set(unique_lines))
 
                                 bad_words = ['https://discord.com/channels/']
                                 with open('strs/linkndp.txt') as oldfile, open('strs/linknd-ndsc.txt', 'w') as new_file:
@@ -1899,9 +1847,7 @@ async def on_message(message):
 
                 with open('strs/occurdata.txt', 'w') as f:
                     f.write("\n\nNumber of occurrences of each word in file is:\n ===============\n")
-                    for key in list(d.keys()):
-                        f.write(str(f'{key},":",{d[key]} \n'))
-
+                    [f.write(str(f'{key},":",{d[key]} \n')) for key in list(d.keys())]
                     file1.close()
                     await message.channel.send("```Occr data Success```")
 
@@ -1968,12 +1914,12 @@ async def on_message(message):
 async def on_connect():
     print(f'Connection established to discord, Logged in as {bot.user} ({bot.user.id})')
     print(f'-----------------------------------------------\n'
-          f'cpu: {ut.cpu_percent()}% of {ut.cpu_count(logical=False)} cores\n'
-          f'ram: {ut.virtual_memory().percent}% in use, '
+          f'Cpu: {ut.cpu_percent()}% of {ut.cpu_count(logical=False)}core/{ut.cpu_count()}thread\n'
+          f'Ram: {ut.virtual_memory().percent}% in use, '
           f'{round(ut.virtual_memory().available*100/ut.virtual_memory().total, 1)}% free '
-          f'({round(ut.virtual_memory().used/1024/1024, 0)}/{round(ut.virtual_memory().total/1024/1024, 0)}MB)\n'
-          f'storage: {ut.disk_usage("/").percent}% used, {round(ut.disk_usage("/").used/1024/1024, 2)}'
-          f'/{round(ut.disk_usage("/").total/1024/1024, 2)}MB\n'
+          f'({round(ut.virtual_memory().used/1048576, 0)}/{round(ut.virtual_memory().total/1048576, 0)}MB)\n'
+          f'Storage: {ut.disk_usage("/").percent}% used, {round(ut.disk_usage("/").used/1048576, 2)}'
+          f'/{round(ut.disk_usage("/").total/1048576, 2)}MB\n'
           f'-----------------------------------------------')
 
 

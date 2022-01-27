@@ -174,7 +174,10 @@ def anime_data(url):
     if name_data.endswith(" "):
         name_data = name_data[:-1]
 
-    ep_dur, null = ep_duration.split(" min.")
+    try:
+        ep_dur, null = ep_duration.split(" min.")
+    except:
+        ep_duration = "NULL"
 
     try:
         dur_ttl = f" ({round(int(ep_dur) * int(eps) / 60, 2)} hours total)"

@@ -68,21 +68,35 @@ class users:
     def buy_stock(self, user, stock, amount_buy, buy_price, buy_time):
         if stock not in unique_stocks:
             unique_stocks.append(stock)
-        counter = 1
-        stock_pn = f"{stock}:{counter}"
-        while True:
-            if stock_pn not in user_stock_data[user_list.index(user)]:
-                break
-            counter += 1
-            stock_pn = f"{stock}:{counter}"
-        user_stock_data[user_list.index(user)].update({stock_pn: [[float(amount_buy), float(buy_price), buy_time], []]})
+        avg_price = 0
+        if stock in user_stock_data[user_list.index(user)]:
+            old_data = user_stock_data[user_list.index(user)][stock]
+            amount_buy += old_data[0][0][0]
+            buys = []
+            for price in old_data[0][2]:
+                avg_price += price
+                buys.append(price)
+            buys.append(buy_price)
+            avg_price += buy_price
+            avg_price /= len(buys)
+            avg_price = round(avg_price, 2)
+            buy_time = old_data[0][3]
+        else:
+            avg_price += buy_price
+            buys = [buy_price]
+        amount_own = amount_buy
+        user_stock_data[user_list.index(user)]\
+            .update({stock: [[[float(amount_buy), float(amount_own)],
+                              float(avg_price), buys, buy_time], []]})
 
     def sell_stock(self, user, stock, amount_sell, sell_price, sell_time):
-        sales = users.get_user_stock(0, user, stock)[1]
+        sales = user_stock_data[user_list.index(user)][stock][1]
         sales.append([float(amount_sell), float(sell_price), sell_time])
-        user_stock_data[user_list.index(user)].update({stock: [users.get_user_stock(0, user, stock)[0], sales]})
+        old_data = users.get_user_stock(0, user, stock)[0]
+        old_data[0][1] = old_data[0][1] - amount_sell
+        user_stock_data[user_list.index(user)].update({stock: [old_data, sales]})
 
-    def load(self):
+    def load(self):  # todo redo load
         with open(f"stocks/stock_data.txt") as f:
             for line in f.readlines():
                 user, user_data = line.replace("}\n", "").split(" {")
@@ -118,16 +132,18 @@ new_values = True
 
 if new_values:
     users.add_user(0, "scott")
-    users.buy_stock(0, "scott", "TSLA", 6.0, 2927.66, "dt.object")
-    users.add_user(0, "hugo")
-    users.buy_stock(0, "scott", "TSLA", 2.0, 2930.00, "dt.object")
-    users.buy_stock(0, "hugo", "BP", 1.0, 100.0, "dt.object")
-    users.sell_stock(0, "scott", "TSLA:2", 0.5, 50.0, "dt.object")
-    users.sell_stock(0, "scott", "TSLA:2", 0.75, 50.0, "dt.object")
+    users.buy_stock(0, "scott", "AMD", 0.03, 103.31, "27-01-22-18:47")
+    print(user_stock_data)
+    users.buy_stock(0, "scott", "AMD", 0.07, 103.61, "27-01-22-18:51")
+    print(user_stock_data)
+    users.buy_stock(0, "scott", "AMD", 0.15, 103.08, "27-01-22-19:32")
+    print(user_stock_data)
+    users.sell_stock(0, "scott", "AMD", 0.15, 103.40, "dt.object")
     print("unique stock", unique_stocks)
     print(user_stock_data)
     users.save(0)
 
+input()
 users.load(0)
 print(user_stock_data)
 input("Hit enter to continue: ")

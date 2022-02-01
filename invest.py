@@ -65,29 +65,20 @@ class users:
     def get_user_stock(self, user, stock):
         return user_stock_data[user_list.index(user)][stock]
 
-    def buy_stock(self, user, stock, amount_buy, buy_price, buy_time):
+    def buy_stock(self, user, stock, amount_buy, buy_price, avg_price, fee, ex_rate, buy_time):
         if stock not in unique_stocks:
             unique_stocks.append(stock)
-        avg_price = 0
         if stock in user_stock_data[user_list.index(user)]:
             old_data = user_stock_data[user_list.index(user)][stock]
+            total_buy_price = old_data[0][3]+(buy_price*amount_buy/ex_rate)
             amount_buy += old_data[0][0][0]
-            buys = []
-            for price in old_data[0][2]:
-                avg_price += price
-                buys.append(price)
-            buys.append(buy_price)
-            avg_price += buy_price
-            avg_price /= len(buys)
-            avg_price = round(avg_price, 2)
-            buy_time = old_data[0][3]
+            fee += old_data[0][2]
         else:
-            avg_price += buy_price
-            buys = [buy_price]
+            total_buy_price = buy_price * amount_buy / ex_rate
         amount_own = amount_buy
         user_stock_data[user_list.index(user)]\
             .update({stock: [[[float(amount_buy), float(amount_own)],
-                              float(avg_price), buys, buy_time], []]})
+                              float(avg_price), fee, round(total_buy_price, 4), buy_time], []]})
 
     def sell_stock(self, user, stock, amount_sell, sell_price, sell_time):
         sales = user_stock_data[user_list.index(user)][stock][1]
@@ -130,22 +121,64 @@ class users:
 
 new_values = True
 
+
+# fee is in GBP
+# buy price is in local stock currency
 if new_values:
+    deposit_fees = 0.36  # pound, everything below is dollars
+    #deposit_fees = 3.50  # pound, everything below is dollars  # question david about paying
     users.add_user(0, "scott")
-    users.buy_stock(0, "scott", "AMD", 0.03, 103.31, "27-01-22-18:47")
-    print(user_stock_data)
-    users.buy_stock(0, "scott", "AMD", 0.07, 103.61, "27-01-22-18:51")
-    print(user_stock_data)
-    users.buy_stock(0, "scott", "AMD", 0.15, 103.08, "27-01-22-19:32")
-    print(user_stock_data)
-    users.sell_stock(0, "scott", "AMD", 0.15, 103.40, "dt.object")
+    users.add_user(0, "david")
+
+    #                   User   Ticker StkAmt BuyPce  AvgPce FxFee  FXFee   BuyTime
+    users.buy_stock(0, "scott", "AMD", 0.03, 103.31, 103.31, 0.00, 1.3372, "27-01-22-18:47")
+    users.buy_stock(0, "scott", "AMD", 0.07, 103.61, 103.61, 0.01, 1.33766, "27-01-22-18:51")
+    users.buy_stock(0, "scott", "AMD", 0.15, 103.08, 103.08, 0.02, 1.33785, "27-01-22-19:32")
+    users.buy_stock(0, "scott", "AMD", 0.20, 100.62, 100.62, 0.02, 1.34256, "28-01-22-14:42")
+    users.buy_stock(0, "scott", "AMD", 0.25, 100.06, 101.36, 0.03, 1.34258, "28-01-22-14:54")
+    users.buy_stock(0, "scott", "INTC", 0.5, 46.53, 46.54, 0.03, 1.34123, "28-01-22-15:11")
+    users.buy_stock(0, "scott", "MSFT", 1.0, 306.90, 306.90, 0.34, 1.34931, "01-02-22-14:47")
+    users.buy_stock(0, "david", "MSFT", 1.0, 307.11, 307.11, 0.34, 1.35094, "28-01-22-16:11")
+    users.buy_stock(0, "scott", "AMZN", 0.09, 2989.04, 2989.06, 0.30, 1.35032, "28-01-22-16:16")
+    users.buy_stock(0, "david", "AMZN", 0.09, 2989.04, 2989.06, 0.30, 1.35032, "28-01-22-16:16")
+
     print("unique stock", unique_stocks)
     print(user_stock_data)
     users.save(0)
 
-input()
-users.load(0)
-print(user_stock_data)
+#users.load(0)
+#print(user_stock_data)
+
+c = CurrencyRates()
+profit_list = [0 for x in range(len(user_list))]
+for stock_name in unique_stocks:
+    lv_stock = yf.get_quote_data(stock_name)
+    #print(lv_stock)
+    for user in user_list:
+        profit_total = profit_list[user_list.index(user)]
+        try:
+            u_stock = user_stock_data[user_list.index(user)][stock_name]
+            #print(lv_stock["regularMarketPrice"]/u_stock[0][1],
+            #      u_stock[0][1], lv_stock["regularMarketPrice"])
+            usd = lv_stock["regularMarketPrice"]*u_stock[0][0][1]
+            #usd = lv_stock["postMarketPrice"]*u_stock[0][0][1]
+            stock_val = round(c.convert("USD", "GBP", usd)-u_stock[0][2], 4)
+            print(stock_val)
+            print(f"{lv_stock['displayName']} ({stock_name}) -- "
+                  f"{u_stock[0][3]}->{stock_val} {round(stock_val-u_stock[0][3], 4)}")
+            profit_list[user_list.index(user)] = round(profit_list[user_list.index(user)]+stock_val-u_stock[0][3], 4)
+        except KeyError:
+            pass  # this pass means that user does not own that stock
+print(profit_list)
+# todo figure out fx impacts and how to account for them, currently causing data to be quite off
+
+
+
+
+
+
+# OLD INVEST CODE BELOW
+
 input("Hit enter to continue: ")
 
 
@@ -172,10 +205,10 @@ def current_profit(current, bought, amount):
     c = CurrencyRates()
     #d = CurrencyCodes()
     output = c.convert("USD", "GBP", float(current))
-    profit = ((bought/float(amount)) - output) * float(amount)
+    profit = ((bought/float(amount))-output) * float(amount)
     profit = profit - profit*2
     print((bought+profit))
-    percent = ('{0:.2f}%'.format((bought+profit / bought * 100)))
+    percent = ('{0:.2f}%'.format((bought+profit/bought*100)))
     print(percent)
     log(f"Profit of: {profit} {percent}")
 
@@ -310,7 +343,7 @@ def data_collect(start_date, end_date, stock):
                  f'{str(list(stock_prices.loc[rname])[:-1])}\n') for rname in stock_prices.index]
 
 
-update_stocks = True
+update_stocks = False
 
 if update_stocks:
     [data_collect(start_date=date_begin, end_date=date, stock=stock) for stock in unique_stocks]
@@ -332,11 +365,18 @@ if stockwatch:
             stockdata = str(yf.get_quote_data(stock))
 
             # current price
-            m = re.search("'regularMarketPrice':(.+?), 'regularMarketDayHigh'", stockdata)
-            if m:
-                current = float(m.group(1))
-            else:
-                current = yf.get_premarket_price(stock)
+            try:
+                m = re.search("'regularMarketPrice':(.+?), 'regularMarketDayHigh'", stockdata)
+                if m:
+                    current = float(m.group(1))
+                else:
+                    current = yf.get_premarket_price(stock)
+            except ValueError:
+                m = re.search("'regularMarketPrice':(.+?), 'regularMarketTime'", stockdata)
+                if m:
+                    current = float(m.group(1))
+                else:
+                    current = yf.get_premarket_price(stock)
 
             # current profit
             m = re.search("'regularMarketChange':(.+?), 'regularMarketChangePercent'", stockdata)

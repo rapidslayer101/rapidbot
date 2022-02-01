@@ -1,6 +1,4 @@
-import random
-
-import requests, re
+import requests, re, random, time
 from enclib import search
 
 
@@ -224,6 +222,7 @@ if anime_finder:
             print("Autodetect failed, enter a number from below")
             counter = 0
             for url in anime_mal_link:
+                # todo redo the genre and season 2 links removal
                 counter += 1
                 if not counter > 30:
                     print(f"{counter} - {url}")
@@ -239,14 +238,14 @@ if anime_finder:
     anime_name_old = anime_name.replace("__", " ")
 
 
-import time
 start_point = int(input("Input last number in txt: "))+1
 for i in range(53000-start_point):
     try:
         anime_data(f"https://myanimelist.net/anime/{i+start_point}")
-        time.sleep(1.5)
+        time.sleep(1)
     except AttributeError:
-        pass
+        print(f"Error {i+start_point}")
+        time.sleep(0.35)
 input()
 # grab name out of MAL url
 

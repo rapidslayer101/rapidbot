@@ -202,7 +202,7 @@ def anime_data(url):
     # print("Prequel loop exited, now checking upwards")  # todo go upwards / across if alternatives
 
 
-anime_finder = False
+anime_finder = True
 
 if anime_finder:
     anime_name = input("Anime name: ").replace("(", "").replace(")", "")  # or link
@@ -238,15 +238,15 @@ if anime_finder:
     anime_name_old = anime_name.replace("__", " ")
 
 
-start_point = int(input("Input last number in txt: "))+1
-for i in range(53000-start_point):
-    try:
-        anime_data(f"https://myanimelist.net/anime/{i+start_point}")
-        time.sleep(1)
-    except AttributeError:
-        print(f"Error {i+start_point}")
-        time.sleep(0.35)
-input()
+#start_point = int(input("Input last number in txt: "))+1
+#for i in range(53000-start_point):
+#    try:
+#        anime_data(f"https://myanimelist.net/anime/{i+start_point}")
+#        time.sleep(1)
+#    except AttributeError:
+#        print(f"Error {i+start_point}")
+#        time.sleep(0.35)
+#input()
 # grab name out of MAL url
 
 anime_name = anime_mal_link.split("/")[-1].replace("__", ": ").replace("_", " ")

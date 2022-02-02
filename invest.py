@@ -65,20 +65,19 @@ class users:
     def get_user_stock(self, user, stock):
         return user_stock_data[user_list.index(user)][stock]
 
-    def buy_stock(self, user, stock, amount_buy, buy_price, avg_price, fee, ex_rate, buy_time):
+    def buy_stock(self, user, stock, amount_buy, buy_cost, avg_price, ex_rate, buy_time):
         if stock not in unique_stocks:
             unique_stocks.append(stock)
         if stock in user_stock_data[user_list.index(user)]:
             old_data = user_stock_data[user_list.index(user)][stock]
-            total_buy_price = old_data[0][3]+(buy_price*amount_buy/ex_rate)
+            total_buy_price = old_data[0][2]+(buy_cost*ex_rate)
             amount_buy += old_data[0][0][0]
-            fee += old_data[0][2]
         else:
-            total_buy_price = buy_price * amount_buy / ex_rate
+            total_buy_price = buy_cost*ex_rate
         amount_own = amount_buy
         user_stock_data[user_list.index(user)]\
             .update({stock: [[[float(amount_buy), float(amount_own)],
-                              float(avg_price), fee, round(total_buy_price, 4), buy_time], []]})
+                              float(avg_price), round(total_buy_price, 4), buy_time], []]})
 
     def sell_stock(self, user, stock, amount_sell, sell_price, sell_time):
         sales = user_stock_data[user_list.index(user)][stock][1]
@@ -130,17 +129,17 @@ if new_values:
     users.add_user(0, "scott")
     users.add_user(0, "david")
 
-    #                   User   Ticker StkAmt BuyPce  AvgPce FxFee  FXFee   BuyTime
-    users.buy_stock(0, "scott", "AMD", 0.03, 103.31, 103.31, 0.00, 1.3372, "27-01-22-18:47")
-    users.buy_stock(0, "scott", "AMD", 0.07, 103.61, 103.61, 0.01, 1.33766, "27-01-22-18:51")
-    users.buy_stock(0, "scott", "AMD", 0.15, 103.08, 103.08, 0.02, 1.33785, "27-01-22-19:32")
-    users.buy_stock(0, "scott", "AMD", 0.20, 100.62, 100.62, 0.02, 1.34256, "28-01-22-14:42")
-    users.buy_stock(0, "scott", "AMD", 0.25, 100.06, 101.36, 0.03, 1.34258, "28-01-22-14:54")
-    users.buy_stock(0, "scott", "INTC", 0.5, 46.53, 46.54, 0.03, 1.34123, "28-01-22-15:11")
-    users.buy_stock(0, "scott", "MSFT", 1.0, 306.90, 306.90, 0.34, 1.34931, "01-02-22-14:47")
-    users.buy_stock(0, "david", "MSFT", 1.0, 307.11, 307.11, 0.34, 1.35094, "28-01-22-16:11")
-    users.buy_stock(0, "scott", "AMZN", 0.09, 2989.04, 2989.06, 0.30, 1.35032, "28-01-22-16:16")
-    users.buy_stock(0, "david", "AMZN", 0.09, 2989.04, 2989.06, 0.30, 1.35032, "28-01-22-16:16")
+    #                   User   Ticker StkAmt BuyCost AvgPce FxFee  FXFee   BuyTime
+    users.buy_stock(0, "scott", "AMD", 0.03, 2.31, 103.31, 1.3372, "27-01-22-18:47")
+    users.buy_stock(0, "scott", "AMD", 0.07, 5.43, 103.61, 1.33766, "27-01-22-18:51")
+    users.buy_stock(0, "scott", "AMD", 0.15, 11.58, 103.08, 1.33785, "27-01-22-19:32")
+    users.buy_stock(0, "scott", "AMD", 0.20, 15.01, 100.62, 1.34256, "28-01-22-14:42")
+    users.buy_stock(0, "scott", "AMD", 0.25, 18.66, 101.36, 1.34258, "28-01-22-14:54")
+    users.buy_stock(0, "scott", "INTC", 0.5, 17.38, 46.54, 1.34123, "28-01-22-15:11")
+    users.buy_stock(0, "scott", "MSFT", 1.0, 227.79, 306.90, 1.34931, "01-02-22-14:47")
+    users.buy_stock(0, "david", "MSFT", 1.0, 227.67, 307.11, 1.35094, "28-01-22-16:11")
+    users.buy_stock(0, "scott", "AMZN", 0.09, 199.52, 2989.06, 1.35032, "28-01-22-16:16")
+    users.buy_stock(0, "david", "AMZN", 0.09, 199.52, 2989.06, 1.35032, "28-01-22-16:16")
 
     print("unique stock", unique_stocks)
     print(user_stock_data)
@@ -153,23 +152,20 @@ c = CurrencyRates()
 profit_list = [0 for x in range(len(user_list))]
 for stock_name in unique_stocks:
     lv_stock = yf.get_quote_data(stock_name)
-    #print(lv_stock)
     for user in user_list:
         profit_total = profit_list[user_list.index(user)]
         try:
             u_stock = user_stock_data[user_list.index(user)][stock_name]
-            #print(lv_stock["regularMarketPrice"]/u_stock[0][1],
-            #      u_stock[0][1], lv_stock["regularMarketPrice"])
-            usd = lv_stock["regularMarketPrice"]*u_stock[0][0][1]
-            #usd = lv_stock["postMarketPrice"]*u_stock[0][0][1]
-            stock_val = round(c.convert("USD", "GBP", usd)-u_stock[0][2], 4)
-            print(stock_val)
+            stock_val = lv_stock["regularMarketPrice"]*u_stock[0][0][1]
+            #stock_val = lv_stock["postMarketPrice"]*u_stock[0][0][1]
             print(f"{lv_stock['displayName']} ({stock_name}) -- "
-                  f"{u_stock[0][3]}->{stock_val} {round(stock_val-u_stock[0][3], 4)}")
-            profit_list[user_list.index(user)] = round(profit_list[user_list.index(user)]+stock_val-u_stock[0][3], 4)
+                  f"{u_stock[0][2]}->{stock_val} {round(stock_val-u_stock[0][2], 4)}")
+            profit_list[user_list.index(user)] = round(profit_list[user_list.index(user)]+stock_val-u_stock[0][2], 4)
         except KeyError:
             pass  # this pass means that user does not own that stock
 print(profit_list)
+for profit in profit_list:
+    print(c.convert("USD", "GBP", profit))
 # todo figure out fx impacts and how to account for them, currently causing data to be quite off
 
 

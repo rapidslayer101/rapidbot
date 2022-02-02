@@ -70,14 +70,16 @@ class users:
             unique_stocks.append(stock)
         if stock in user_stock_data[user_list.index(user)]:
             old_data = user_stock_data[user_list.index(user)][stock]
-            total_buy_price = old_data[0][2]+(buy_cost*ex_rate)
+            buy_prices = old_data[0][2]+(buy_cost*ex_rate)
+            buy_prices_lc = old_data[0][3]+buy_cost
             amount_buy += old_data[0][0][0]
         else:
-            total_buy_price = buy_cost*ex_rate
+            buy_prices = buy_cost*ex_rate
+            buy_prices_lc = buy_cost
         amount_own = amount_buy
         user_stock_data[user_list.index(user)]\
             .update({stock: [[[float(amount_buy), float(amount_own)],
-                              float(avg_price), round(total_buy_price, 4), buy_time], []]})
+                              float(avg_price), round(buy_prices, 4), round(buy_prices_lc, 4), buy_time], []]})
 
     def sell_stock(self, user, stock, amount_sell, sell_price, sell_time):
         sales = user_stock_data[user_list.index(user)][stock][1]
@@ -129,6 +131,7 @@ if new_values:
     users.add_user(0, "scott")
     users.add_user(0, "david")
 
+    # todo, dual stock buy in one
     #                   User   Ticker StkAmt BuyCost AvgPce FxFee  FXFee   BuyTime
     users.buy_stock(0, "scott", "AMD", 0.03, 2.31, 103.31, 1.3372, "27-01-22-18:47")
     users.buy_stock(0, "scott", "AMD", 0.07, 5.43, 103.61, 1.33766, "27-01-22-18:51")
@@ -137,9 +140,13 @@ if new_values:
     users.buy_stock(0, "scott", "AMD", 0.25, 18.66, 101.36, 1.34258, "28-01-22-14:54")
     users.buy_stock(0, "scott", "INTC", 0.5, 17.38, 46.54, 1.34123, "28-01-22-15:11")
     users.buy_stock(0, "scott", "MSFT", 1.0, 227.79, 306.90, 1.34931, "01-02-22-14:47")
-    users.buy_stock(0, "david", "MSFT", 1.0, 227.67, 307.11, 1.35094, "28-01-22-16:11")
-    users.buy_stock(0, "scott", "AMZN", 0.09, 199.52, 2989.06, 1.35032, "28-01-22-16:16")
-    users.buy_stock(0, "david", "AMZN", 0.09, 199.52, 2989.06, 1.35032, "28-01-22-16:16")
+    users.buy_stock(0, "david", "MSFT", 1.0, 227.67, 307.11, 1.35094, "01-02-22-16:11")
+    users.buy_stock(0, "scott", "AMZN", 0.09, 199.52, 2989.06, 1.35032, "01-02-22-16:16")
+    users.buy_stock(0, "david", "AMZN", 0.09, 199.52, 2989.06, 1.35032, "01-02-22-16:16")
+    users.buy_stock(0, "scott", "PYPL", 0.5, 48.80, 132.13, 1.35607, "02-02-22-16:35")
+    users.buy_stock(0, "david", "PYPL", 0.5, 48.80, 132.13, 1.35607, "02-02-22-16:35")
+    users.buy_stock(0, "scott", "BRK-B", 0.5, 117.26, 2989.06, 1.35656, "02-02-22-16:58")
+    users.buy_stock(0, "david", "BRK-B", 0.5, 117.26, 2989.06, 1.35656, "02-02-22-16:58")
 
     print("unique stock", unique_stocks)
     print(user_stock_data)
@@ -150,6 +157,7 @@ if new_values:
 
 c = CurrencyRates()
 profit_list = [0 for x in range(len(user_list))]
+rate = c.get_rate("GBP", "USD")
 for stock_name in unique_stocks:
     lv_stock = yf.get_quote_data(stock_name)
     for user in user_list:
@@ -158,9 +166,19 @@ for stock_name in unique_stocks:
             u_stock = user_stock_data[user_list.index(user)][stock_name]
             stock_val = lv_stock["regularMarketPrice"]*u_stock[0][0][1]
             #stock_val = lv_stock["postMarketPrice"]*u_stock[0][0][1]
-            print(f"{lv_stock['displayName']} ({stock_name}) -- "
-                  f"{u_stock[0][2]}->{stock_val} {round(stock_val-u_stock[0][2], 4)}")
-            profit_list[user_list.index(user)] = round(profit_list[user_list.index(user)]+stock_val-u_stock[0][2], 4)
+            try:
+                full_name = lv_stock['displayName']
+            except KeyError:
+                full_name = lv_stock['longName']
+            #profit = stock_val-u_stock[0][2]
+            fx_impact = round(u_stock[0][2] / u_stock[0][3] / rate, 4)
+            profit = (u_stock[0][2]*(1+(((stock_val/u_stock[0][2])*100-100)-(100-(fx_impact*100)))/100)-u_stock[0][2])
+            print(f"{full_name} ({stock_name}) -- "
+                  f"{round(u_stock[0][2], 2)} -> {round(stock_val, 2)} -- "
+                  f"{round(profit, 4)} "
+                  f"({round(((stock_val/u_stock[0][2])*100-100)-(100-(fx_impact*100)), 2):.2f}%) "
+                  f"(sk{round((stock_val/u_stock[0][2])*100-100, 2)}%)(fx{round(100-(fx_impact*100), 2)*(-1)}%)")
+            profit_list[user_list.index(user)] = round(profit_list[user_list.index(user)]+round(profit*fx_impact, 4), 4)
         except KeyError:
             pass  # this pass means that user does not own that stock
 print(profit_list)

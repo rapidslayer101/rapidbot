@@ -1906,4 +1906,4 @@ async def on_guild_join(guild):
     await channel.send(embed=em)
 
 
-bot.run('NzQ5OTgzMDcyNzk1MjMwMjc5.X0z6Kg.4G2gqy5rI7yzjuSgBE-1Cvpb6zw')
+bot.run('NzExNTc4NDEyMTAzMzY4NzA3.XsFDCQ.5kvtCepsQ8vKpxRfaxm4Fvu3x18')

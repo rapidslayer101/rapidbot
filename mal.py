@@ -108,11 +108,11 @@ def get_links(a, name):
         return urls
 
 
-load_user_data = False
+load_user_data = True
 
 if load_user_data:
-    #user_anime_list = requests.get("https://myanimelist.net/animelist/rapidslayer101").content
-    user_anime_list = requests.get("https://myanimelist.net/animelist/BappoHacko").content
+    user_anime_list = requests.get("https://myanimelist.net/animelist/rapidslayer101").content
+    #user_anime_list = requests.get("https://myanimelist.net/animelist/BappoHacko").content
     table_data = search(user_anime_list, '<table class="list-table" data-items="',
                         '<tbody><tr class="list-table-header">')[:-12].split("{&quot;status&quot;:")
 
@@ -145,6 +145,9 @@ if load_user_data:
         media_type = search(item, "anime_media_type_string&quot;:&quot;", "&quot;,&quot;")
         anime_id = search(item, "anime_id&quot;:", ",&quot;")
 
+        with open("mal_watched.txt", "a+") as f:
+            f.write(f"https://myanimelist.net/anime/{anime_id} -- {anime_title} - {media_type} ({air_type})({mpaa}): {status},"
+                    f" scored {score}, watched eps {watched}/{total_eps}")
         print(f"https://myanimelist.net/anime/{anime_id} -- {anime_title} - {media_type} ({air_type})({mpaa}): {status},"
               f" scored {score}, watched eps {watched}/{total_eps}")
 

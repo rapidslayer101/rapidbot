@@ -50,6 +50,7 @@ unique_stocks = []
 
 c = CurrencyRates()
 rate = c.get_rate("GBP", "USD")
+to_gbp = 1/rate
 
 
 class users:
@@ -127,25 +128,24 @@ new_values = True
 # fee is in GBP
 # buy price is in local stock currency
 if new_values:
-    deposit_fees = 0.36  # pound, everything below is dollars
-    #deposit_fees = 3.50  # pound, everything below is dollars  # question david about paying
-    users.add_user(0, "scott")
-    users.add_user(0, "david")
+    without_deposit_fee = 70  # amount in GBP of money without deposit fee
+    users.add_user(0, "Scott")
+    users.add_user(0, "David")
 
     #                   Users   Ticker StkAmt BuyCost AvgPce FxFee  FXFee   BuyTime
-    users.buy_stock(0, ["scott"], "AMD", 0.03, 2.31, 103.31, 1.3372, "27-01-22-18:47")
-    users.buy_stock(0, ["scott"], "AMD", 0.07, 5.43, 103.61, 1.33766, "27-01-22-18:51")
-    users.buy_stock(0, ["scott"], "AMD", 0.15, 11.58, 103.08, 1.33785, "27-01-22-19:32")
-    users.buy_stock(0, ["scott"], "AMD", 0.20, 15.01, 100.62, 1.34256, "28-01-22-14:42")
-    users.buy_stock(0, ["scott"], "AMD", 0.25, 18.66, 101.36, 1.34258, "28-01-22-14:54")
-    users.buy_stock(0, ["scott"], "INTC", 0.5, 17.38, 46.54, 1.34123, "28-01-22-15:11")
-    users.buy_stock(0, ["scott"], "MSFT", 1.0, 227.79, 306.90, 1.34931, "01-02-22-14:47")
-    users.buy_stock(0, ["david"], "MSFT", 1.0, 227.67, 307.11, 1.35094, "01-02-22-16:11")
-    users.buy_stock(0, ["scott", "david"], "AMZN", 0.09, 199.52, 2989.06, 1.35032, "01-02-22-16:16")
-    users.buy_stock(0, ["scott", "david"], "PYPL", 0.5, 48.80, 132.13, 1.35607, "02-02-22-16:35")
-    users.buy_stock(0, ["scott", "david"], "BRK-B", 0.5, 117.26, 317.65, 1.35656, "02-02-22-16:58")
-    users.sell_stock(0, ["scott", "david"], "PYPL", 0.5, 128.68, 1.45, "02-02-22-16:58")
-    users.buy_stock(0, ["scott", "david"], "AMZN", 0.035, 73.715, 2953.60, 1.36109, "02-02-22-16:58")
+    users.buy_stock(0, ["Scott"], "AMD", 0.03, 2.31, 103.31, 1.3372, "27-01-22-18:47")
+    users.buy_stock(0, ["Scott"], "AMD", 0.07, 5.43, 103.61, 1.33766, "27-01-22-18:51")
+    users.buy_stock(0, ["Scott"], "AMD", 0.15, 11.58, 103.08, 1.33785, "27-01-22-19:32")
+    users.buy_stock(0, ["Scott"], "AMD", 0.20, 15.01, 100.62, 1.34256, "28-01-22-14:42")
+    users.buy_stock(0, ["Scott"], "AMD", 0.25, 18.66, 101.36, 1.34258, "28-01-22-14:54")
+    users.buy_stock(0, ["Scott"], "INTC", 0.5, 17.38, 46.54, 1.34123, "28-01-22-15:11")
+    users.buy_stock(0, ["Scott"], "MSFT", 1.0, 227.79, 306.90, 1.34931, "01-02-22-14:47")
+    users.buy_stock(0, ["David"], "MSFT", 1.0, 227.67, 307.11, 1.35094, "01-02-22-16:11")
+    users.buy_stock(0, ["Scott", "David"], "AMZN", 0.09, 199.52, 2989.06, 1.35032, "01-02-22-16:16")
+    users.buy_stock(0, ["Scott", "David"], "PYPL", 0.5, 48.80, 132.13, 1.35607, "02-02-22-16:35")
+    users.buy_stock(0, ["Scott", "David"], "BRK-B", 0.5, 117.26, 317.65, 1.35656, "02-02-22-16:58")
+    users.sell_stock(0, ["Scott", "David"], "PYPL", 0.5, 128.68, 1.45, "02-02-22-16:58")
+    users.buy_stock(0, ["Scott", "David"], "AMZN", 0.035, 73.715, 2953.60, 1.36109, "02-02-22-16:58")
 
     print("unique stock", unique_stocks)
     print(user_stock_data)
@@ -155,13 +155,12 @@ if new_values:
 #print(user_stock_data)
 
 profit_list = [0 for x in range(len(user_list))]
-#rate = c.get_rate("GBP", "USD")
+spend_list = [0 for x in range(len(user_list))]
 for stock_name in unique_stocks:
     lv_stock = yf.get_quote_data(stock_name)
     market_price = lv_stock["regularMarketPrice"]
     # stock_val = lv_stock["postMarketPrice"]
     for user in user_list:
-        profit_total = profit_list[user_list.index(user)]
         try:
             u_stock = user_stock_data[user_list.index(user)][stock_name]
             if u_stock[0][0][1] != 0:
@@ -171,24 +170,37 @@ for stock_name in unique_stocks:
                 except KeyError:
                     full_name = lv_stock['longName']
                 fx_impact = round(u_stock[0][2]/u_stock[0][3]/rate, 5)
-                profit = u_stock[0][2]*(1+(((stock_val/u_stock[0][2])*100-100)-(100-(fx_impact*100)))/100)-u_stock[0][2]
+                price = u_stock[0][2]*0.9985  # back to price without fx fee
+                profit = price*(1+(((stock_val/price)*100-100)-(100-(fx_impact*100)))/100)-u_stock[0][2]
+                #profit = (profit-(u_stock[0][2]*0.0015))*to_gbp  # final fees
+                profit = profit*to_gbp
+
                 print(f"{full_name} ({stock_name}) -- "
                       f"{round(u_stock[0][1]/rate*u_stock[0][0][1], 2)} -> "
                       f"{round(market_price/rate*u_stock[0][0][1], 2)} -- "
-                      f"£{round(profit/rate, 2)} "
+                      f"£{round(profit, 2)} "
                       f"({round(((stock_val/u_stock[0][2])*100-100)-(100-(fx_impact*100)), 2):.2f}%) "
                       f"(sk{round((stock_val/u_stock[0][2])*100-100, 2)}%)(fx{round(100-(fx_impact*100), 2)*(-1)}%)")
-                profit_list[user_list.index(user)] = round(profit_list[user_list.index(user)]+profit*fx_impact, 4)
+                profit_list[user_list.index(user)] = round(profit_list[user_list.index(user)]+profit, 4)
+                spend_list[user_list.index(user)] = round(spend_list[user_list.index(user)]+u_stock[0][2], 4)
         except KeyError:
             pass  # this pass means that user does not own that stock
 print(profit_list)
-all_user_prof = 0
-rate = c.get_rate("USD", "GBP")
-for profit in profit_list:
-    all_user_prof += profit*rate
-    print(f"{user_list[profit_list.index(profit)]}'s profit: £{round(profit*rate, 2)}")
-print(f"Total user profit: £{round(all_user_prof, 2)}")
+all_prof = 0
+all_spend = 0
+all_end = 0
+rate = 1/rate
 
+for profit in profit_list:
+    user_spend = spend_list[profit_list.index(profit)]*to_gbp
+    all_prof += profit
+    all_spend += user_spend
+    all_end += user_spend+profit
+    print(f"{user_list[profit_list.index(profit)]}'s profit: £{round(user_spend, 2)} "
+          f"-> £{round(user_spend+profit, 2)} -- "
+          f"£{round(profit, 2)} ({round((user_spend+profit)/user_spend*100, 2)}%)")
+print(f"Total user profit: £{round(all_spend, 2)} -> £{round(all_end, 2)} -- "
+      f"£{round(all_prof, 2)} ({round(all_end/all_spend*100, 2)}%)")
 
 
 

@@ -154,8 +154,7 @@ for stock_name in unique_stocks:
                       f"£{round(market_price/rate*u_stock[0][0][1], 2)} -- "
                       f"£{round(profit, 2)} "
                       f"({round((market_price/rate)/(u_stock[0][1])*100-100, 2)}%) ")
-                      #f"({round(((stock_val/price)*100-100)-(100-(fx_impact*100)), 2):.2f}%) "
-                      #f"(sk{round((stock_val/price)*100-100, 2)}%)(fx{round(100-(fx_impact*100), 2)*(-1)}%)")
+                      # todo show fx impact
                 profit_list[user_list.index(user)] = round(profit_list[user_list.index(user)]+profit, 4)
                 spend_list[user_list.index(user)] = round(spend_list[user_list.index(user)]+(u_stock[0][3]*0.9985), 4)
         except KeyError:

@@ -54,9 +54,9 @@ to_gbp = 1/rate
 
 
 class users:
-    def add_user(self, user):
-        user_list.append(user)
-        user_stock_data.append({})
+    def add_users(self, users_):
+        [user_list.append(user) for user in users_]
+        [user_stock_data.append({}) for x in range(len(users_))]
 
     def get_user_stocks(self, user):
         return user_stock_data[user_list.index(user)]
@@ -79,47 +79,42 @@ class users:
                 buy_prices_lc = buy_cost
             amount_own = amount_buy_
             user_stock_data[user_list.index(user)]\
-                .update({stock: [[[float(amount_buy_), float(amount_own)],
-                                  float(avg_price), round(buy_prices, 4), round(buy_prices_lc, 4), buy_time], []]})
+                .update({stock: [[[amount_buy_, amount_own], avg_price, round(buy_prices, 4),
+                                  round(buy_prices_lc, 4), buy_time], []]})
 
     def sell_stock(self, users_, stock, amount_sell, sell_price, result, sell_time):
         for user in users_:
             sales = user_stock_data[user_list.index(user)][stock][1]
-            sales.append([float(amount_sell), float(sell_price*rate), result, sell_time])
+            sales.append([amount_sell, round(sell_price*rate, 4), result, sell_time])
             old_data = users.get_user_stock(0, user, stock)[0]
-            old_data[0][1] = old_data[0][1] - amount_sell
+            old_data[0][1] -= amount_sell
             user_stock_data[user_list.index(user)].update({stock: [old_data, sales]})
 
     def load(self):  # todo redo load
-        with open(f"stocks/stock_data.txt") as f:
-            for line in f.readlines():
-                user, user_data = line.replace("}\n", "").split(" {")
-                if user not in user_list:
-                    users.add_user(0, user)
-                user_data = user_data.split("]], ")
+        with open("stocks/stock_data.txt", encoding="utf-8") as f:
+            for command in f.readlines():
+                command, fields = command[:-1].split("(")
+                #print(command, fields)  # debug command print
+                if command == "add_user":
+                    users.add_users(0, eval(fields[:-1]))
+                if command == "buy_stock":
+                    user, fields = fields.split("], ")
+                    fields = fields.replace("\"", "")
+                    user += "]"
+                    ticker, stk_amt, buy_c, avg_pce, fx_fee, buy_time = fields.split(", ")
+                    users.buy_stock(0, eval(user), ticker, float(stk_amt), float(buy_c),
+                                    float(avg_pce), float(fx_fee), buy_time)
+                if command == "sell_stock":
+                    user, fields = fields.split("], ")
+                    fields = fields.replace("\"", "")
+                    user += "]"
+                    ticker, sell_amt, sell_pce, outcome, sell_time = fields.split(", ")
+                    users.sell_stock(0, eval(user), ticker, float(sell_amt), float(sell_pce), float(outcome), sell_time)
 
-                for stock in user_data:
-                    name = stock.split("': [[")[0].replace("'", "")
-                    stock_data = str(stock.split("': [[")[1:])[:-2]
-                    purchase = stock_data.split("'], [")[0]
-                    sell = stock_data.split("'], [")[1:]
-                    amount_buy, buy_price, buy_time = purchase[2:].replace("'", "").split(", ")
 
-                    sales = []
-                    for sale in sell:
-                        try:
-                            if not sale == "":
-                                sale = sale.replace("]", "").replace("\"", "").replace("[", "").replace("'", "")
-                                amount_sell, sell_price, sell_time = sale.split(", ")
-                                sales.append([float(amount_sell), float(sell_price), sell_time])
-                        except:
-                            pass
-                    user_stock_data[user_list.index(user)]\
-                        .update({name: [[float(amount_buy), float(buy_price), buy_time.replace("'", "")], sales]})
-
-    def save(self):
-        with open(f"stocks/stock_data.txt", "w") as f:
-            [f.write(f"{user} {user_stock_data[user_list.index(user)]}\n") for user in user_list]
+    #def save(self):  # todo rebuild
+    #    with open(f"stocks/stock_data.txt", "w") as f:
+    #        [f.write(f"{user} {user_stock_data[user_list.index(user)]}\n") for user in user_list]
 
 
 new_values = True
@@ -128,31 +123,10 @@ new_values = True
 # fee is in GBP
 # buy price is in local stock currency
 if new_values:
-    without_deposit_fee = 70  # amount in GBP of money without deposit fee
-    users.add_user(0, "Scott")
-    users.add_user(0, "David")
+   users.load(0)
 
-    #                   Users   Ticker StkAmt BuyCost AvgPce FxFee  FXFee   BuyTime
-    users.buy_stock(0, ["Scott"], "AMD", 0.03, 2.31, 103.31, 1.3372, "27-01-22-18:47")
-    users.buy_stock(0, ["Scott"], "AMD", 0.07, 5.43, 103.61, 1.33766, "27-01-22-18:51")
-    users.buy_stock(0, ["Scott"], "AMD", 0.15, 11.58, 103.08, 1.33785, "27-01-22-19:32")
-    users.buy_stock(0, ["Scott"], "AMD", 0.20, 15.01, 100.62, 1.34256, "28-01-22-14:42")
-    users.buy_stock(0, ["Scott"], "AMD", 0.25, 18.66, 101.36, 1.34258, "28-01-22-14:54")
-    users.buy_stock(0, ["Scott"], "INTC", 0.5, 17.38, 46.54, 1.34123, "28-01-22-15:11")
-    users.buy_stock(0, ["Scott"], "MSFT", 1.0, 227.79, 306.90, 1.34931, "01-02-22-14:47")
-    users.buy_stock(0, ["David"], "MSFT", 1.0, 227.67, 307.11, 1.35094, "01-02-22-16:11")
-    users.buy_stock(0, ["Scott", "David"], "AMZN", 0.09, 199.52, 2989.06, 1.35032, "01-02-22-16:16")
-    users.buy_stock(0, ["Scott", "David"], "PYPL", 0.5, 48.80, 132.13, 1.35607, "02-02-22-16:35")
-    users.buy_stock(0, ["Scott", "David"], "BRK-B", 0.5, 117.26, 317.65, 1.35656, "02-02-22-16:58")
-    users.sell_stock(0, ["Scott", "David"], "PYPL", 0.5, 128.68, 1.45, "02-02-22-16:58")
-    users.buy_stock(0, ["Scott", "David"], "AMZN", 0.035, 73.715, 2953.60, 1.36109, "02-02-22-16:58")
-
-    print("unique stock", unique_stocks)
-    print(user_stock_data)
-    users.save(0)
-
-#users.load(0)
-#print(user_stock_data)
+print("unique stock", unique_stocks)
+print(user_stock_data)
 
 profit_list = [0 for x in range(len(user_list))]
 spend_list = [0 for x in range(len(user_list))]
@@ -164,25 +138,26 @@ for stock_name in unique_stocks:
         try:
             u_stock = user_stock_data[user_list.index(user)][stock_name]
             if u_stock[0][0][1] != 0:
-                stock_val = market_price*u_stock[0][0][1]
+                stock_val = (market_price*to_gbp)*u_stock[0][0][1]
                 try:
                     full_name = lv_stock['displayName']
                 except KeyError:
                     full_name = lv_stock['longName']
-                fx_impact = round(u_stock[0][2]/u_stock[0][3]/rate, 5)
-                price = u_stock[0][2]*0.9985  # back to price without fx fee
-                profit = price*(1+(((stock_val/price)*100-100)-(100-(fx_impact*100)))/100)-u_stock[0][2]
-                #profit = (profit-(u_stock[0][2]*0.0015))*to_gbp  # final fees
-                profit = profit*to_gbp
+                price = (u_stock[0][2]*to_gbp)*0.9985  # back to GBP without fx fee
+                #fx_impact = u_stock[0][2]/u_stock[0][3]/rate  # old 1
+                fx_impact = (price/(u_stock[0][3]*to_gbp))/rate  # new 1
+                #fx_impact = (price/((u_stock[0][3]*to_gbp)*1.0015))/rate # new 2
+                profit = price*(1+(((stock_val/price)*100-100)-(100-(fx_impact*100)))/100)-(u_stock[0][2]*to_gbp)
+                profit = (profit-(u_stock[0][2]*0.0015))  # final fees
 
                 print(f"{full_name} ({stock_name}) -- "
-                      f"{round(u_stock[0][1]/rate*u_stock[0][0][1], 2)} -> "
+                      f"{round(u_stock[0][3], 2)} -> "
                       f"{round(market_price/rate*u_stock[0][0][1], 2)} -- "
                       f"£{round(profit, 2)} "
-                      f"({round(((stock_val/u_stock[0][2])*100-100)-(100-(fx_impact*100)), 2):.2f}%) "
-                      f"(sk{round((stock_val/u_stock[0][2])*100-100, 2)}%)(fx{round(100-(fx_impact*100), 2)*(-1)}%)")
+                      f"({round(((stock_val/price)*100-100)-(100-(fx_impact*100)), 2):.2f}%) "
+                      f"(sk{round((stock_val/price)*100-100, 2)}%)(fx{round(100-(fx_impact*100), 2)*(-1)}%)")
                 profit_list[user_list.index(user)] = round(profit_list[user_list.index(user)]+profit, 4)
-                spend_list[user_list.index(user)] = round(spend_list[user_list.index(user)]+u_stock[0][2], 4)
+                spend_list[user_list.index(user)] = round(spend_list[user_list.index(user)]+u_stock[0][3], 4)
         except KeyError:
             pass  # this pass means that user does not own that stock
 print(profit_list)
@@ -192,7 +167,7 @@ all_end = 0
 rate = 1/rate
 
 for profit in profit_list:
-    user_spend = spend_list[profit_list.index(profit)]*to_gbp
+    user_spend = spend_list[profit_list.index(profit)]
     all_prof += profit
     all_spend += user_spend
     all_end += user_spend+profit

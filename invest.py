@@ -71,7 +71,8 @@ class users:
             amount_buy_ = amount_buy
             if stock in user_stock_data[user_list.index(user)]:
                 old_data = user_stock_data[user_list.index(user)][stock]
-                buy_prices = old_data[0][2]+(buy_cost*ex_rate)
+                buy_prices = old_data[0][2]+((buy_cost*0.9985)*ex_rate)
+                #buy_prices = old_data[0][2]+(buy_cost*ex_rate)
                 buy_prices_lc = old_data[0][3]+buy_cost
                 amount_buy_ += old_data[0][0][0]
             else:
@@ -125,6 +126,7 @@ new_values = True
 if new_values:
    users.load(0)
 
+unique_stocks.sort()
 print("unique stock", unique_stocks)
 print(user_stock_data)
 
@@ -143,12 +145,16 @@ for stock_name in unique_stocks:
                     full_name = lv_stock['displayName']
                 except KeyError:
                     full_name = lv_stock['longName']
-                price = (u_stock[0][2]*to_gbp)*0.9985  # back to GBP without fx fee
-                #fx_impact = u_stock[0][2]/u_stock[0][3]/rate  # old 1
-                fx_impact = (price/(u_stock[0][3]*to_gbp))/rate  # new 1
-                #fx_impact = (price/((u_stock[0][3]*to_gbp)*1.0015))/rate # new 2
-                profit = price*(1+(((stock_val/price)*100-100)-(100-(fx_impact*100)))/100)-(u_stock[0][2]*to_gbp)
-                profit = (profit-(u_stock[0][2]*0.0015))  # final fees
+                price = u_stock[0][2]*to_gbp
+                #profit = price*(1+(((stock_val/price)*100-100)-(100-(fx_impact*100)))/100)-(u_stock[0][2]*to_gbp)
+                #profit = (profit-(u_stock[0][2]*0.0015))  # final fees
+                #profit = (((u_stock[0][3]*0.9985)*(market_price/u_stock[0][1])*fx_impact)-u_stock[0][3])
+                fx_impact = price / (u_stock[0][3]*0.9985)
+                fx_impact = (price*1.0015) / u_stock[0][3]
+                profit = (u_stock[0][3]*0.9985)*(market_price/u_stock[0][1])*fx_impact
+                profit = profit-u_stock[0][3]
+                #profit = profit-(round(profit*0.0015, 2))-u_stock[0][3]  # final fee
+                #input()
 
                 print(f"{full_name} ({stock_name}) -- "
                       f"{round(u_stock[0][3], 2)} -> "
@@ -160,6 +166,7 @@ for stock_name in unique_stocks:
                 spend_list[user_list.index(user)] = round(spend_list[user_list.index(user)]+u_stock[0][3], 4)
         except KeyError:
             pass  # this pass means that user does not own that stock
+
 print(profit_list)
 all_prof = 0
 all_spend = 0

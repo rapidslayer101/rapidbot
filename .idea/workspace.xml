@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a8c460a8-8387-46fd-bf73-a0077fba4106" name="Changes" comment="GC17 - Converted values to GBP before calculations, still working on accuracy">
+    <list default="true" id="a8c460a8-8387-46fd-bf73-a0077fba4106" name="Changes" comment="GC18 - Same problem... fixes attempts...">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/invest.py" beforeDir="false" afterPath="$PROJECT_DIR$/invest.py" afterDir="false" />
     </list>
@@ -180,7 +180,8 @@
       <workItem from="1644427883012" duration="3852000" />
       <workItem from="1644508297372" duration="6158000" />
       <workItem from="1644515559009" duration="148000" />
-      <workItem from="1644515746098" duration="8415000" />
+      <workItem from="1644515746098" duration="9563000" />
+      <workItem from="1644530143057" duration="4484000" />
     </task>
     <task id="LOCAL-00001" summary="GC13 - Even more value changes and FX calculations to try to reach real value (WIP)">
       <created>1643837135575</created>
@@ -203,7 +204,14 @@
       <option name="project" value="LOCAL" />
       <updated>1644514491475</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="GC18 - Same problem... fixes attempts...">
+      <created>1644524459646</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1644524459646</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -224,13 +232,14 @@
     <MESSAGE value="GC13 - Even more value changes and FX calculations to try to reach real value (WIP)" />
     <MESSAGE value="GC16 - Even more accurate invest.py" />
     <MESSAGE value="GC17 - Converted values to GBP before calculations, still working on accuracy" />
-    <option name="LAST_COMMIT_MESSAGE" value="GC17 - Converted values to GBP before calculations, still working on accuracy" />
+    <MESSAGE value="GC18 - Same problem... fixes attempts..." />
+    <option name="LAST_COMMIT_MESSAGE" value="GC18 - Same problem... fixes attempts..." />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/rapidbot_25_01_22$mal.coverage" NAME="mal Coverage Results" MODIFIED="1643994724203" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/rapidbot_25_01_22$mal_data.coverage" NAME="mal_data Coverage Results" MODIFIED="1643995891278" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/rapidbot_25_01_22$invest_test.coverage" NAME="invest_test Coverage Results" MODIFIED="1644364513265" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/rapidbot_25_01_22$invest.coverage" NAME="invest Coverage Results" MODIFIED="1644524236064" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/rapidbot_25_01_22$invest.coverage" NAME="invest Coverage Results" MODIFIED="1644534604588" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/rapidbot_25_01_22$anime_watcher.coverage" NAME="anime_watcher Coverage Results" MODIFIED="1643558225408" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/rapidbot_25_01_22$hugh_gonna_die.coverage" NAME="hugh_gonna_die Coverage Results" MODIFIED="1643805753834" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>

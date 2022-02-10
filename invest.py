@@ -135,35 +135,29 @@ spend_list = [0 for x in range(len(user_list))]
 for stock_name in unique_stocks:
     lv_stock = yf.get_quote_data(stock_name)
     market_price = lv_stock["regularMarketPrice"]
-    # stock_val = lv_stock["postMarketPrice"]
+    # market_price = lv_stock["postMarketPrice"]
     for user in user_list:
         try:
             u_stock = user_stock_data[user_list.index(user)][stock_name]
             if u_stock[0][0][1] != 0:
-                stock_val = (market_price*to_gbp)*u_stock[0][0][1]
                 try:
                     full_name = lv_stock['displayName']
                 except KeyError:
                     full_name = lv_stock['longName']
-                price = u_stock[0][2]*to_gbp
-                #profit = price*(1+(((stock_val/price)*100-100)-(100-(fx_impact*100)))/100)-(u_stock[0][2]*to_gbp)
-                #profit = (profit-(u_stock[0][2]*0.0015))  # final fees
-                #profit = (((u_stock[0][3]*0.9985)*(market_price/u_stock[0][1])*fx_impact)-u_stock[0][3])
-                fx_impact = price / (u_stock[0][3]*0.9985)
-                fx_impact = (price*1.0015) / u_stock[0][3]
-                profit = (u_stock[0][3]*0.9985)*(market_price/u_stock[0][1])*fx_impact
-                profit = profit-u_stock[0][3]
-                #profit = profit-(round(profit*0.0015, 2))-u_stock[0][3]  # final fee
-                #input()
+
+                stock_val = (market_price * to_gbp) * u_stock[0][0][1]
+                profit = ((market_price/rate)-(u_stock[0][1]*0.9985))*u_stock[0][0][1]
 
                 print(f"{full_name} ({stock_name}) -- "
-                      f"{round(u_stock[0][3], 2)} -> "
-                      f"{round(market_price/rate*u_stock[0][0][1], 2)} -- "
+                      f"£{round(u_stock[0][1]*u_stock[0][0][1], 2)}"
+                      f"(+{round(u_stock[0][3]-(u_stock[0][1]*u_stock[0][0][1]), 2)}) -> "
+                      f"£{round(market_price/rate*u_stock[0][0][1], 2)} -- "
                       f"£{round(profit, 2)} "
-                      f"({round(((stock_val/price)*100-100)-(100-(fx_impact*100)), 2):.2f}%) "
-                      f"(sk{round((stock_val/price)*100-100, 2)}%)(fx{round(100-(fx_impact*100), 2)*(-1)}%)")
+                      f"({round((market_price/rate)/(u_stock[0][1])*100-100, 2)}%) ")
+                      #f"({round(((stock_val/price)*100-100)-(100-(fx_impact*100)), 2):.2f}%) "
+                      #f"(sk{round((stock_val/price)*100-100, 2)}%)(fx{round(100-(fx_impact*100), 2)*(-1)}%)")
                 profit_list[user_list.index(user)] = round(profit_list[user_list.index(user)]+profit, 4)
-                spend_list[user_list.index(user)] = round(spend_list[user_list.index(user)]+u_stock[0][3], 4)
+                spend_list[user_list.index(user)] = round(spend_list[user_list.index(user)]+(u_stock[0][3]*0.9985), 4)
         except KeyError:
             pass  # this pass means that user does not own that stock
 
@@ -178,11 +172,12 @@ for profit in profit_list:
     all_prof += profit
     all_spend += user_spend
     all_end += user_spend+profit
-    print(f"{user_list[profit_list.index(profit)]}'s profit: £{round(user_spend, 2)} "
+    print(f"{user_list[profit_list.index(profit)]}'s profit: "
+          f"£{round(user_spend, 2)}(+{round(user_spend*0.0015, 2)})"
           f"-> £{round(user_spend+profit, 2)} -- "
-          f"£{round(profit, 2)} ({round((user_spend+profit)/user_spend*100, 2)}%)")
-print(f"Total user profit: £{round(all_spend, 2)} -> £{round(all_end, 2)} -- "
-      f"£{round(all_prof, 2)} ({round(all_end/all_spend*100, 2)}%)")
+          f"£{round(profit, 2)} ({round((user_spend+profit)/user_spend*100-100, 2)}%)")
+print(f"Total user profit: £{round(all_spend, 2)}(+{round(all_spend*0.0015, 2)}) -> £{round(all_end, 2)} -- "
+      f"£{round(all_prof, 2)} ({round(all_end/all_spend*100-100, 2)}%)")
 
 
 

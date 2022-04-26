@@ -28,8 +28,6 @@ else:
 # file system checks
 if not os.path.isdir("strs"):
     os.mkdir("strs")
-if not os.path.isfile("strs/nsfw.txt"):
-    open("strs/nsfw.txt", "w").close()
 if not os.path.isfile("strs/msgstore.txt"):
     open("strs/msgstore.txt", "w").close()
 if not os.path.isfile("strs/tokens.txt"):
@@ -405,275 +403,6 @@ class ColourText(commands.Cog):
     @commands.command(aliases=["cyan_text"])
     async def cyantext(self, ctx):
         await ctx.channel.send(f"```xl\n'{ctx.message.content[10:]}\n\nRequested by {ctx.author}```")
-
-
-def is_nsfw_on(channel_id):
-    with open('strs/nsfw.txt', 'r') as i:
-        isin = f'{i.read()}'
-    if isin.find(str(channel_id)) > -1:
-        return True
-    else:
-        return False
-
-
-class NSFW(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-
-    @commands.command()
-    @commands.has_permissions(administrator=True)
-    async def nsfw_status(self, ctx):
-        if is_nsfw_on(ctx.channel.id):
-            await ctx.channel.send("NSFW is enabled in this channel")
-        else:
-            await ctx.channel.send("NSFW is not enabled in this channel")
-
-    @commands.command()
-    @commands.has_permissions(administrator=True)
-    async def nsfw_on(self, ctx):
-        if is_nsfw_on(ctx.channel.id):
-            await ctx.channel.send("```NSFW is already enabled in this channel```")
-        else:
-            with open('strs/nsfw.txt', 'a') as f:
-                f.write(str(ctx.channel.id) + '\n')
-                await ctx.channel.send("```NSFW is now enabled for this channel```")
-
-    @commands.command()
-    @commands.has_permissions(administrator=True)
-    async def nsfw_off(self, ctx):
-        bad_words = [f'{ctx.channel.id}']
-        if not is_nsfw_on(ctx.channel.id):
-            await ctx.channel.send("```NSFW is not enabled in this channel```")
-        else:
-            with open('strs/nsfw.txt') as old_file, open('strs/nsfw.txt', 'w') as new_file:
-                for line in old_file:
-                    if any(bad_word in line for bad_word in bad_words):
-                        new_file.write(line)
-                await ctx.channel.send("```If NSFW was enabled before it now wont be```")
-
-    @commands.command()
-    async def porntags(self, ctx):
-        if is_nsfw_on(ctx.channel.id):
-            em = Embed(title="porntags HELP:",
-                       description="suggested tags that can be used with the many nsfw search commands")
-            em.add_field(name="Tags", value="`69`,`Amateur`,`Anal`,`Animated`,`Asian`,`Ass`,`Bbc`,`Bbw`,`Bdsm`"
-                              ",`Big Ass`,`Big Dick`,`Big Tits`,`Blonde`,`Blowjob`,`Bondage`,`Boobs`\
-            `Caption`,`Cartoon`,`Cheating`,`Cosplay`,`Cowgirl`,`Creampie`,`Cuckold`,`Cum`,`Cumshot`,"
-                                            "`Deepthroat`,`Dildo`,`Doggystyle`,`Dp`,`Ebony`,\
-            `Feet`,`Ffm`,`Fingering`,`Foursome`,`Fuck`,`Funny`,`Handjob`", inline=False)
-            await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
-
-    @commands.command()
-    async def psi(self, ctx, arg):  # todo functions, tho i dislike it
-        if is_nsfw_on(ctx.channel.id):
-            pagesearch2 = f'https://www.pornpics.com/?q={arg}/'.replace(" ", "+")
-            page = urllib.request.urlopen(pagesearch2)
-            a = (re.findall(r'(https?://[^\s]+)', str(page.read())))
-            b = (re.findall(r'(http?://[^\s]+)', str(page.read())))
-            c = ('\n'.join(a))
-            d = ('\n'.join(b))
-            e = c + d
-            e1 = e.replace("\\n", "").replace("'", "").replace("\"", "")
-            e4 = e1.split()
-            e5 = e4[26:]
-            imgsent = 0
-            for imgn in range(200):
-                e6 = ''.join(e5[imgn:imgn + 1])
-                if 'https://cdni.pornpics.com' in e6:
-                    em = Embed()
-                    em.set_image(url=e6[:-1])
-                    await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
-                    time.sleep(2)
-                    imgsent = imgsent + 1
-                if 'https://img.pornpics.com' in e6:
-                    em = Embed()
-                    em.set_image(url=e6[:-1])
-                    await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
-                    time.sleep(2)
-                    imgsent = imgsent + 1
-                if 'https://images.pornpics.com' in e6:
-                    em = Embed()
-                    em.set_image(url=e6[:-1])
-                    await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
-                    time.sleep(2)
-                    imgsent = imgsent + 1
-                if imgn == 199:
-                    if imgsent > 0:
-                        await ctx.channel.send(f"```diff\nWant more {ctx.message.content[5:]}? Try some galleries!\
-                        \n-psg 1 {ctx.message.content[5:]}\n\nWant something else?\nTry another -psi search```")
-                    else:
-                        await ctx.channel.send("```OH NO! There was no results for your search! try another search```")
-        else:
-            await ctx.channel.send("```NSFW is not enabled in this chat\n"
-                                   " To enable it you must have role admin\n then type -nsfw_on```")
-
-    @commands.command()
-    async def psg(self, ctx, arg1, arg2):  # todo functions, tho i dislike it
-        if is_nsfw_on(ctx.channel.id):
-            global choicesz, choiceszz
-            choicesz = str(arg1)
-            choiceszz = choicesz.replace(" ", "")
-            import urllib.request, re
-            pagesearch2 = f'https://www.pornpics.com/?q={arg2}/'.replace(" ", "+")
-            page = urllib.request.urlopen(pagesearch2)
-            a = (re.findall(r'(https?://[^\s]+)', str(page.read())))
-            b = (re.findall(r'(http?://[^\s]+)', str(page.read())))
-            c = ('\n'.join(a))
-            d = ('\n'.join(b))
-            e = c + d
-            e1 = e.replace("\\n", "").replace("'", "").replace("\"", "")
-            e4 = e1.split()
-            e5 = e4[26:]
-            global PRNN
-            PRNN = 0
-            for imgn in range(200):
-                e6 = ''.join(e5[imgn:imgn + 1])
-                if 'https://www.pornpics.com/galleries/' in e6[:-1]:
-                    PRNN = PRNN + 1
-                    if str(PRNN) == (choiceszz):
-                        pagesearch4 = f'{e6[:-1]}'.replace(" ", "+")
-                        page = urllib.request.urlopen(pagesearch4)
-                        a = (re.findall(r'(https?://[^\s]+)', str(page.read())))
-                        b = (re.findall(r'(http?://[^\s]+)', str(page.read())))
-                        c = ('\n'.join(a))
-                        d = ('\n'.join(b))
-                        e = c + d
-                        e1 = e.replace("\\n", "").replace("'", "").replace("\"", "")
-                        e4 = e1.split()
-                        e5 = e4[26:]
-                        for imgn in range(200):
-                            e6 = ''.join(e5[imgn:imgn + 1])
-                            if 'https://cdni.pornpics.com/1280' in e6:
-                                em = Embed()
-                                em.set_image(url=e6[:-1])
-                                await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
-                                time.sleep(2)
-                            if 'https://img.pornpics.com/460' in e6:
-                                em = Embed()
-                                em.set_image(url=e6[:-1])
-                                await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
-                                time.sleep(2)
-                            if 'https://images.pornpics.com/1280' in e6:
-                                em = Embed()
-                                em.set_image(url=e6[:-1])
-                                await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
-                                time.sleep(2)
-                            if imgn == 199:
-                                pgnum = ctx.message.content[5:7]
-                                pgnum2 = pgnum2.replace(" ", "")
-                                pgnum3 = int(pgnum) + 1
-                                string = f"```diff\nWant even more?! try this command\n-psg\
-                                {pgnum3} {ctx.message.content[7:]}\n\nWant something else?\
-                                \nTry another -psi search```"
-                                string2 = string.replace("  ", " ")
-                                await ctx.channel.send(string2)
-                    else:
-                        await ctx.channel.send("```NSFW is not enabled in this chat\n"
-                                               " To enable it you must have role admin\n then type -nsfw_on```")
-
-    @commands.command()
-    async def porngif(self, ctx, *args):
-        if is_nsfw_on(ctx.channel.id):
-            import urllib, re
-            try:
-                pagen = f"&page={int(args[0])}"
-                c_args = convert_tuple(args[1:])[:-1]
-            except:
-                pagen = ""
-                c_args = convert_tuple(args)[:-1]
-            pagesearch = f'https://www.pornhub.com/gifs/search?search={c_args.replace(" ", "+")}{pagen}'
-            page = urllib.request.urlopen(pagesearch)
-            a = (re.findall(r'(data-mp4[^\s]+)', str(page.read())))
-            b = (re.findall(r'(https://cl.phncdn.com/pics/gifs/[^\s]+)', str(page.read())))
-            c = ('\n'.join(a))
-            d = ('\n'.join(b))
-            e = c + d
-            e1 = e.replace("<span", "").replace("\"", "").replace(">", "").replace("\\", "")
-            e4 = e1.split()
-            e5 = e4[9:]
-            imgsent = 0
-            for imgn in range(200):
-                e6 = ''.join(e5[imgn:imgn + 1])
-                print(e6)
-                if 'https://cl.phncdn.com/pics/gifs/' or 'https://dl.phncdn.com/pics/gifs/' in e6:
-                    edit = e6[65:66]
-                    e7edit = edit.replace("<", "").replace("n", "").replace("t", "").replace("a", "")
-                    e7 = e6[9:65] + e7edit
-                    await ctx.channel.send(e7)
-                    print(e7)
-                    e7edit = e7[44:52]
-                    e7edit2 = e7edit.replace("<", "").replace("n", "").replace("t", "").replace("a", "")
-                    import urllib.request, re
-                    pagesearch4 = f'https://www.pornhub.com/gif/{e7edit2}'.replace(" ", "+")
-                    page = urllib.request.urlopen(pagesearch4)
-                    a = (re.findall(r'(href="/view_video.php[^\s]+)', str(page.read())))
-                    b = (re.findall(r'(href="/view_video.php[^\s]+)', str(page.read())))
-                    c = ('\n'.join(a))
-                    d = ('\n'.join(b))
-                    e = c + d
-                    e1 = e.replace("\\n", "").replace("'", "").replace("\"", "")
-                    e4 = e1.split()
-                    for imgn1 in range(200):
-                        e6 = ''.join(e4[imgn1:imgn1 + 1])
-                        if 'href=/view_video.php?viewkey=' in e6 and '&amp;t=' in e6:
-                            e7 = e6[:45]
-                            e8 = e7[5:]
-                            finale = "https://www.pornhub.com" + e8
-                            em = Embed(title=f"Full video link: {finale}")
-                            await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
-                    time.sleep(4)
-                    imgsent = imgsent + 1
-                if imgn == 199:
-                    pgnum2 = pagen.replace(" ", "")
-                    pgnum3 = int(pgnum2) + 1
-                    await ctx.channel.send(f"```diff\nWant more? Type this command:\n-porngif {pgnum3} {c_args}```")
-                    time.sleep(3)
-        else:
-            await ctx.channel.send("```NSFW is not enabled in this chat\n"
-                                   " To enable it you must have role admin\n then type -nsfw_on```")
-
-    @commands.command()
-    async def hentai(self, ctx, arg1, arg2):
-        if is_nsfw_on(ctx.channel.id):
-            hensearch = arg2.replace(" ", "")
-            pagesearch = f'https://konachan.com/post?page={arg1}&tags=uncensored+nude+{hensearch}'
-            pagesearch2 = pagesearch.replace(" ", "+")
-            page = urllib.request.urlopen(pagesearch2)
-            a = (re.findall(r'(https?://[^\s]+)', str(page.read())))
-            b = (re.findall(r'(http?://[^\s]+)', str(page.read())))
-            c = ('\n'.join(a))
-            d = ('\n'.join(b))
-            e = c + d
-            e1 = e.replace("<span", "").replace("\"", "").replace(">", "")
-            e4 = e1.split()
-            e5 = e4[9:]
-            imgsent = 0
-            for imgn in range(200):
-                e6 = ''.join(e5[imgn:imgn + 1])
-                if 'https://konachan.com/jpeg/' in e6:
-                    em = Embed()
-                    em.set_image(url=e6)
-                    await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
-                    time.sleep(3)
-                    imgsent = imgsent + 1
-                if 'https://konachan.com/image/' in e6:
-                    em = Embed()
-                    em.set_image(url=e6)
-                    await ctx.channel.send(embed=em.set_footer(text=f"Requested by {ctx.author}"))
-                    time.sleep(3)
-                    imgsent = imgsent + 1
-                if imgn == 199:
-                    pgnum = arg1
-                    pgnum2 = pgnum.replace(" ", "")
-                    pgnum3 = int(pgnum2) + 1
-                    if imgsent > 0:
-                        await ctx.channel.send(
-                            f"```diff\nWant more? Type this command:\n-hentai {pgnum3} {hensearch}```")
-                    else:
-                        await ctx.channel.send("```OH NO! There was no results for your search! try another search```")
-        else:
-            await ctx.channel.send("```NSFW is not enabled in this chat\n"
-                                   " To enable it you must have role admin\n then type -nsfw_on```")
 
 
 class OnlineSearching(commands.Cog):
@@ -1193,12 +922,8 @@ class Help(commands.Cog):
             em.add_field(name=":page_facing_up: Server (6)   :dollar: Currency (2)  :rainbow: Colour text (5)",
                          value="`-h server`    `-h currency`    `-h color text`", inline=False)
 
-            if is_nsfw_on(ctx.channel.id):
-                em.add_field(name=":wink: NSFW (7)     :computer: Online searches (6)    :game_die: Games (11)",
-                             value="`-h nsfw`     `-h search`           `-h games`", inline=False)
-            else:
-                em.add_field(name="Disabled (7)     :computer: Online searches (6)    :game_die: Games (11)",
-                             value="`disabled`   `-h search`           `-h games`", inline=False)
+            em.add_field(name="Disabled (7)     :computer: Online searches (6)    :game_die: Games (11)",
+                         value="`disabled`   `-h search`           `-h games`", inline=False)
         else:
             if c_args in ["encryption", "encrypt", "enc", "decryption", "decrypt", "dec"]:
                 em = Embed(title=":hash: Encryption commands (3)", description="`encrypt`,`decrypt`,`enc_key`")
@@ -1234,17 +959,6 @@ class Help(commands.Cog):
                            description="`redtext`,`orange_text`,`yellowtext`,`bluetext`,`cyantext`")
                 em.set_footer(text=f"Add -h to the beginning of a command for its help section! "
                                    f"Requested by {ctx.message.author}")
-
-            if c_args in ["nsfw"]:
-                if is_nsfw_on(ctx.channel.id):
-                    em = Embed(title=":wink: NSFW commands (7)", description="`nsfw_on`,`nsfw_off`,`porntags`,"
-                                     "`psi`,`psg`,`porngif`,`hentai`")
-                    em.set_footer(text=f"Add -h to the beginning of a command for\
-                    its help section! Requested by {ctx.message.author}")
-                else:
-                    em = Embed(title="This is not enabled in your server",
-                               description="If your an admin type `-nsfw_on` to enable these commands")
-                    em.set_footer(text=f"Requested by {ctx.message.author}")
 
             if c_args in ["search", "online search", "online_search"]:
                 em = Embed(title=":computer: Online searches commands (6)",
@@ -1368,58 +1082,6 @@ class Help(commands.Cog):
             if c_args in ["cyantext", "cyan_text"]:  # COLOUR TEXT
                 em = Embed(title="CYANTEXT HELP:", description="The cyan text command turns your message cyan")
                 em.add_field(name="Here is how to use it", value="`-cyantext <message>", inline=False)
-
-            if c_args in ["nsfw_on"]:  # NSFW
-                em = Embed(title="NSFW_ON HELP:", description="The nsfw on command enables nsfw in a channel/chat")
-                em.add_field(name="Command requirements", value="you will need the role admin to use this command",
-                             inline=False)
-
-            if c_args in ["nsfw_off"]:  # NSFW
-                em = Embed(title="NSFW_OFF HELP:", description="The nsfw_off command disables nsfw in a channel/chat")
-                em.add_field(name="Command requirements", value="you will need the role admin to use this command",
-                             inline=False)
-
-            if c_args in ["porntags"]:  # NSFW
-                if is_nsfw_on(ctx.channel.id):
-                    em = Embed(title="PORNTAGS HELP:", description="The porn tags command provides suggestions"
-                                     " for tags to be used in nsfw searches")
-                else:
-                    message = "```This command is not enabled in this chat```"
-
-            if c_args in ["psi"]:  # NSFW
-                if is_nsfw_on(ctx.channel.id):
-                    em = Embed(title="PSI HELP:", description="The porn search image command searches for porn images")
-                    em.add_field(name="Here is how to use it",
-                                 value="`-psi x`\nx is the thing your searching for", inline=False)
-                else:
-                    message = "```This command is not enabled in this chat```"
-
-            if c_args in ["psg"]:  # NSFW
-                if is_nsfw_on(ctx.channel.id):
-                    em = Embed(title="PSG HELP:",
-                               description="The porn search galleries command searches for images in galleries")
-                    em.add_field(name="Here is how to use it", value="`-psg n x`\nn is the \
-                    gallery number to search\nx is the thing/tag your searching for", inline=False)
-                else:
-                    message = "```This command is not enabled in this chat```"
-
-            if c_args in ["porngif"]:  # NSFW
-                if is_nsfw_on(ctx.channel.id):
-                    em = Embed(title="PORNGIF HELP:",
-                               description="The porn gif command finds some gifs and sends them back")
-                    em.add_field(name="Here is how to use it", value="`-porngif n x`\nn is the\
-                     page number to search\nx is the thing/tag your searching for", inline=False)
-                else:
-                    message = "```This command is not enabled in this chat```"
-
-            if c_args in ["hentai"]:  # NSFW
-                if is_nsfw_on(ctx.channel.id):
-                    em = Embed(title="HENTAI HELP:",
-                               description="The hentai search command finds hentai and sends it back")
-                    em.add_field(name="Here is how to use it", value="`-hentai n x`\nn is the page \
-                    number to search\nx is the thing/tag your searching for (you can leave this blank)", inline=False)
-                else:
-                    message = "```This command is not enabled in this chat```"
 
             if c_args in ["ggt_codes"]:  # SEARCHES
                 em = Embed(title="GGT_CODES HELP:", description="The Google translate language codes command shows "
@@ -1558,7 +1220,6 @@ bot.add_cog(BotInfo(bot))
 bot.add_cog(Server(bot))
 bot.add_cog(Currency(bot))
 bot.add_cog(ColourText(bot))
-bot.add_cog(NSFW(bot))
 bot.add_cog(OnlineSearching(bot))
 bot.add_cog(Games(bot))
 bot.add_cog(Admin(bot))
@@ -1906,4 +1567,4 @@ async def on_guild_join(guild):
     await channel.send(embed=em)
 
 
-bot.run('NzExNTc4NDEyMTAzMzY4NzA3.XsFDCQ.5kvtCepsQ8vKpxRfaxm4Fvu3x18')
+bot.run('TOKEN')
